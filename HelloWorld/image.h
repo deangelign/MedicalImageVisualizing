@@ -53,7 +53,8 @@ typedef struct _colorimage {
 } ColorImage;
 
 typedef struct _medicalimage {
-    int maxValue;
+  int maxValue;
+  int maxIntensityAllowed;
   int    nx,ny,nz; /* dimensoes da imagem */
   int ***val;      /* volume com os valores dos voxels */ 
   float  dx,dy,dz; /* tamanho do voxel em unidades de comprimento */

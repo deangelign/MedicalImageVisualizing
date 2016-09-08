@@ -549,6 +549,7 @@ MedicalImage *ReadMedicalImage(char *filename)
 				case 8:
 					data8 = AllocUCharArray(nx*ny*nz);
 					fread(data8,sizeof(uchar),nx*ny*nz,fp);
+                    I->maxIntensityAllowed = 255;//2^8 -1
 					for (z=0; z < nz; z++)
 						for (y=0; y < ny; y++)
 							for (x=0; x < nx; x++)
@@ -563,19 +564,14 @@ MedicalImage *ReadMedicalImage(char *filename)
 					data16 = AllocUShortArray(nx*ny*nz);
 					fread(data16,sizeof(ushort),nx*ny*nz,fp);
 					I->maxValue = 0;
+                    I->maxIntensityAllowed = 65535;//2^16 -1
 					for (z=0; z < nz; z++)
 						for (y=0; y < ny; y++)
 							for (x=0; x < nx; x++){
 								if ((int)data16[x+y*nx+z*nx*ny] > I->maxValue){
 									I->maxValue = (int)data16[x+y*nx+z*nx*ny];
-									//if(I->maxValue > 4095){
-									//	I->maxValue = 4095;
-									//}
 								}
-								I->val[z][y][x] = (int) data16[x+y*nx+z*nx*ny];
-								//if(I->val[z][y][x] > 4095){
-								//	I->val[z][y][x] = 4095;
-								//}
+                                I->val[z][y][x] = (int) data16[x+y*nx+z*nx*ny];
 							}
 					free(data16);
 					break;
