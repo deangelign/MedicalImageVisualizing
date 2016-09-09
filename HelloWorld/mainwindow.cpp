@@ -107,14 +107,17 @@ void MainWindow::on_action3D_Image_triggered()
         sliceY = getSlice('x',1, 'z', 1, image3D, sliceDepth);//zx plan
         sliceX = getSlice('y',1, 'z', 1, image3D, sliceDepth);//zy plan
 
-        QImage *imageZ = new QImage(sliceZ->nx,sliceZ->ny,QImage::Format_RGB32);
-        QImage *imageY = new QImage(sliceY->nx,sliceY->ny,QImage::Format_RGB32);
-        QImage *imageX = new QImage(sliceX->nx,sliceX->ny,QImage::Format_RGB32);
+        QImage *imageZ;
+        QImage *imageY;
+        QImage *imageX;
 
         //solution1: comprimi 12 bits em 8 bits (desolcamento de 4 bits para a direita)
         //solution2: salva uma imagem png como 16 bits e depois le ela
-        int solution =1;
+        int solution = 1;
         if(solution == 1){
+            imageZ = new QImage(sliceZ->nx,sliceZ->ny,QImage::Format_RGB32);
+            imageY = new QImage(sliceY->nx,sliceY->ny,QImage::Format_RGB32);
+            imageX = new QImage(sliceX->nx,sliceX->ny,QImage::Format_RGB32);
             //using qt components to display the images
             if(image3D->nbits > 8){
                 QRgb value = qRgb(0,0,0);
@@ -146,44 +149,67 @@ void MainWindow::on_action3D_Image_triggered()
                 }
 
             }else{
+                QRgb value = qRgb(0,0,0);
+                int aux;//TODO: escolher um nome apropriado para a variavel
 
+                for(int y=0; y < sliceZ->ny; y++){
+                    for(int x=0; x < sliceZ->nx; x++){
+                        aux = sliceZ->val[y][x];
+                        value = qRgb(aux, aux , aux);
+                        imageZ->setPixel(x,y,value);
+                    }
+                }
+
+                for(int y=0; y < sliceY->ny; y++){
+                    for(int x=0; x < sliceY->nx; x++){
+                        aux = sliceY->val[y][x];
+                        value = qRgb(aux, aux , aux);
+                        imageY->setPixel(x,y,value);
+                    }
+                }
+
+                for(int y=0; y < sliceX->ny; y++){
+                    for(int x=0; x < sliceX->nx; x++){
+                        aux = sliceX->val[y][x];
+                        value = qRgb(aux, aux , aux);
+                        imageX->setPixel(x,y,value);
+                    }
+                }
             }
             ui->labelFigureZ->setPixmap(QPixmap::fromImage((*imageZ)));
             ui->labelFigureY->setPixmap(QPixmap::fromImage((*imageY)));
             ui->labelFigureX->setPixmap(QPixmap::fromImage((*imageX)));
+        }if(solution == 2){
+            int nbits = 8;
+            if(image3D->nbits > 8){
+                nbits = 16;
+            }
+            bitsAdjustment(sliceZ,11, true);
+            bitsAdjustment(sliceY,11, true);
+            bitsAdjustment(sliceX,11, true);
+
+            writeGrayImagePng(sliceZ,nbits, "Z_axis.png");
+            writeGrayImagePng(sliceY,nbits, "Y_axis.png");
+            writeGrayImagePng(sliceX,nbits, "X_axis.png");
+            imageZ = new QImage();
+            imageY = new QImage();
+            imageX = new QImage();
+
+            QString localFilename;
+            localFilename = "Z_axis.png";
+            QImageReader *reader = new QImageReader(localFilename);
+            reader->setAutoTransform(true);
+            reader->read(imageZ);
+            reader->setFileName("Y_axis.png");
+            reader->read(imageY);
+            reader->setFileName("X_axis.png");
+            reader->read(imageX);
+
+            ui->labelFigureZ->setPixmap(QPixmap::fromImage((*imageZ)));
+            ui->labelFigureY->setPixmap(QPixmap::fromImage((*imageY)));
+            ui->labelFigureX->setPixmap(QPixmap::fromImage((*imageX)));
+
         }
-        //QImage *imageZ = new QImage(sliceZ->dx,sliceZ->dy,QImage::Format_RGB32);
-        //            QImage *imageZ = new QImage(sliceZ->nx,sliceZ->ny,QImage::Format_RGB32);
-        //            QRgb value = qRgb(0,0,0);
-        //            int maxValue = 0;
-        //            int aux;
-        //            for(int y=0; y < sliceZ->ny; y++){
-        //                for(int x=0; x < sliceZ->nx; x++){
-
-        //                    aux = (((float)sliceZ->val[y][x])/4095)*255;
-        //                    value = qRgb(aux, aux , aux);
-        //                    imageZ->setPixel(x,y,value);
-        //                }
-        //            }
-        //            printf("MaxFinal: %d\n",maxValue);
-        //            ui->label->setPixmap(QPixmap::fromImage((*imageZ)));
-
-        //        QString localFilename;
-        //        localFilename = "slice0.png";
-        //        QImageReader *reader = new QImageReader(localFilename);
-        //        reader->setAutoTransform(true);
-        //        const QImage newImage = reader->read();
-
-        //        //newImage.
-        //        if (newImage.isNull()) {
-        //            QMessageBox::information(this, QGuiApplication::applicationDisplayName(),
-        //                                     tr("Cannot load %1: %2")
-        //                                     .arg(QDir::toNativeSeparators(fileName), reader->errorString()));
-
-        //            return;
-        //        }
-
-        //        ui->label->setPixmap(QPixmap::fromImage(newImage));
 
     }
     else{

@@ -9,5 +9,6 @@
 #include "linear.h"
 #include "spectrum.h"
 #include "gqueue.h"
+#include "displaymanager.h"
 
 #endif

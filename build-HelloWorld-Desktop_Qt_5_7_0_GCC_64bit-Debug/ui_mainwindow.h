@@ -64,7 +64,7 @@ public:
         labelFigureZ->setWordWrap(false);
         labelFigureY = new QLabel(centralWidget);
         labelFigureY->setObjectName(QStringLiteral("labelFigureY"));
-        labelFigureY->setGeometry(QRect(448, 30, 400, 350));
+        labelFigureY->setGeometry(QRect(448, 32, 400, 350));
         labelFigureY->setAutoFillBackground(false);
         labelFigureY->setStyleSheet(QLatin1String("background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0, stop:0 rgba(0, 0, 0, 255), stop:1 rgba(255, 255, 255, 255));\n"
 "background-color: rgb(255, 255, 255);\n"
@@ -72,7 +72,7 @@ public:
         labelFigureY->setWordWrap(false);
         labelFigureX = new QLabel(centralWidget);
         labelFigureX->setObjectName(QStringLiteral("labelFigureX"));
-        labelFigureX->setGeometry(QRect(30, 398, 400, 350));
+        labelFigureX->setGeometry(QRect(32, 398, 400, 350));
         labelFigureX->setAutoFillBackground(false);
         labelFigureX->setStyleSheet(QLatin1String("background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0, stop:0 rgba(0, 0, 0, 255), stop:1 rgba(255, 255, 255, 255));\n"
 "background-color: rgb(255, 255, 255);\n"
