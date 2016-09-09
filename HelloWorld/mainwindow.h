@@ -16,8 +16,7 @@ public:
     ~MainWindow();
 
 private slots:
-    void on_actionOpen_triggered();
-
+    void on_action3D_Image_triggered();
 private:
     Ui::MainWindow *ui;
 };

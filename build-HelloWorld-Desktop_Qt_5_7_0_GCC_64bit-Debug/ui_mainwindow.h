@@ -13,7 +13,6 @@
 #include <QtWidgets/QAction>
 #include <QtWidgets/QApplication>
 #include <QtWidgets/QButtonGroup>
-#include <QtWidgets/QGraphicsView>
 #include <QtWidgets/QHeaderView>
 #include <QtWidgets/QLabel>
 #include <QtWidgets/QMainWindow>
@@ -29,43 +28,56 @@ class Ui_MainWindow
 {
 public:
     QAction *actionFile;
-    QAction *actionOpen;
-    QAction *actionSave;
-    QAction *actionExit;
+    QAction *action3D_Image;
+    QAction *actionLabel_map;
     QWidget *centralWidget;
-    QLabel *HelloWorldLabel;
-    QGraphicsView *graphicsView;
+    QLabel *labelFigureZ;
+    QLabel *labelFigureY;
+    QLabel *labelFigureX;
     QToolBar *mainToolBar;
     QStatusBar *statusBar;
     QMenuBar *menuBar;
     QMenu *menuFile;
+    QMenu *menuImport;
 
     void setupUi(QMainWindow *MainWindow)
     {
         if (MainWindow->objectName().isEmpty())
             MainWindow->setObjectName(QStringLiteral("MainWindow"));
-        MainWindow->resize(699, 459);
+        MainWindow->resize(1024, 800);
+        MainWindow->setStyleSheet(QStringLiteral("background-color: rgb(170, 170, 127);"));
         actionFile = new QAction(MainWindow);
         actionFile->setObjectName(QStringLiteral("actionFile"));
-        actionOpen = new QAction(MainWindow);
-        actionOpen->setObjectName(QStringLiteral("actionOpen"));
-        actionSave = new QAction(MainWindow);
-        actionSave->setObjectName(QStringLiteral("actionSave"));
-        actionExit = new QAction(MainWindow);
-        actionExit->setObjectName(QStringLiteral("actionExit"));
+        action3D_Image = new QAction(MainWindow);
+        action3D_Image->setObjectName(QStringLiteral("action3D_Image"));
+        actionLabel_map = new QAction(MainWindow);
+        actionLabel_map->setObjectName(QStringLiteral("actionLabel_map"));
         centralWidget = new QWidget(MainWindow);
         centralWidget->setObjectName(QStringLiteral("centralWidget"));
-        HelloWorldLabel = new QLabel(centralWidget);
-        HelloWorldLabel->setObjectName(QStringLiteral("HelloWorldLabel"));
-        HelloWorldLabel->setGeometry(QRect(20, 20, 201, 271));
-        QSizePolicy sizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-        sizePolicy.setHorizontalStretch(0);
-        sizePolicy.setVerticalStretch(0);
-        sizePolicy.setHeightForWidth(HelloWorldLabel->sizePolicy().hasHeightForWidth());
-        HelloWorldLabel->setSizePolicy(sizePolicy);
-        graphicsView = new QGraphicsView(centralWidget);
-        graphicsView->setObjectName(QStringLiteral("graphicsView"));
-        graphicsView->setGeometry(QRect(240, -10, 351, 381));
+        labelFigureZ = new QLabel(centralWidget);
+        labelFigureZ->setObjectName(QStringLiteral("labelFigureZ"));
+        labelFigureZ->setGeometry(QRect(32, 32, 400, 350));
+        labelFigureZ->setAutoFillBackground(false);
+        labelFigureZ->setStyleSheet(QLatin1String("background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0, stop:0 rgba(0, 0, 0, 255), stop:1 rgba(255, 255, 255, 255));\n"
+"background-color: rgb(255, 255, 255);\n"
+"background-color: rgb(0, 0, 0);"));
+        labelFigureZ->setWordWrap(false);
+        labelFigureY = new QLabel(centralWidget);
+        labelFigureY->setObjectName(QStringLiteral("labelFigureY"));
+        labelFigureY->setGeometry(QRect(448, 30, 400, 350));
+        labelFigureY->setAutoFillBackground(false);
+        labelFigureY->setStyleSheet(QLatin1String("background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0, stop:0 rgba(0, 0, 0, 255), stop:1 rgba(255, 255, 255, 255));\n"
+"background-color: rgb(255, 255, 255);\n"
+"background-color: rgb(0, 0, 0);"));
+        labelFigureY->setWordWrap(false);
+        labelFigureX = new QLabel(centralWidget);
+        labelFigureX->setObjectName(QStringLiteral("labelFigureX"));
+        labelFigureX->setGeometry(QRect(30, 398, 400, 350));
+        labelFigureX->setAutoFillBackground(false);
+        labelFigureX->setStyleSheet(QLatin1String("background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0, stop:0 rgba(0, 0, 0, 255), stop:1 rgba(255, 255, 255, 255));\n"
+"background-color: rgb(255, 255, 255);\n"
+"background-color: rgb(0, 0, 0);"));
+        labelFigureX->setWordWrap(false);
         MainWindow->setCentralWidget(centralWidget);
         mainToolBar = new QToolBar(MainWindow);
         mainToolBar->setObjectName(QStringLiteral("mainToolBar"));
@@ -75,17 +87,17 @@ public:
         MainWindow->setStatusBar(statusBar);
         menuBar = new QMenuBar(MainWindow);
         menuBar->setObjectName(QStringLiteral("menuBar"));
-        menuBar->setGeometry(QRect(0, 0, 699, 20));
+        menuBar->setGeometry(QRect(0, 0, 1024, 20));
         menuFile = new QMenu(menuBar);
         menuFile->setObjectName(QStringLiteral("menuFile"));
+        menuImport = new QMenu(menuFile);
+        menuImport->setObjectName(QStringLiteral("menuImport"));
         MainWindow->setMenuBar(menuBar);
 
         menuBar->addAction(menuFile->menuAction());
-        menuFile->addSeparator();
-        menuFile->addAction(actionOpen);
-        menuFile->addSeparator();
-        menuFile->addAction(actionSave);
-        menuFile->addAction(actionExit);
+        menuFile->addAction(menuImport->menuAction());
+        menuImport->addAction(action3D_Image);
+        menuImport->addAction(actionLabel_map);
 
         retranslateUi(MainWindow);
 
@@ -96,11 +108,13 @@ public:
     {
         MainWindow->setWindowTitle(QApplication::translate("MainWindow", "MainWindow", 0));
         actionFile->setText(QApplication::translate("MainWindow", "File", 0));
-        actionOpen->setText(QApplication::translate("MainWindow", "open", 0));
-        actionSave->setText(QApplication::translate("MainWindow", "Save", 0));
-        actionExit->setText(QApplication::translate("MainWindow", "Exit", 0));
-        HelloWorldLabel->setText(QApplication::translate("MainWindow", "Hello World", 0));
+        action3D_Image->setText(QApplication::translate("MainWindow", "3D Image", 0));
+        actionLabel_map->setText(QApplication::translate("MainWindow", "Label map", 0));
+        labelFigureZ->setText(QString());
+        labelFigureY->setText(QString());
+        labelFigureX->setText(QString());
         menuFile->setTitle(QApplication::translate("MainWindow", "File", 0));
+        menuImport->setTitle(QApplication::translate("MainWindow", "Import", 0));
     } // retranslateUi
 
 };

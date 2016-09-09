@@ -21,7 +21,9 @@ SOURCES += main.cpp\
     gqueue.cpp \
     comptime.cpp \
     common.cpp \
-    adjacency.cpp
+    adjacency.cpp \
+    slicer.cpp \
+    displaymanager.cpp
 
 HEADERS  += mainwindow.h \
     spectrum.h \
@@ -32,6 +34,8 @@ HEADERS  += mainwindow.h \
     comptime.h \
     common.h \
     adjacency.h \
-    gqueue.h
+    gqueue.h \
+    slicer.h \
+    displaymanager.h
 
 FORMS    += mainwindow.ui

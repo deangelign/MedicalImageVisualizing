@@ -13,8 +13,8 @@ MAKEFILE      = Makefile
 CC            = gcc
 CXX           = g++
 DEFINES       = -DQT_QML_DEBUG -DQT_WIDGETS_LIB -DQT_GUI_LIB -DQT_CORE_LIB
-CFLAGS        = -pipe -g -Wall -W -D_REENTRANT -fPIC $(DEFINES) 
-CXXFLAGS      = -pipe -g -std=gnu++11 -Wall -W -D_REENTRANT -fPIC $(DEFINES) 
+CFLAGS        = -pipe -g -Wall -W -D_REENTRANT -fPIC $(DEFINES)
+CXXFLAGS      = -pipe -g -std=gnu++11 -Wall -W -D_REENTRANT -fPIC $(DEFINES)
 INCPATH       = -I../HelloWorld -I. -I../../Qt/5.7/gcc_64/include -I../../Qt/5.7/gcc_64/include/QtWidgets -I../../Qt/5.7/gcc_64/include/QtGui -I../../Qt/5.7/gcc_64/include/QtCore -I. -I. -I../../Qt/5.7/gcc_64/mkspecs/linux-g++
 QMAKE         = /home/deangeli/Qt/5.7/gcc_64/bin/qmake
 DEL_FILE      = rm -f
@@ -35,7 +35,7 @@ COMPRESS      = gzip -9f
 DISTNAME      = HelloWorld1.0.0
 DISTDIR = /home/deangeli/QtProjects/build-HelloWorld-Desktop_Qt_5_7_0_GCC_64bit-Debug/.tmp/HelloWorld1.0.0
 LINK          = g++
-LFLAGS        = -Wl,-rpath,/home/deangeli/Qt/5.7/gcc_64/lib -Wno-write-strings
+LFLAGS        = -Wl,-rpath,/home/deangeli/Qt/5.7/gcc_64/lib
 LIBS          = $(SUBLIBS) -L/home/deangeli/Qt/5.7/gcc_64/lib -lQt5Widgets -L/usr/lib64 -lQt5Gui -lQt5Core -lGL -lpthread -lpng
 AR            = ar cqs
 RANLIB        = 
@@ -57,7 +57,9 @@ SOURCES       = ../HelloWorld/main.cpp \
 		../HelloWorld/gqueue.cpp \
 		../HelloWorld/comptime.cpp \
 		../HelloWorld/common.cpp \
-		../HelloWorld/adjacency.cpp moc_mainwindow.cpp
+		../HelloWorld/adjacency.cpp \
+		../HelloWorld/slicer.cpp \
+		../HelloWorld/displaymanager.cpp moc_mainwindow.cpp
 OBJECTS       = main.o \
 		mainwindow.o \
 		spectrum.o \
@@ -68,6 +70,8 @@ OBJECTS       = main.o \
 		comptime.o \
 		common.o \
 		adjacency.o \
+		slicer.o \
+		displaymanager.o \
 		moc_mainwindow.o
 DIST          = ../../Qt/5.7/gcc_64/mkspecs/features/spec_pre.prf \
 		../../Qt/5.7/gcc_64/mkspecs/common/unix.conf \
@@ -227,7 +231,9 @@ DIST          = ../../Qt/5.7/gcc_64/mkspecs/features/spec_pre.prf \
 		../HelloWorld/comptime.h \
 		../HelloWorld/common.h \
 		../HelloWorld/adjacency.h \
-		../HelloWorld/gqueue.h ../HelloWorld/main.cpp \
+		../HelloWorld/gqueue.h \
+		../HelloWorld/slicer.h \
+		../HelloWorld/displaymanager.h ../HelloWorld/main.cpp \
 		../HelloWorld/mainwindow.cpp \
 		../HelloWorld/spectrum.cpp \
 		../HelloWorld/linear.cpp \
@@ -236,7 +242,9 @@ DIST          = ../../Qt/5.7/gcc_64/mkspecs/features/spec_pre.prf \
 		../HelloWorld/gqueue.cpp \
 		../HelloWorld/comptime.cpp \
 		../HelloWorld/common.cpp \
-		../HelloWorld/adjacency.cpp
+		../HelloWorld/adjacency.cpp \
+		../HelloWorld/slicer.cpp \
+		../HelloWorld/displaymanager.cpp
 QMAKE_TARGET  = HelloWorld
 DESTDIR       = 
 TARGET        = HelloWorld
@@ -569,8 +577,8 @@ dist: distdir FORCE
 distdir: FORCE
 	@test -d $(DISTDIR) || mkdir -p $(DISTDIR)
 	$(COPY_FILE) --parents $(DIST) $(DISTDIR)/
-	$(COPY_FILE) --parents ../HelloWorld/mainwindow.h ../HelloWorld/spectrum.h ../HelloWorld/mc920.h ../HelloWorld/linear.h ../HelloWorld/kernel.h ../HelloWorld/image.h ../HelloWorld/comptime.h ../HelloWorld/common.h ../HelloWorld/adjacency.h ../HelloWorld/gqueue.h $(DISTDIR)/
-	$(COPY_FILE) --parents ../HelloWorld/main.cpp ../HelloWorld/mainwindow.cpp ../HelloWorld/spectrum.cpp ../HelloWorld/linear.cpp ../HelloWorld/kernel.cpp ../HelloWorld/image.cpp ../HelloWorld/gqueue.cpp ../HelloWorld/comptime.cpp ../HelloWorld/common.cpp ../HelloWorld/adjacency.cpp $(DISTDIR)/
+	$(COPY_FILE) --parents ../HelloWorld/mainwindow.h ../HelloWorld/spectrum.h ../HelloWorld/mc920.h ../HelloWorld/linear.h ../HelloWorld/kernel.h ../HelloWorld/image.h ../HelloWorld/comptime.h ../HelloWorld/common.h ../HelloWorld/adjacency.h ../HelloWorld/gqueue.h ../HelloWorld/slicer.h ../HelloWorld/displaymanager.h $(DISTDIR)/
+	$(COPY_FILE) --parents ../HelloWorld/main.cpp ../HelloWorld/mainwindow.cpp ../HelloWorld/spectrum.cpp ../HelloWorld/linear.cpp ../HelloWorld/kernel.cpp ../HelloWorld/image.cpp ../HelloWorld/gqueue.cpp ../HelloWorld/comptime.cpp ../HelloWorld/common.cpp ../HelloWorld/adjacency.cpp ../HelloWorld/slicer.cpp ../HelloWorld/displaymanager.cpp $(DISTDIR)/
 	$(COPY_FILE) --parents ../HelloWorld/mainwindow.ui $(DISTDIR)/
 
 
@@ -948,11 +956,18 @@ mainwindow.o: ../HelloWorld/mainwindow.cpp ../HelloWorld/mainwindow.h \
 		../../Qt/5.7/gcc_64/include/QtGui/qinputmethod.h \
 		../../Qt/5.7/gcc_64/include/QtWidgets/QButtonGroup \
 		../../Qt/5.7/gcc_64/include/QtWidgets/qbuttongroup.h \
+		../../Qt/5.7/gcc_64/include/QtWidgets/QGraphicsView \
+		../../Qt/5.7/gcc_64/include/QtWidgets/qgraphicsview.h \
+		../../Qt/5.7/gcc_64/include/QtGui/qpainter.h \
+		../../Qt/5.7/gcc_64/include/QtGui/qtextoption.h \
+		../../Qt/5.7/gcc_64/include/QtGui/qpen.h \
+		../../Qt/5.7/gcc_64/include/QtWidgets/qscrollarea.h \
+		../../Qt/5.7/gcc_64/include/QtWidgets/qabstractscrollarea.h \
+		../../Qt/5.7/gcc_64/include/QtWidgets/qframe.h \
+		../../Qt/5.7/gcc_64/include/QtWidgets/qgraphicsscene.h \
 		../../Qt/5.7/gcc_64/include/QtWidgets/QHeaderView \
 		../../Qt/5.7/gcc_64/include/QtWidgets/qheaderview.h \
 		../../Qt/5.7/gcc_64/include/QtWidgets/qabstractitemview.h \
-		../../Qt/5.7/gcc_64/include/QtWidgets/qabstractscrollarea.h \
-		../../Qt/5.7/gcc_64/include/QtWidgets/qframe.h \
 		../../Qt/5.7/gcc_64/include/QtCore/qabstractitemmodel.h \
 		../../Qt/5.7/gcc_64/include/QtCore/qitemselectionmodel.h \
 		../../Qt/5.7/gcc_64/include/QtWidgets/qabstractitemdelegate.h \
@@ -967,14 +982,40 @@ mainwindow.o: ../HelloWorld/mainwindow.cpp ../HelloWorld/mainwindow.h \
 		../../Qt/5.7/gcc_64/include/QtWidgets/qrubberband.h \
 		../../Qt/5.7/gcc_64/include/QtWidgets/QLabel \
 		../../Qt/5.7/gcc_64/include/QtWidgets/qlabel.h \
+		../../Qt/5.7/gcc_64/include/QtWidgets/QMenu \
+		../../Qt/5.7/gcc_64/include/QtWidgets/qmenu.h \
 		../../Qt/5.7/gcc_64/include/QtWidgets/QMenuBar \
 		../../Qt/5.7/gcc_64/include/QtWidgets/qmenubar.h \
-		../../Qt/5.7/gcc_64/include/QtWidgets/qmenu.h \
 		../../Qt/5.7/gcc_64/include/QtWidgets/QStatusBar \
 		../../Qt/5.7/gcc_64/include/QtWidgets/qstatusbar.h \
 		../../Qt/5.7/gcc_64/include/QtWidgets/QToolBar \
 		../../Qt/5.7/gcc_64/include/QtWidgets/qtoolbar.h \
-		../../Qt/5.7/gcc_64/include/QtWidgets/QWidget
+		../../Qt/5.7/gcc_64/include/QtWidgets/QWidget \
+		../../Qt/5.7/gcc_64/include/QtWidgets/QFileDialog \
+		../../Qt/5.7/gcc_64/include/QtWidgets/qfiledialog.h \
+		../../Qt/5.7/gcc_64/include/QtCore/qdir.h \
+		../../Qt/5.7/gcc_64/include/QtCore/qfileinfo.h \
+		../../Qt/5.7/gcc_64/include/QtWidgets/qdialog.h \
+		../../Qt/5.7/gcc_64/include/QtWidgets/QMessageBox \
+		../../Qt/5.7/gcc_64/include/QtWidgets/qmessagebox.h \
+		../../Qt/5.7/gcc_64/include/QtCore/QTextStream \
+		../../Qt/5.7/gcc_64/include/QtGui/QImageReader \
+		../../Qt/5.7/gcc_64/include/QtGui/qimagereader.h \
+		../../Qt/5.7/gcc_64/include/QtGui/qimageiohandler.h \
+		../../Qt/5.7/gcc_64/include/QtCore/qplugin.h \
+		../../Qt/5.7/gcc_64/include/QtCore/qpointer.h \
+		../../Qt/5.7/gcc_64/include/QtCore/qjsonobject.h \
+		../../Qt/5.7/gcc_64/include/QtCore/qjsonvalue.h \
+		../../Qt/5.7/gcc_64/include/QtCore/qfactoryinterface.h \
+		../HelloWorld/mc920.h \
+		../HelloWorld/common.h \
+		../HelloWorld/comptime.h \
+		../HelloWorld/image.h \
+		../HelloWorld/adjacency.h \
+		../HelloWorld/kernel.h \
+		../HelloWorld/linear.h \
+		../HelloWorld/spectrum.h \
+		../HelloWorld/gqueue.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o mainwindow.o ../HelloWorld/mainwindow.cpp
 
 spectrum.o: ../HelloWorld/spectrum.cpp ../HelloWorld/spectrum.h \
@@ -1012,6 +1053,16 @@ common.o: ../HelloWorld/common.cpp ../HelloWorld/common.h
 adjacency.o: ../HelloWorld/adjacency.cpp ../HelloWorld/adjacency.h \
 		../HelloWorld/common.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o adjacency.o ../HelloWorld/adjacency.cpp
+
+slicer.o: ../HelloWorld/slicer.cpp ../HelloWorld/slicer.h \
+		../HelloWorld/image.h \
+		../HelloWorld/common.h
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o slicer.o ../HelloWorld/slicer.cpp
+
+displaymanager.o: ../HelloWorld/displaymanager.cpp ../HelloWorld/displaymanager.h \
+		../HelloWorld/image.h \
+		../HelloWorld/common.h
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o displaymanager.o ../HelloWorld/displaymanager.cpp
 
 moc_mainwindow.o: moc_mainwindow.cpp 
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o moc_mainwindow.o moc_mainwindow.cpp
