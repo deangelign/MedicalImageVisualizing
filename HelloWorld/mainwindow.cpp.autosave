@@ -153,7 +153,7 @@ void MainWindow::on_spinBoxImageZ_valueChanged(int arg1)
 {
     try{
         int sliceNumber = ui->spinBoxImageZ->text().toInt();
-
+        
 
     }catch(int e){
         //TODO:

@@ -523,6 +523,10 @@ MedicalImage *ReadMedicalImage(char *filename)
     uchar *data8=NULL;
     ushort *data16=NULL;
     int  x,y,z,nx,ny,nz,nbits;
+    float dx,dy,dz;
+    dx = dy = dz = 0;
+    nx = ny = nz = 0;
+    nbits = 0;
     MedicalImage *I=NULL;
     char remarks[256];
 
@@ -541,6 +545,10 @@ MedicalImage *ReadMedicalImage(char *filename)
             fscanf(fp,"%f",&I->dy);
             fscanf(fp,"%f\n",&I->dz);
             fscanf(fp,"%d\n",&nbits); // 8 ou 16 bits
+
+            fprintf(stderr,"%s\n %d %d %d\n %f %f %f\n %d\n",filename,I->nx,I->ny,I->nz,I->dx,I->dy,I->dz,nbits);
+
+
 
             switch(nbits) {
 
@@ -655,195 +663,195 @@ void WriteMedicalImage(MedicalImage *I, char *filename)
 
 }
 
-void writeGrayImagePng(GrayImage *grayImage,int nbits, char *file_name){
-    int width = grayImage->nx;
-    int height = grayImage->ny;
+//void writeGrayImagePng(GrayImage *grayImage,int nbits, char *file_name){
+//    int width = grayImage->nx;
+//    int height = grayImage->ny;
 
 
-    png_bytep *row_pointers;
-    if(nbits != 8 && nbits != 16){
-        Error("Invalid number of bits","writePngImage");
-    }
-    int bytesColorSpace = 1;
-    int byteshift = nbits/8;
+//    png_bytep *row_pointers;
+//    if(nbits != 8 && nbits != 16){
+//        Error("Invalid number of bits","writePngImage");
+//    }
+//    int bytesColorSpace = 1;
+//    int byteshift = nbits/8;
 
-    size_t pixel_size = (bytesColorSpace) * byteshift;
-    row_pointers = (png_bytep*) malloc(sizeof(png_bytep) * height);
-    for (int y=0; y<height; y++){
-        row_pointers[y] = (png_byte*) malloc(pixel_size*width);
-    }
-
-
-    for (int y = 0; y < height; ++y) {
-        png_byte *row = row_pointers[y];
-        for (int x=0; x<width; x++) {
-
-            png_byte* ptr = &(row[x*byteshift]);
-            ptr[0*byteshift] = grayImage->val[y][x] & 0xFF;//get first byte
-
-            if(nbits==16) {//in 16bit image, we should store as big endian
-                ptr[1] = ptr[0];
-                ptr[0] = (grayImage->val[y][x]>>8) & 0xFF;//get second byte
-            }
-        }
-    }
+//    size_t pixel_size = (bytesColorSpace) * byteshift;
+//    row_pointers = (png_bytep*) malloc(sizeof(png_bytep) * height);
+//    for (int y=0; y<height; y++){
+//        row_pointers[y] = (png_byte*) malloc(pixel_size*width);
+//    }
 
 
-    /* create file */
-    FILE *fp = fopen(file_name, "wb");
-    if (!fp)
-        Error("Internal Error: File %s could not be opened for writing", "writeColorImagePng");
+//    for (int y = 0; y < height; ++y) {
+//        png_byte *row = row_pointers[y];
+//        for (int x=0; x<width; x++) {
 
-    /* initialize stuff */
-    png_structp png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
+//            png_byte* ptr = &(row[x*byteshift]);
+//            ptr[0*byteshift] = grayImage->val[y][x] & 0xFF;//get first byte
 
-    if (!png_ptr)
-        Error("Internal Error: png_create_write_struct failed", "writeColorImagePng");
-
-    png_infop info_ptr = png_create_info_struct(png_ptr);
-    if (!info_ptr)
-        Error("Internal Error: png_create_info_struct failed", "writeColorImagePng");
-
-    if (setjmp(png_jmpbuf(png_ptr)))
-        Error("Internal Error: Error during init_io", "writeColorImagePng");
-
-    png_init_io(png_ptr, fp);
+//            if(nbits==16) {//in 16bit image, we should store as big endian
+//                ptr[1] = ptr[0];
+//                ptr[0] = (grayImage->val[y][x]>>8) & 0xFF;//get second byte
+//            }
+//        }
+//    }
 
 
-    /* write header */
-    if (setjmp(png_jmpbuf(png_ptr)))
-        Error("Internal Error: Error during writing header", "writeColorImagePng");
+//    /* create file */
+//    FILE *fp = fopen(file_name, "wb");
+//    if (!fp)
+//        Error("Internal Error: File %s could not be opened for writing", "writeColorImagePng");
+
+//    /* initialize stuff */
+//    png_structp png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
+
+//    if (!png_ptr)
+//        Error("Internal Error: png_create_write_struct failed", "writeColorImagePng");
+
+//    png_infop info_ptr = png_create_info_struct(png_ptr);
+//    if (!info_ptr)
+//        Error("Internal Error: png_create_info_struct failed", "writeColorImagePng");
+
+//    if (setjmp(png_jmpbuf(png_ptr)))
+//        Error("Internal Error: Error during init_io", "writeColorImagePng");
+
+//    png_init_io(png_ptr, fp);
 
 
-    png_set_IHDR(png_ptr, info_ptr, width, height,
-                 nbits, PNG_COLOR_TYPE_GRAY, PNG_INTERLACE_NONE,
-                 PNG_COMPRESSION_TYPE_BASE, PNG_FILTER_TYPE_BASE);
-
-    png_write_info(png_ptr, info_ptr);
+//    /* write header */
+//    if (setjmp(png_jmpbuf(png_ptr)))
+//        Error("Internal Error: Error during writing header", "writeColorImagePng");
 
 
-    /* write bytes */
-    if (setjmp(png_jmpbuf(png_ptr)))
-        Error("Internal Error: Error during writing bytes", "writeColorImagePng");
+//    png_set_IHDR(png_ptr, info_ptr, width, height,
+//                 nbits, PNG_COLOR_TYPE_GRAY, PNG_INTERLACE_NONE,
+//                 PNG_COMPRESSION_TYPE_BASE, PNG_FILTER_TYPE_BASE);
 
-    png_write_image(png_ptr, row_pointers);
-
-
-    /* end write */
-    if (setjmp(png_jmpbuf(png_ptr)))
-        Error("Internal Error: Error during end of write", "writeColorImagePng");
-
-    png_write_end(png_ptr, NULL);
-
-    png_destroy_write_struct(&png_ptr, &info_ptr);
-
-    /* cleanup heap allocation */
-    for (int y=0; y<height; y++)
-        free(row_pointers[y]);
-    free(row_pointers);
-
-    fclose(fp);
-}
+//    png_write_info(png_ptr, info_ptr);
 
 
-void writeColorImagePng(ColorImage *colorImage,int nbits, char *file_name){
+//    /* write bytes */
+//    if (setjmp(png_jmpbuf(png_ptr)))
+//        Error("Internal Error: Error during writing bytes", "writeColorImagePng");
 
-    int width = colorImage->nx;
-    int height = colorImage->ny;
-
-
-    png_bytep *row_pointers;
-    if(nbits != 8 && nbits != 16){
-        Error("Invalid number of bits","writePngImage");
-    }
-    int bytesColorSpace = 3;
-    int byteshift = nbits/8;
-
-    size_t pixel_size = (bytesColorSpace) * byteshift;
-    row_pointers = (png_bytep*) malloc(sizeof(png_bytep) * height);
-    for (int y=0; y<height; y++){
-        row_pointers[y] = (png_byte*) malloc(pixel_size*width);
-    }
+//    png_write_image(png_ptr, row_pointers);
 
 
-    for (int y = 0; y < height; ++y) {
-        png_byte *row = row_pointers[y];
-        for (int x=0; x<width; x++) {
+//    /* end write */
+//    if (setjmp(png_jmpbuf(png_ptr)))
+//        Error("Internal Error: Error during end of write", "writeColorImagePng");
 
-            png_byte* ptr = &(row[x*3*byteshift]);
-            ptr[0*byteshift] = colorImage->cor[y][x].val[0] & 0xFF;//get first byte
-            ptr[1*byteshift] = colorImage->cor[y][x].val[1] & 0xFF;
-            ptr[2*byteshift] = colorImage->cor[y][x].val[2] & 0xFF;
+//    png_write_end(png_ptr, NULL);
 
-            if(nbits==16) {//in 16bit image, we should store as big endian
-                ptr[0*byteshift+1] = ptr[0*byteshift];
-                ptr[1*byteshift+1] = ptr[1*byteshift];
-                ptr[2*byteshift+1] = ptr[2*byteshift];
+//    png_destroy_write_struct(&png_ptr, &info_ptr);
 
-                ptr[0*byteshift] = ((colorImage->cor[y][x].val[0]>>8) & 0xFF);//get second byte
-                ptr[1*byteshift] = ((colorImage->cor[y][x].val[1]>>8) & 0xFF);
-                ptr[2*byteshift] = ((colorImage->cor[y][x].val[2]>>8) & 0xFF);
-            }
-        }
-    }
+//    /* cleanup heap allocation */
+//    for (int y=0; y<height; y++)
+//        free(row_pointers[y]);
+//    free(row_pointers);
+
+//    fclose(fp);
+//}
 
 
-    /* create file */
-    FILE *fp = fopen(file_name, "wb");
-    if (!fp)
-        Error("Internal Error: File %s could not be opened for writing", "writeColorImagePng");
+//void writeColorImagePng(ColorImage *colorImage,int nbits, char *file_name){
 
-    /* initialize stuff */
-    png_structp png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
-
-    if (!png_ptr)
-        Error("Internal Error: png_create_write_struct failed", "writeColorImagePng");
-
-    png_infop info_ptr = png_create_info_struct(png_ptr);
-    if (!info_ptr)
-        Error("Internal Error: png_create_info_struct failed", "writeColorImagePng");
-
-    if (setjmp(png_jmpbuf(png_ptr)))
-        Error("Internal Error: Error during init_io", "writeColorImagePng");
-
-    png_init_io(png_ptr, fp);
+//    int width = colorImage->nx;
+//    int height = colorImage->ny;
 
 
-    /* write header */
-    if (setjmp(png_jmpbuf(png_ptr)))
-        Error("Internal Error: Error during writing header", "writeColorImagePng");
+//    png_bytep *row_pointers;
+//    if(nbits != 8 && nbits != 16){
+//        Error("Invalid number of bits","writePngImage");
+//    }
+//    int bytesColorSpace = 3;
+//    int byteshift = nbits/8;
+
+//    size_t pixel_size = (bytesColorSpace) * byteshift;
+//    row_pointers = (png_bytep*) malloc(sizeof(png_bytep) * height);
+//    for (int y=0; y<height; y++){
+//        row_pointers[y] = (png_byte*) malloc(pixel_size*width);
+//    }
 
 
-    png_set_IHDR(png_ptr, info_ptr, width, height,
-                 nbits, PNG_COLOR_TYPE_RGB, PNG_INTERLACE_NONE,
-                 PNG_COMPRESSION_TYPE_BASE, PNG_FILTER_TYPE_BASE);
+//    for (int y = 0; y < height; ++y) {
+//        png_byte *row = row_pointers[y];
+//        for (int x=0; x<width; x++) {
 
-    png_write_info(png_ptr, info_ptr);
+//            png_byte* ptr = &(row[x*3*byteshift]);
+//            ptr[0*byteshift] = colorImage->cor[y][x].val[0] & 0xFF;//get first byte
+//            ptr[1*byteshift] = colorImage->cor[y][x].val[1] & 0xFF;
+//            ptr[2*byteshift] = colorImage->cor[y][x].val[2] & 0xFF;
+
+//            if(nbits==16) {//in 16bit image, we should store as big endian
+//                ptr[0*byteshift+1] = ptr[0*byteshift];
+//                ptr[1*byteshift+1] = ptr[1*byteshift];
+//                ptr[2*byteshift+1] = ptr[2*byteshift];
+
+//                ptr[0*byteshift] = ((colorImage->cor[y][x].val[0]>>8) & 0xFF);//get second byte
+//                ptr[1*byteshift] = ((colorImage->cor[y][x].val[1]>>8) & 0xFF);
+//                ptr[2*byteshift] = ((colorImage->cor[y][x].val[2]>>8) & 0xFF);
+//            }
+//        }
+//    }
 
 
-    /* write bytes */
-    if (setjmp(png_jmpbuf(png_ptr))){
-        Error("Internal Error: Error during writing bytes", "writeColorImagePng");
-    }
+//    /* create file */
+//    FILE *fp = fopen(file_name, "wb");
+//    if (!fp)
+//        Error("Internal Error: File %s could not be opened for writing", "writeColorImagePng");
 
-    png_write_image(png_ptr, row_pointers);
+//    /* initialize stuff */
+//    png_structp png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
+
+//    if (!png_ptr)
+//        Error("Internal Error: png_create_write_struct failed", "writeColorImagePng");
+
+//    png_infop info_ptr = png_create_info_struct(png_ptr);
+//    if (!info_ptr)
+//        Error("Internal Error: png_create_info_struct failed", "writeColorImagePng");
+
+//    if (setjmp(png_jmpbuf(png_ptr)))
+//        Error("Internal Error: Error during init_io", "writeColorImagePng");
+
+//    png_init_io(png_ptr, fp);
 
 
-    /* end write */
-    if (setjmp(png_jmpbuf(png_ptr)))
-        Error("Internal Error: Error during end of write", "writeColorImagePng");
+//    /* write header */
+//    if (setjmp(png_jmpbuf(png_ptr)))
+//        Error("Internal Error: Error during writing header", "writeColorImagePng");
 
-    png_write_end(png_ptr, NULL);
 
-    png_destroy_write_struct(&png_ptr, &info_ptr);
+//    png_set_IHDR(png_ptr, info_ptr, width, height,
+//                 nbits, PNG_COLOR_TYPE_RGB, PNG_INTERLACE_NONE,
+//                 PNG_COMPRESSION_TYPE_BASE, PNG_FILTER_TYPE_BASE);
 
-    /* cleanup heap allocation */
-    for (int y=0; y<height; y++)
-        free(row_pointers[y]);
-    free(row_pointers);
+//    png_write_info(png_ptr, info_ptr);
 
-    fclose(fp);
-}
+
+//    /* write bytes */
+//    if (setjmp(png_jmpbuf(png_ptr))){
+//        Error("Internal Error: Error during writing bytes", "writeColorImagePng");
+//    }
+
+//    png_write_image(png_ptr, row_pointers);
+
+
+//    /* end write */
+//    if (setjmp(png_jmpbuf(png_ptr)))
+//        Error("Internal Error: Error during end of write", "writeColorImagePng");
+
+//    png_write_end(png_ptr, NULL);
+
+//    png_destroy_write_struct(&png_ptr, &info_ptr);
+
+//    /* cleanup heap allocation */
+//    for (int y=0; y<height; y++)
+//        free(row_pointers[y]);
+//    free(row_pointers);
+
+//    fclose(fp);
+//}
 
 MyImage *createMyImage(int nx, int ny, int nz){
     MyImage *myImage= (MyImage *)calloc(1,sizeof(MyImage));
@@ -857,11 +865,6 @@ MyImage *createMyImage(int nx, int ny, int nz){
     sprintf(myImage->unid,"mm");
     myImage->Pixel = NULL;
     return myImage;
-}
-
-void *readMyImage(char *filename){
-    MyImage *myImage= (MyImage *)calloc(1,sizeof(MyImage));
-    //TODO
 }
 
 

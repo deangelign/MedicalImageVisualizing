@@ -18,6 +18,7 @@
 #include <QtWidgets/QMainWindow>
 #include <QtWidgets/QMenu>
 #include <QtWidgets/QMenuBar>
+#include <QtWidgets/QSpinBox>
 #include <QtWidgets/QStatusBar>
 #include <QtWidgets/QToolBar>
 #include <QtWidgets/QWidget>
@@ -34,6 +35,7 @@ public:
     QLabel *labelFigureZ;
     QLabel *labelFigureY;
     QLabel *labelFigureX;
+    QSpinBox *spinBoxImageZ;
     QToolBar *mainToolBar;
     QStatusBar *statusBar;
     QMenuBar *menuBar;
@@ -64,7 +66,7 @@ public:
         labelFigureZ->setWordWrap(false);
         labelFigureY = new QLabel(centralWidget);
         labelFigureY->setObjectName(QStringLiteral("labelFigureY"));
-        labelFigureY->setGeometry(QRect(448, 32, 400, 350));
+        labelFigureY->setGeometry(QRect(580, 20, 400, 350));
         labelFigureY->setAutoFillBackground(false);
         labelFigureY->setStyleSheet(QLatin1String("background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0, stop:0 rgba(0, 0, 0, 255), stop:1 rgba(255, 255, 255, 255));\n"
 "background-color: rgb(255, 255, 255);\n"
@@ -72,12 +74,16 @@ public:
         labelFigureY->setWordWrap(false);
         labelFigureX = new QLabel(centralWidget);
         labelFigureX->setObjectName(QStringLiteral("labelFigureX"));
-        labelFigureX->setGeometry(QRect(32, 398, 400, 350));
+        labelFigureX->setGeometry(QRect(30, 420, 400, 350));
         labelFigureX->setAutoFillBackground(false);
         labelFigureX->setStyleSheet(QLatin1String("background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0, stop:0 rgba(0, 0, 0, 255), stop:1 rgba(255, 255, 255, 255));\n"
 "background-color: rgb(255, 255, 255);\n"
 "background-color: rgb(0, 0, 0);"));
         labelFigureX->setWordWrap(false);
+        spinBoxImageZ = new QSpinBox(centralWidget);
+        spinBoxImageZ->setObjectName(QStringLiteral("spinBoxImageZ"));
+        spinBoxImageZ->setGeometry(QRect(440, 30, 47, 23));
+        spinBoxImageZ->setStyleSheet(QStringLiteral("background-color: rgb(255, 255, 255);"));
         MainWindow->setCentralWidget(centralWidget);
         mainToolBar = new QToolBar(MainWindow);
         mainToolBar->setObjectName(QStringLiteral("mainToolBar"));
@@ -87,7 +93,7 @@ public:
         MainWindow->setStatusBar(statusBar);
         menuBar = new QMenuBar(MainWindow);
         menuBar->setObjectName(QStringLiteral("menuBar"));
-        menuBar->setGeometry(QRect(0, 0, 1024, 20));
+        menuBar->setGeometry(QRect(0, 0, 1024, 19));
         menuFile = new QMenu(menuBar);
         menuFile->setObjectName(QStringLiteral("menuFile"));
         menuImport = new QMenu(menuFile);

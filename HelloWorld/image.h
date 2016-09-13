@@ -3,7 +3,6 @@
 
 #include "common.h"
 
-
 /* Implementacoes vetoriais de uma imagem cinza 2D: inteira e double */
 
 typedef struct {

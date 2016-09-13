@@ -17,6 +17,8 @@ public:
 
 private slots:
     void on_action3D_Image_triggered();
+    void on_spinBoxImageZ_valueChanged(int arg1);
+
 private:
     Ui::MainWindow *ui;
 };

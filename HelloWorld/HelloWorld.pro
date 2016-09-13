@@ -11,6 +11,7 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 TARGET = HelloWorld
 TEMPLATE = app
 
+#QMAKE_CXXFLAGS_RELEASE = -O1 -g
 
 SOURCES += main.cpp\
         mainwindow.cpp \
@@ -23,7 +24,8 @@ SOURCES += main.cpp\
     common.cpp \
     adjacency.cpp \
     slicer.cpp \
-    displaymanager.cpp
+    displaymanager.cpp \
+    eventmanager.cpp
 
 HEADERS  += mainwindow.h \
     spectrum.h \
@@ -36,6 +38,10 @@ HEADERS  += mainwindow.h \
     adjacency.h \
     gqueue.h \
     slicer.h \
-    displaymanager.h
+    displaymanager.h \
+    eventmanager.h
 
 FORMS    += mainwindow.ui
+
+unix:!macx: LIBS += -lpng
+#-fsanitize=address

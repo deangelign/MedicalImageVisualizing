@@ -44,8 +44,8 @@ background-color: rgb(0, 0, 0);</string>
    <widget class="QLabel" name="labelFigureY">
     <property name="geometry">
      <rect>
-      <x>448</x>
-      <y>32</y>
+      <x>580</x>
+      <y>20</y>
       <width>400</width>
       <height>350</height>
      </rect>
@@ -68,8 +68,8 @@ background-color: rgb(0, 0, 0);</string>
    <widget class="QLabel" name="labelFigureX">
     <property name="geometry">
      <rect>
-      <x>32</x>
-      <y>398</y>
+      <x>30</x>
+      <y>420</y>
       <width>400</width>
       <height>350</height>
      </rect>
@@ -89,6 +89,19 @@ background-color: rgb(0, 0, 0);</string>
      <bool>false</bool>
     </property>
    </widget>
+   <widget class="QSpinBox" name="spinBoxImageZ">
+    <property name="geometry">
+     <rect>
+      <x>440</x>
+      <y>30</y>
+      <width>47</width>
+      <height>23</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">background-color: rgb(255, 255, 255);</string>
+    </property>
+   </widget>
   </widget>
   <widget class="QToolBar" name="mainToolBar">
    <attribute name="toolBarArea">
@@ -105,7 +118,7 @@ background-color: rgb(0, 0, 0);</string>
      <x>0</x>
      <y>0</y>
      <width>1024</width>
-     <height>20</height>
+     <height>19</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">

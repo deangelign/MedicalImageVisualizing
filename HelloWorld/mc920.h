@@ -10,5 +10,6 @@
 #include "spectrum.h"
 #include "gqueue.h"
 #include "displaymanager.h"
+#include "eventmanager.h"
 
 #endif
