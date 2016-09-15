@@ -36,7 +36,7 @@ DISTNAME      = HelloWorld1.0.0
 DISTDIR = /home/deangeli/QtProjects/MedicalImageVisualizing/Debug/.tmp/HelloWorld1.0.0
 LINK          = g++
 LFLAGS        = -Wl,-rpath,/home/deangeli/Qt/5.7/gcc_64/lib
-LIBS          = $(SUBLIBS) -lpng -fsanitize=address -L/home/deangeli/Qt/5.7/gcc_64/lib -lQt5Widgets -L/usr/lib64 -lQt5Gui -lQt5Core -lGL -lpthread 
+LIBS          = $(SUBLIBS) -lpng -L/home/deangeli/Qt/5.7/gcc_64/lib -lQt5Widgets -L/usr/lib64 -lQt5Gui -lQt5Core -lGL -lpthread 
 AR            = ar cqs
 RANLIB        = 
 SED           = sed
@@ -976,7 +976,16 @@ mainwindow.o: ../HelloWorld/mainwindow.cpp ../HelloWorld/mainwindow.h \
 		../HelloWorld/gqueue.h \
 		../HelloWorld/displaymanager.h \
 		../HelloWorld/eventmanager.h \
-		../../../Qt/5.7/gcc_64/include/QtGui/QImage
+		../../../Qt/5.7/gcc_64/include/QtGui/QImage \
+		../../../Qt/5.7/gcc_64/include/QtWidgets/QLabel \
+		../../../Qt/5.7/gcc_64/include/QtWidgets/qlabel.h \
+		../../../Qt/5.7/gcc_64/include/QtWidgets/qframe.h \
+		../../../Qt/5.7/gcc_64/include/QtGui/QPixmap \
+		../../../Qt/5.7/gcc_64/include/QtWidgets/QMenu \
+		../../../Qt/5.7/gcc_64/include/QtWidgets/qmenu.h \
+		../../../Qt/5.7/gcc_64/include/QtWidgets/qaction.h \
+		../../../Qt/5.7/gcc_64/include/QtWidgets/qactiongroup.h \
+		../../../Qt/5.7/gcc_64/include/QtWidgets/QAction
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o mainwindow.o ../HelloWorld/mainwindow.cpp
 
 spectrum.o: ../HelloWorld/spectrum.cpp ../HelloWorld/spectrum.h \
@@ -1096,7 +1105,46 @@ eventmanager.o: ../HelloWorld/eventmanager.cpp ../HelloWorld/eventmanager.h \
 		../../../Qt/5.7/gcc_64/include/QtCore/qline.h \
 		../../../Qt/5.7/gcc_64/include/QtGui/qpainterpath.h \
 		../HelloWorld/image.h \
-		../HelloWorld/common.h
+		../HelloWorld/common.h \
+		../../../Qt/5.7/gcc_64/include/QtWidgets/QLabel \
+		../../../Qt/5.7/gcc_64/include/QtWidgets/qlabel.h \
+		../../../Qt/5.7/gcc_64/include/QtWidgets/qframe.h \
+		../../../Qt/5.7/gcc_64/include/QtWidgets/qwidget.h \
+		../../../Qt/5.7/gcc_64/include/QtGui/qpalette.h \
+		../../../Qt/5.7/gcc_64/include/QtGui/qbrush.h \
+		../../../Qt/5.7/gcc_64/include/QtGui/qpixmap.h \
+		../../../Qt/5.7/gcc_64/include/QtCore/qsharedpointer.h \
+		../../../Qt/5.7/gcc_64/include/QtCore/qshareddata.h \
+		../../../Qt/5.7/gcc_64/include/QtCore/qhash.h \
+		../../../Qt/5.7/gcc_64/include/QtCore/qsharedpointer_impl.h \
+		../../../Qt/5.7/gcc_64/include/QtGui/qfont.h \
+		../../../Qt/5.7/gcc_64/include/QtGui/qfontmetrics.h \
+		../../../Qt/5.7/gcc_64/include/QtGui/qfontinfo.h \
+		../../../Qt/5.7/gcc_64/include/QtWidgets/qsizepolicy.h \
+		../../../Qt/5.7/gcc_64/include/QtGui/qcursor.h \
+		../../../Qt/5.7/gcc_64/include/QtGui/qkeysequence.h \
+		../../../Qt/5.7/gcc_64/include/QtGui/qevent.h \
+		../../../Qt/5.7/gcc_64/include/QtCore/qvariant.h \
+		../../../Qt/5.7/gcc_64/include/QtCore/qmap.h \
+		../../../Qt/5.7/gcc_64/include/QtCore/qdebug.h \
+		../../../Qt/5.7/gcc_64/include/QtCore/qtextstream.h \
+		../../../Qt/5.7/gcc_64/include/QtCore/qlocale.h \
+		../../../Qt/5.7/gcc_64/include/QtCore/qset.h \
+		../../../Qt/5.7/gcc_64/include/QtCore/qcontiguouscache.h \
+		../../../Qt/5.7/gcc_64/include/QtCore/qurl.h \
+		../../../Qt/5.7/gcc_64/include/QtCore/qurlquery.h \
+		../../../Qt/5.7/gcc_64/include/QtCore/qfile.h \
+		../../../Qt/5.7/gcc_64/include/QtCore/qfiledevice.h \
+		../../../Qt/5.7/gcc_64/include/QtGui/qvector2d.h \
+		../../../Qt/5.7/gcc_64/include/QtGui/qtouchdevice.h \
+		../../../Qt/5.7/gcc_64/include/QtGui/QPixmap \
+		../../../Qt/5.7/gcc_64/include/QtWidgets/QMenu \
+		../../../Qt/5.7/gcc_64/include/QtWidgets/qmenu.h \
+		../../../Qt/5.7/gcc_64/include/QtGui/qicon.h \
+		../../../Qt/5.7/gcc_64/include/QtWidgets/qaction.h \
+		../../../Qt/5.7/gcc_64/include/QtWidgets/qactiongroup.h \
+		../../../Qt/5.7/gcc_64/include/QtWidgets/QAction \
+		../HelloWorld/displaymanager.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o eventmanager.o ../HelloWorld/eventmanager.cpp
 
 moc_mainwindow.o: moc_mainwindow.cpp 

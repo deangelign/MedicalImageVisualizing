@@ -3,6 +3,7 @@
 
 GrayImage *getSliceZPositive(int z, char axisVertical, int directionVertical,char axisHorizontal, int directionHorizontal, MedicalImage *image3D) {
     int x,y;
+    int indexX,indexY;
     GrayImage *slice = NULL;
 
 
@@ -18,26 +19,36 @@ GrayImage *getSliceZPositive(int z, char axisVertical, int directionVertical,cha
             }
 
             else if(directionVertical == -1 && directionHorizontal == 1){
+                indexY = 0;
                 for(y=image3D->ny-1; y >= 0 ; y--){
                     for(x=0; x < image3D->nx; x++){
-                        slice->val[y][x] = image3D->val[z][y][x];
+                        slice->val[indexY][x] = image3D->val[z][y][x];
                     }
+                    indexY++;
                 }
             }
 
             else if(directionVertical == -1 && directionHorizontal == -1){
+                indexY = 0;
+                indexX = 0;
                 for(y=image3D->ny-1; y >= 0 ; y--){
                     for(x=image3D->nx-1; x >= 0; x--){
-                        slice->val[y][x] = image3D->val[z][y][x];
+                        slice->val[indexY][indexX] = image3D->val[z][y][x];
+                        indexX++;
                     }
+                    indexX = 0;
+                    indexY++;
                 }
             }
 
             else if(directionVertical == 1 && directionHorizontal == -1){
+                indexX = 0;
                 for(y=0; y < image3D->ny ; y++){
                     for(x=image3D->nx-1; x >= 0; x--){
-                        slice->val[y][x] = image3D->val[z][y][x];
+                        slice->val[y][indexX] = image3D->val[z][y][x];
+                        indexX++;
                     }
+                    indexX = 0;
                 }
             }else{
                 DestroyGrayImage(&slice);
@@ -50,7 +61,6 @@ GrayImage *getSliceZPositive(int z, char axisVertical, int directionVertical,cha
     }else if(axisVertical == 'x') {
         if (axisHorizontal == 'y') {
 
-
             slice = CreateGrayImage(image3D->ny, image3D->nx);
             if (directionVertical == 1 && directionHorizontal == 1) {
                 for (y = 0; y < image3D->ny; y++) {
@@ -61,26 +71,36 @@ GrayImage *getSliceZPositive(int z, char axisVertical, int directionVertical,cha
             }
 
             else if (directionVertical == -1 && directionHorizontal == 1) {
+                indexY = 0;
                 for (y = image3D->ny - 1; y >= 0; y--) {
                     for (x = 0; x < image3D->nx; x++) {
-                        slice->val[x][y] = image3D->val[z][y][x];
+                        slice->val[x][indexY] = image3D->val[z][y][x];
                     }
+                    indexY++;
                 }
             }
 
             else if (directionVertical == -1 && directionHorizontal == -1) {
+                indexY = 0;
+                indexX = 0;
                 for (y = image3D->ny - 1; y >= 0; y--) {
                     for (x = image3D->nx - 1; x >= 0; x--) {
-                        slice->val[x][y] = image3D->val[z][y][x];
+                        slice->val[indexX][indexY] = image3D->val[z][y][x];
+                        indexX++;
                     }
+                    indexX = 0;
+                    indexY++;
                 }
             }
 
             else if (directionVertical == 1 && directionHorizontal == -1) {
+                indexX = 0;
                 for (y = 0; y < image3D->ny; y++) {
                     for (x = image3D->nx - 1; x >= 0; x--) {
-                        slice->val[x][y] = image3D->val[z][y][x];
+                        slice->val[indexX][y] = image3D->val[z][y][x];
+                        indexX++;
                     }
+                    indexX = 0;
                 }
             } else {
                 fprintf(stdout, "Error: invalid axes orientation %d %d.\n", directionHorizontal, directionVertical);
@@ -100,6 +120,7 @@ GrayImage *getSliceZPositive(int z, char axisVertical, int directionVertical,cha
 
 GrayImage *getSliceYPositive(int y, char axisVertical, int directionVertical,char axisHorizontal, int directionHorizontal, MedicalImage *image3D){
     int x,z;
+    int indexX,indexZ;
     GrayImage *slice = NULL;
 
     if(axisVertical == 'z'){
@@ -114,26 +135,36 @@ GrayImage *getSliceYPositive(int y, char axisVertical, int directionVertical,cha
 
             }
             else if(directionVertical == -1 && directionHorizontal == 1){
+                indexZ = 0;
                 for(z=image3D->nz-1; z >= 0 ; z--){
                     for(x=0; x < image3D->nx; x++){
-                        slice->val[z][x] = image3D->val[z][y][x];
+                        slice->val[indexZ][x] = image3D->val[z][y][x];
                     }
+                    indexZ++;
                 }
             }
 
             else if(directionVertical == -1 && directionHorizontal == -1){
+                indexZ = 0;
+                indexX = 0;
                 for(z=image3D->nz-1; z >= 0 ; z--){
                     for(x=image3D->nx-1; x >= 0; x--){
-                        slice->val[z][x] = image3D->val[z][y][x];
+                        slice->val[indexZ][indexX] = image3D->val[z][y][x];
+                        indexX++;
                     }
+                    indexX = 0;
+                    indexZ++;
                 }
             }
 
             else if(directionVertical == 1 && directionHorizontal == -1){
+                indexX = 0;
                 for(z=0; z < image3D->nz ; z++){
                     for(x=image3D->nx-1; x >= 0; x--){
-                        slice->val[z][x] = image3D->val[z][y][x];
+                        slice->val[z][indexX] = image3D->val[z][y][x];
+                        indexX++;
                     }
+                    indexX = 0;
                 }
             }else{
                 DestroyGrayImage(&slice);
@@ -155,26 +186,36 @@ GrayImage *getSliceYPositive(int y, char axisVertical, int directionVertical,cha
             }
 
             else if (directionVertical == -1 && directionHorizontal == 1) {
+                indexZ = 0;
                 for (z = image3D->nz - 1; z >= 0; z--) {
                     for (x = 0; x < image3D->nx; x++) {
-                        slice->val[x][z] = image3D->val[z][y][x];
+                        slice->val[x][indexZ] = image3D->val[z][y][x];
                     }
+                    indexZ++;
                 }
             }
 
             else if (directionVertical == -1 && directionHorizontal == -1) {
+                indexZ = 0;
+                indexX = 0;
                 for (z = image3D->nz - 1; z >= 0; z--) {
                     for (x = image3D->nx - 1; x >= 0; x--) {
-                        slice->val[x][z] = image3D->val[z][y][x];
+                        slice->val[indexX][indexZ] = image3D->val[z][y][x];
+                        indexX ++;
                     }
+                    indexX = 0;
+                    indexZ++;
                 }
             }
 
             else if (directionVertical == 1 && directionHorizontal == -1) {
+                indexX = 0;
                 for (z = 0; z < image3D->nz; z++) {
                     for (x = image3D->nx - 1; x >= 0; x--) {
-                        slice->val[x][z] = image3D->val[z][y][x];
+                        slice->val[indexX][z] = image3D->val[z][y][x];
+                        indexX++;
                     }
+                    indexX = 0;
                 }
             } else {
                 fprintf(stdout, "Error: invalid axes orientation %d %d.\n", directionHorizontal, directionVertical);
@@ -192,6 +233,7 @@ GrayImage *getSliceYPositive(int y, char axisVertical, int directionVertical,cha
 
 GrayImage *getSliceXPositive(int x, char axisVertical, int directionVertical,char axisHorizontal, int directionHorizontal, MedicalImage *image3D){
     int y,z;
+    int indexY, indexZ;
     GrayImage *slice = NULL;
 
     if(axisVertical == 'y'){
@@ -206,26 +248,36 @@ GrayImage *getSliceXPositive(int x, char axisVertical, int directionVertical,cha
             }
 
             else if(directionVertical == -1 && directionHorizontal == 1){
+                indexY = 0;
                 for(y=image3D->ny-1; y >= 0 ; y--){
                     for(z=0; z < image3D->nz; z++){
-                        slice->val[y][z] = image3D->val[z][y][x];
+                        slice->val[indexY][z] = image3D->val[z][y][x];
                     }
+                    indexY++;
                 }
             }
 
             else if(directionVertical == -1 && directionHorizontal == -1){
+                indexY = 0;
+                indexZ = 0;
                 for(y=image3D->ny-1; y >= 0 ; y--){
                     for(z=image3D->nz-1; z >= 0; z--){
-                        slice->val[y][z] = image3D->val[z][y][x];
+                        slice->val[indexY][indexZ] = image3D->val[z][y][x];
+                        indexZ++;
                     }
+                    indexY++;
+                    indexZ = 0;
                 }
             }
 
             else if(directionVertical == 1 && directionHorizontal == -1){
+                indexZ = 0;
                 for(y=0; y < image3D->ny ; y++){
                     for(z=image3D->nz-1; z >= 0; z--){
-                        slice->val[y][z] = image3D->val[z][y][x];
+                        slice->val[y][indexZ] = image3D->val[z][y][x];
+                        indexZ++;
                     }
+                    indexZ = 0;
                 }
             }else{
                 DestroyGrayImage(&slice);
@@ -247,26 +299,36 @@ GrayImage *getSliceXPositive(int x, char axisVertical, int directionVertical,cha
             }
 
             else if (directionVertical == -1 && directionHorizontal == 1) {
+                indexY = 0;
                 for (y = image3D->ny - 1; y >= 0; y--) {
                     for (z = 0; z < image3D->nz; z++) {
-                        slice->val[z][y] = image3D->val[z][y][x];
+                        slice->val[z][indexY] = image3D->val[z][y][x];
                     }
+                    indexY++;
                 }
             }
 
             else if (directionVertical == -1 && directionHorizontal == -1) {
+                indexY = 0;
+                indexZ = 0;
                 for (y = image3D->ny - 1; y >= 0; y--) {
                     for (z = image3D->nz - 1; z >= 0; z--) {
-                        slice->val[z][y] = image3D->val[z][y][x];
+                        slice->val[indexZ][indexY] = image3D->val[z][y][x];
+                        indexZ++;
                     }
+                    indexY++;
+                    indexZ = 0;
                 }
             }
 
             else if (directionVertical == 1 && directionHorizontal == -1) {
+                indexZ = 0;
                 for (y = 0; y < image3D->ny; y++) {
                     for (z = image3D->nz - 1; z >= 0; z--) {
-                        slice->val[x][y] = image3D->val[z][y][x];
+                        slice->val[indexZ][y] = image3D->val[z][y][x];
+                        indexZ++;
                     }
+                    indexZ = 0;
                 }
             } else {
                 fprintf(stdout, "Error: invalid axes orientation %d %d.\n", directionHorizontal, directionVertical);
@@ -298,3 +360,5 @@ GrayImage* getSlice(char verticalAxis, int directionVertial, char horizontalAxis
     }
     return slice;
 }
+
+

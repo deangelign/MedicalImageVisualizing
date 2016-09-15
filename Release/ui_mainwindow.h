@@ -36,6 +36,8 @@ public:
     QLabel *labelFigureY;
     QLabel *labelFigureX;
     QSpinBox *spinBoxImageZ;
+    QSpinBox *spinBoxImageY;
+    QSpinBox *spinBoxImageX;
     QToolBar *mainToolBar;
     QStatusBar *statusBar;
     QMenuBar *menuBar;
@@ -46,7 +48,7 @@ public:
     {
         if (MainWindow->objectName().isEmpty())
             MainWindow->setObjectName(QStringLiteral("MainWindow"));
-        MainWindow->resize(1024, 800);
+        MainWindow->resize(1044, 800);
         MainWindow->setStyleSheet(QStringLiteral("background-color: rgb(170, 170, 127);"));
         actionFile = new QAction(MainWindow);
         actionFile->setObjectName(QStringLiteral("actionFile"));
@@ -58,7 +60,7 @@ public:
         centralWidget->setObjectName(QStringLiteral("centralWidget"));
         labelFigureZ = new QLabel(centralWidget);
         labelFigureZ->setObjectName(QStringLiteral("labelFigureZ"));
-        labelFigureZ->setGeometry(QRect(32, 32, 400, 350));
+        labelFigureZ->setGeometry(QRect(32, 16, 400, 350));
         labelFigureZ->setAutoFillBackground(false);
         labelFigureZ->setStyleSheet(QLatin1String("background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0, stop:0 rgba(0, 0, 0, 255), stop:1 rgba(255, 255, 255, 255));\n"
 "background-color: rgb(255, 255, 255);\n"
@@ -66,7 +68,7 @@ public:
         labelFigureZ->setWordWrap(false);
         labelFigureY = new QLabel(centralWidget);
         labelFigureY->setObjectName(QStringLiteral("labelFigureY"));
-        labelFigureY->setGeometry(QRect(580, 20, 400, 350));
+        labelFigureY->setGeometry(QRect(580, 16, 400, 350));
         labelFigureY->setAutoFillBackground(false);
         labelFigureY->setStyleSheet(QLatin1String("background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0, stop:0 rgba(0, 0, 0, 255), stop:1 rgba(255, 255, 255, 255));\n"
 "background-color: rgb(255, 255, 255);\n"
@@ -74,7 +76,7 @@ public:
         labelFigureY->setWordWrap(false);
         labelFigureX = new QLabel(centralWidget);
         labelFigureX->setObjectName(QStringLiteral("labelFigureX"));
-        labelFigureX->setGeometry(QRect(30, 420, 400, 350));
+        labelFigureX->setGeometry(QRect(32, 400, 400, 350));
         labelFigureX->setAutoFillBackground(false);
         labelFigureX->setStyleSheet(QLatin1String("background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0, stop:0 rgba(0, 0, 0, 255), stop:1 rgba(255, 255, 255, 255));\n"
 "background-color: rgb(255, 255, 255);\n"
@@ -82,8 +84,16 @@ public:
         labelFigureX->setWordWrap(false);
         spinBoxImageZ = new QSpinBox(centralWidget);
         spinBoxImageZ->setObjectName(QStringLiteral("spinBoxImageZ"));
-        spinBoxImageZ->setGeometry(QRect(440, 30, 47, 23));
+        spinBoxImageZ->setGeometry(QRect(442, 16, 47, 23));
         spinBoxImageZ->setStyleSheet(QStringLiteral("background-color: rgb(255, 255, 255);"));
+        spinBoxImageY = new QSpinBox(centralWidget);
+        spinBoxImageY->setObjectName(QStringLiteral("spinBoxImageY"));
+        spinBoxImageY->setGeometry(QRect(990, 16, 47, 23));
+        spinBoxImageY->setStyleSheet(QStringLiteral("background-color: rgb(255, 255, 255);"));
+        spinBoxImageX = new QSpinBox(centralWidget);
+        spinBoxImageX->setObjectName(QStringLiteral("spinBoxImageX"));
+        spinBoxImageX->setGeometry(QRect(442, 400, 47, 23));
+        spinBoxImageX->setStyleSheet(QStringLiteral("background-color: rgb(255, 255, 255);"));
         MainWindow->setCentralWidget(centralWidget);
         mainToolBar = new QToolBar(MainWindow);
         mainToolBar->setObjectName(QStringLiteral("mainToolBar"));
@@ -93,7 +103,7 @@ public:
         MainWindow->setStatusBar(statusBar);
         menuBar = new QMenuBar(MainWindow);
         menuBar->setObjectName(QStringLiteral("menuBar"));
-        menuBar->setGeometry(QRect(0, 0, 1024, 19));
+        menuBar->setGeometry(QRect(0, 0, 1044, 19));
         menuFile = new QMenu(menuBar);
         menuFile->setObjectName(QStringLiteral("menuFile"));
         menuImport = new QMenu(menuFile);

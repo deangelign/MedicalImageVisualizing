@@ -546,7 +546,7 @@ MedicalImage *ReadMedicalImage(char *filename)
             fscanf(fp,"%f\n",&I->dz);
             fscanf(fp,"%d\n",&nbits); // 8 ou 16 bits
 
-            fprintf(stderr,"%s\n %d %d %d\n %f %f %f\n %d\n",filename,I->nx,I->ny,I->nz,I->dx,I->dy,I->dz,nbits);
+            //fprintf(stderr,"%s\n %d %d %d\n %f %f %f\n %d\n",filename,I->nx,I->ny,I->nz,I->dx,I->dy,I->dz,nbits);
 
 
 
@@ -555,12 +555,17 @@ MedicalImage *ReadMedicalImage(char *filename)
             case 8:
                 data8 = AllocUCharArray(nx*ny*nz);
                 fread(data8,sizeof(uchar),nx*ny*nz,fp);
+                I->maxValue = 0;
                 for (z=0; z < nz; z++)
                     for (y=0; y < ny; y++)
-                        for (x=0; x < nx; x++)
+                        for (x=0; x < nx; x++){
                             I->val[z][y][x] = (int) data8[x+y*nx+z*nx*ny];
+                            if(I->maxValue < I->val[z][y][x]){
+                                I->maxValue = I->val[z][y][x];
+                            }
+                        }
+
                 free(data8);
-                I->maxValue = 255;
                 I->nbits = 8;
                 break;
 

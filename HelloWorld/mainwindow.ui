@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1024</width>
+    <width>1044</width>
     <height>800</height>
    </rect>
   </property>
@@ -21,10 +21,13 @@
     <property name="geometry">
      <rect>
       <x>32</x>
-      <y>32</y>
+      <y>8</y>
       <width>400</width>
       <height>350</height>
      </rect>
+    </property>
+    <property name="contextMenuPolicy">
+     <enum>Qt::CustomContextMenu</enum>
     </property>
     <property name="autoFillBackground">
      <bool>false</bool>
@@ -45,10 +48,19 @@ background-color: rgb(0, 0, 0);</string>
     <property name="geometry">
      <rect>
       <x>580</x>
-      <y>20</y>
+      <y>8</y>
       <width>400</width>
       <height>350</height>
      </rect>
+    </property>
+    <property name="baseSize">
+     <size>
+      <width>0</width>
+      <height>0</height>
+     </size>
+    </property>
+    <property name="contextMenuPolicy">
+     <enum>Qt::CustomContextMenu</enum>
     </property>
     <property name="autoFillBackground">
      <bool>false</bool>
@@ -68,11 +80,14 @@ background-color: rgb(0, 0, 0);</string>
    <widget class="QLabel" name="labelFigureX">
     <property name="geometry">
      <rect>
-      <x>30</x>
-      <y>420</y>
+      <x>32</x>
+      <y>372</y>
       <width>400</width>
       <height>350</height>
      </rect>
+    </property>
+    <property name="contextMenuPolicy">
+     <enum>Qt::CustomContextMenu</enum>
     </property>
     <property name="autoFillBackground">
      <bool>false</bool>
@@ -93,13 +108,143 @@ background-color: rgb(0, 0, 0);</string>
     <property name="geometry">
      <rect>
       <x>440</x>
-      <y>30</y>
+      <y>8</y>
       <width>47</width>
       <height>23</height>
      </rect>
     </property>
     <property name="styleSheet">
      <string notr="true">background-color: rgb(255, 255, 255);</string>
+    </property>
+   </widget>
+   <widget class="QSpinBox" name="spinBoxImageY">
+    <property name="geometry">
+     <rect>
+      <x>990</x>
+      <y>8</y>
+      <width>47</width>
+      <height>23</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">background-color: rgb(255, 255, 255);</string>
+    </property>
+   </widget>
+   <widget class="QSpinBox" name="spinBoxImageX">
+    <property name="geometry">
+     <rect>
+      <x>440</x>
+      <y>372</y>
+      <width>47</width>
+      <height>23</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">background-color: rgb(255, 255, 255);</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="rotateZ_90AntiClockwise">
+    <property name="geometry">
+     <rect>
+      <x>440</x>
+      <y>32</y>
+      <width>30</width>
+      <height>30</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">background-color: rgb(255, 255, 255);</string>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+    <property name="icon">
+     <iconset>
+      <normaloff>../icons/rotationAntiCloskwise.png</normaloff>../icons/rotationAntiCloskwise.png</iconset>
+    </property>
+    <property name="iconSize">
+     <size>
+      <width>20</width>
+      <height>20</height>
+     </size>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="mirrorZ">
+    <property name="geometry">
+     <rect>
+      <x>440</x>
+      <y>64</y>
+      <width>30</width>
+      <height>30</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">background-color: rgb(255, 255, 255);</string>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+    <property name="icon">
+     <iconset>
+      <normaloff>../icons/plainicon.com-40295-256px.png</normaloff>../icons/plainicon.com-40295-256px.png</iconset>
+    </property>
+    <property name="iconSize">
+     <size>
+      <width>20</width>
+      <height>20</height>
+     </size>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="rotateY_90Anticlockwise">
+    <property name="geometry">
+     <rect>
+      <x>990</x>
+      <y>32</y>
+      <width>30</width>
+      <height>30</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">background-color: rgb(255, 255, 255);</string>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+    <property name="icon">
+     <iconset>
+      <normaloff>../icons/rotationAntiCloskwise.png</normaloff>../icons/rotationAntiCloskwise.png</iconset>
+    </property>
+    <property name="iconSize">
+     <size>
+      <width>20</width>
+      <height>20</height>
+     </size>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="rotateY_90Anticlockwise_2">
+    <property name="geometry">
+     <rect>
+      <x>440</x>
+      <y>396</y>
+      <width>30</width>
+      <height>30</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">background-color: rgb(255, 255, 255);</string>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+    <property name="icon">
+     <iconset>
+      <normaloff>../icons/rotationAntiCloskwise.png</normaloff>../icons/rotationAntiCloskwise.png</iconset>
+    </property>
+    <property name="iconSize">
+     <size>
+      <width>20</width>
+      <height>20</height>
+     </size>
     </property>
    </widget>
   </widget>
@@ -117,7 +262,7 @@ background-color: rgb(0, 0, 0);</string>
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1024</width>
+     <width>1044</width>
      <height>19</height>
     </rect>
    </property>
