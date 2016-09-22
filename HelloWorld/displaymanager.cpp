@@ -42,7 +42,23 @@ void bitsAdjustment(GrayImage *grayImage,int nbits, bool saturation){
     }
 }
 
-ColorMap* generateRGBColorMap(MedicalImage *labelImage){
+void contrastBrightAdjustment(GrayImage *grayImage, ViewDisplay *view){
+    for(int y=0; y<grayImage->ny; y++){
+        for (int x = 0; x < grayImage->nx; ++x) {
+            if(view->I1 > grayImage->val[y][x]){
+                grayImage->val[y][x] = view->k1;
+            }else if(view->I1 <= grayImage->val[y][x] && grayImage->val[y][x] < view->I2){
+                 //fprintf(stderr,"%d\n",grayImage->val[y][x]-view->I1);
+                 grayImage->val[y][x] = view->factor*(grayImage->val[y][x]-view->I1) + view->k1;
+                 //fprintf(stderr,"%f %f %f %d\n",view->factor,view->I1,view->k1,grayImage->val[y][x]-view->I1);
+            }else{
+                 grayImage->val[y][x] = view->k2;
+            }
+        }
+    }
+}
+
+ColorMap* generateRGBColorMap(MedicalImage *labelImage,int maximumValue){
     ColorMap *RGBColorTable = (ColorMap*)calloc(1,sizeof(ColorMap));
     RGBColorTable->numberRows = labelImage->maxValue+1;
     RGBColorTable->numberColumns = 3;//RGB
@@ -57,9 +73,17 @@ ColorMap* generateRGBColorMap(MedicalImage *labelImage){
     }
 
     srand(0);
+    int value;
     for(int i=1;i<RGBColorTable->numberRows; i++){
         for(int j=0; j<RGBColorTable->numberColumns; j++){
-            RGBColorTable->table[i][j] = rand() % 256;
+            value = rand() % (maximumValue+1);
+            if(value < 800){
+                value += 800;
+            }
+            if(value > 3500){
+                value - 600;
+            }
+            RGBColorTable->table[i][j] = value;
         }
     }
 
@@ -98,72 +122,70 @@ void destroyRGBColorMap(ColorMap **RGBColorTable){
     }
 }
 
-void convertRGBColorMap2YCbCrColorMap(ColorMap *rgbColorTable, ColorMap **yCbCrColorTable){
-
-    if(*yCbCrColorTable != NULL){
-        destroyRGBColorMap(yCbCrColorTable);
-    }
-
-    (*yCbCrColorTable) = (ColorMap*)calloc(1,sizeof(ColorMap));
-    (*yCbCrColorTable)->numberRows = rgbColorTable->numberRows;
-    (*yCbCrColorTable)->numberColumns = rgbColorTable->numberColumns;
-    (*yCbCrColorTable)->table = (int **)calloc(rgbColorTable->numberRows,sizeof(int *));
-
-    for (int i=0; i < rgbColorTable->numberRows; i++){
-        (*yCbCrColorTable)->table[i] = (int *)calloc(rgbColorTable->numberColumns,sizeof(int));
-    }
-
-    for(int i=0;i<rgbColorTable->numberRows; i++){
-        //https://en.wikipedia.org/wiki/YCbCr JPEG
-        (*yCbCrColorTable)->table[i][0] = round(0.0 + (0.299*rgbColorTable->table[i][0]) +
-                                              (0.587*rgbColorTable->table[i][1]) +
-                                              (0.114*rgbColorTable->table[i][2]));
-
-        (*yCbCrColorTable)->table[i][1] = round(128.0 - (0.168736*rgbColorTable->table[i][0]) -
-                                              (0.331264*rgbColorTable->table[i][1]) +
-                                              (0.5*rgbColorTable->table[i][2]));
-
-        (*yCbCrColorTable)->table[i][2] = round(128.0 + (0.5*rgbColorTable->table[i][0]) -
-                                              (0.418688*rgbColorTable->table[i][1]) -
-                                              (0.081312*rgbColorTable->table[i][2]));
-
+void destroyYCgCoColorMap(ColorMapFloat **YCgCoColorTable){
+    if ((*YCgCoColorTable) != NULL) {
+        for (int i=0; i < (*YCgCoColorTable)->numberRows; i++){
+            free((*YCgCoColorTable)->table[i]);
+        }
+        free((*YCgCoColorTable)->table);
+        free(*YCgCoColorTable);
+        *YCgCoColorTable = NULL;
     }
 }
 
-void convertYCbCrColorMap2RGBColorMap(ColorMap *yCbCrColorTable, ColorMap **rgbColorTable){
+void convertRGBColorMap2YCgCoColorMap(ColorMap *rgbColorTable, ColorMapFloat **yCgCoColorTable,float maximumValue){
+
+    if(*yCgCoColorTable != NULL){
+        destroyYCgCoColorMap(yCgCoColorTable);
+    }
+
+    (*yCgCoColorTable) = (ColorMapFloat*)calloc(1,sizeof(ColorMap));
+    (*yCgCoColorTable)->numberRows = rgbColorTable->numberRows;
+    (*yCgCoColorTable)->numberColumns = rgbColorTable->numberColumns;
+    (*yCgCoColorTable)->table = (float **)calloc(rgbColorTable->numberRows,sizeof(float *));
+
+    for (int i=0; i < rgbColorTable->numberRows; i++){
+        (*yCgCoColorTable)->table[i] = (float *)calloc(rgbColorTable->numberColumns,sizeof(float));
+    }
+    float r,g,b;
+    for(int i=0;i<rgbColorTable->numberRows; i++){
+        r = rgbColorTable->table[i][0]/maximumValue;
+        g = rgbColorTable->table[i][1]/maximumValue;
+        b = rgbColorTable->table[i][2]/maximumValue;
+
+
+        (*yCgCoColorTable)->table[i][0] = (r/4.0) + (g/2.0) + (b/4.0)  ;
+        (*yCgCoColorTable)->table[i][1] = (-r/4.0) + (g/2.0) - (b/4.0) ;
+        (*yCgCoColorTable)->table[i][2] = (r/2.0)   - (b/2.0)  ;
+    }
+}
+
+void convertYCgCoColorMap2RGBColorMap(ColorMapFloat *yCgCoColorTable, ColorMap **rgbColorTable){
 
     if(*rgbColorTable != NULL){
         destroyRGBColorMap(rgbColorTable);
     }
 
     (*rgbColorTable) = (ColorMap*)calloc(1,sizeof(ColorMap));
-    (*rgbColorTable)->numberRows = yCbCrColorTable->numberRows;
-    (*rgbColorTable)->numberColumns = yCbCrColorTable->numberColumns;
-    (*rgbColorTable)->table = (int **)calloc(yCbCrColorTable->numberRows,sizeof(int *));
+    (*rgbColorTable)->numberRows = yCgCoColorTable->numberRows;
+    (*rgbColorTable)->numberColumns = yCgCoColorTable->numberColumns;
+    (*rgbColorTable)->table = (int **)calloc(yCgCoColorTable->numberRows,sizeof(int *));
 
-    for (int i=0; i < yCbCrColorTable->numberRows; i++){
-        (*rgbColorTable)->table[i] = (int *)calloc(yCbCrColorTable->numberColumns,sizeof(int));
+    for (int i=0; i < yCgCoColorTable->numberRows; i++){
+        (*rgbColorTable)->table[i] = (int *)calloc(yCgCoColorTable->numberColumns,sizeof(int));
     }
-
-    for(int i=0;i<yCbCrColorTable->numberRows; i++){
-        //https://en.wikipedia.org/wiki/YCbCr JPEG
-        (*rgbColorTable)->table[i][0] = round( (yCbCrColorTable->table[i][0]) +
-                                              (0.0*yCbCrColorTable->table[i][1]) +
-                                              (1.402*(yCbCrColorTable->table[i][2]-128)));
-
-        (*rgbColorTable)->table[i][1] = round( (yCbCrColorTable->table[i][0]) -
-                                              (0.344136*(yCbCrColorTable->table[i][1]-128)  ) -
-                                              (0.714136*(yCbCrColorTable->table[i][2]-128)  )  );
-
-        (*rgbColorTable)->table[i][2] = round( (yCbCrColorTable->table[i][0]) +
-                                              (1.772*(yCbCrColorTable->table[i][1]-128) ) +
-                                              (0*yCbCrColorTable->table[i][2]));
-
+    int scaling = 4095;
+    for(int i=0;i<yCgCoColorTable->numberRows; i++){
+        //https://en.wikipedia.org/wiki/yCgCo JPEG
+        (*rgbColorTable)->table[i][0] = (yCgCoColorTable->table[i][0] - yCgCoColorTable->table[i][1] + yCgCoColorTable->table[i][2])*scaling;
+        (*rgbColorTable)->table[i][1] = (yCgCoColorTable->table[i][0] + yCgCoColorTable->table[i][1])*scaling;
+        (*rgbColorTable)->table[i][2] = (yCgCoColorTable->table[i][0] - yCgCoColorTable->table[i][1]- yCgCoColorTable->table[i][2])*scaling;
     }
 }
 
 ColorImage *generateColorImageFromLabelImage(GrayImage *labelImage,ColorMap *rgbColorTable){
     ColorImage *colorImage = CreateColorImage(labelImage->nx,labelImage->ny);
+
 
     for(int y=0; y<labelImage->ny; y++){
         for(int x=0; x<labelImage->nx; x++){
@@ -175,35 +197,152 @@ ColorImage *generateColorImageFromLabelImage(GrayImage *labelImage,ColorMap *rgb
     return colorImage;
 }
 
-ColorImage *generateColorImageFromLabelImage(GrayImage *grayImage, GrayImage *labelImage, ColorMap *yCbCrColorTable){
+ColorImage *generateColorImageFromLabelImage(GrayImage *grayImage, GrayImage *labelImage, ColorMapFloat *yCgCoColorTable, float maximumValue){
     ColorImage *colorImage = CreateColorImage(labelImage->nx,labelImage->ny);
+    float newY;
+    int scalingFactor = 255;
+    int colorTableRow;
+    float alpha = 1;
+    float beta = 30.65;
     for(int y=0; y<labelImage->ny; y++){
         for(int x=0; x<labelImage->nx; x++){
+           colorTableRow = labelImage->val[y][x];
 
-            colorImage->cor[y][x].val[0] = round( (grayImage->val[y][x]) +
-                                          (1.402*(yCbCrColorTable->table[labelImage->val[y][x]][2]-128)));
+           newY = ((grayImage->val[y][x])/maximumValue)*2;
+           colorImage->cor[y][x].val[0] = round((newY -yCgCoColorTable->table[colorTableRow][1] + yCgCoColorTable->table[colorTableRow][2])*scalingFactor);
+           colorImage->cor[y][x].val[1] = round((newY +yCgCoColorTable->table[colorTableRow][1])*scalingFactor);
+           colorImage->cor[y][x].val[2] = round((newY -yCgCoColorTable->table[colorTableRow][1] - yCgCoColorTable->table[colorTableRow][2] )*scalingFactor);
 
-           colorImage->cor[y][x].val[1] = round( (grayImage->val[y][x]) -
-                                                  (0.344136*(yCbCrColorTable->table[labelImage->val[y][x]][1]-128)  ) -
-                                                  (0.714136*(yCbCrColorTable->table[labelImage->val[y][x]][2]-128)  )  );
 
-           colorImage->cor[y][x].val[2] = round( (grayImage->val[y][x]) +
-                                                 (1.772*(yCbCrColorTable->table[labelImage->val[y][x]][1]-128) ));
+          colorImage->cor[y][x].val[0] = colorTableRow==0?0:log(colorImage->cor[y][x].val[0]+1)*beta;
+          colorImage->cor[y][x].val[1] = colorTableRow==0?0:log(colorImage->cor[y][x].val[1]+1)*beta;
+          colorImage->cor[y][x].val[2] = colorTableRow==0?0:log(colorImage->cor[y][x].val[2]+1)*beta;
         }
     }
     return colorImage;
 }
 
-void normalizeGrayImage(GrayImage *grayImage){
-    int factor = 2047;
+void normalizeGrayImage(GrayImage *img, float minimumValue, float maximumValueSlice,float maximumValueAllowed){
+    float I1, I2, K1, K2;
+    float val;
+    int x,y;
 
-    for(int y=0; y < grayImage->ny; y++){
-        for(int x=0; x < grayImage->nx; x++){
-            grayImage->val[y][x] = (((float)grayImage->val[y][x])/factor)*255;
-            if(grayImage->val[y][x] > 255){
-                grayImage->val[y][x] = 255;
+    I1 = minimumValue;
+    I2 = maximumValueSlice;
+    K1 = 0;
+    K2 = maximumValueAllowed;
+
+    for (x = 0; x < img->nx; x++)
+        for (y = 0; y < img->ny; y++){
+                val = img->val[y][x];
+                if (val < I1)
+                    img->val[y][x] = K1;
+                else
+                if (val >= I2)
+                    img->val[y][x] = K2;
+                else
+                    img->val[y][x] = ((K2 - K1)/(I2 - I1))*(val - I1)+K1;
             }
+}
 
+void  updateContrastBrightParameters(ViewDisplay *view, float I1, float I2, float k1, float k2){
+    view->I1 = I1;
+    view->I2 = I2;
+    view->k1 = k1;
+    view->k2 = k2;
+    view->contrast = I2-I1;
+    view->bright = (I1+I2)/2.0;
+    if(I2-I1 > 0){
+        view->factor = (k2-k1)/(I2-I1);
+    }else{
+        view->factor = (k2-k1)/(0.00001);
+    }
+}
+
+void updateContrastBrightParameters(ViewDisplay *view, float bright, float contrast){
+
+    view->contrast = contrast;
+    view->bright = bright;
+    view->I1 = view->bright - (view->contrast/2);
+    view->I2 = view->contrast - view->I1;
+
+    if(view->I2-view->I1 > 0){
+        view->factor = (view->k2-view->k1)/(view->I2-view->I1);
+    }else{
+        view->factor = (view->k2-view->k1)/(0.00001);
+    }
+}
+
+void WidthLevelGrayImage(GrayImage *img, float b, float c, int maximumValueScene){
+
+    //GrayImage *imgOut = CreateGrayImage(img->nx,img->ny);
+    float I1, I2;
+    float K1, K2;
+    int x,y,val;
+
+    I1 = (2*b - c)/2;
+    I2 = c + I1;
+    K1 = 0;
+    K2 = maximumValueScene;
+
+    for (x = 0; x < img->nx; x++){
+        for (y = 0; y < img->ny; y++){
+            val = img->val[y][x];
+            if (val < I1){
+                img->val[y][x] = K1;
+            }
+            else
+            if (val >= I2){
+                img->val[y][x] = K2;
+            }
+            else{
+                img->val[y][x] = (((K2 - K1)/(I2 - I1)))*(val - I1)+K1;
+            }
         }
     }
+}
+
+void NegativeGrayImage(GrayImage *img, int maximumValue){
+    int I1, I2, K1, K2;
+    int x,y,val;
+    I1 = 0;
+    I2 = maximumValue;
+    K1 = I2;
+    K2 = I1;
+    for (x = 0; x < img->nx; x++){
+        for (y = 0; y < img->ny; y++){
+            val = img->val[y][x];
+            if (val < I1)
+                img->val[y][x] = K1;
+            else
+                if (val >= I2)
+                    img->val[y][x] = K2;
+                else
+                    img->val[y][x] = ((K2 - K1)/(I2 - I1))*(val - I1)+K1;
+        }
+    }
+}
+
+void LimiarizationGrayImage(GrayImage *img, int th, float maximumValue){
+    GrayImage *imgOut = CreateGrayImage(img->nx,img->ny);
+    float I1, I2, K1, K2;
+    int x,y,val;
+
+    I1 = th;
+    I2 = th;
+    K1 = 0;
+    K2 = maximumValue;
+    imgOut->Imax = K2;
+
+    for (x = 0; x < img->nx; x++)
+        for (y = 0; y < img->ny; y++){
+            val = img->val[y][x];
+            if (val < I1)
+                imgOut->val[y][x] = K1;
+            else
+            if (val >= I2)
+                imgOut->val[y][x] = K2;
+            else
+                imgOut->val[y][x] = ((K2 - K1)/(I2 - I1))*(val - I1)+K1;
+        }
 }

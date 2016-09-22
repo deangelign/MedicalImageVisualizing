@@ -10,19 +10,26 @@ GrayImage *getSliceZPositive(int z, char axisVertical, int directionVertical,cha
     if(axisVertical == 'y'){
         if(axisHorizontal == 'x'){
             slice = CreateGrayImage(image3D->nx,image3D->ny);
+            slice->Imax = 0;
             if(directionVertical == 1 && directionHorizontal == 1){
+
                 for(y=0; y < image3D->ny ; y++){
                     for(x=0; x < image3D->nx; x++){
                         slice->val[y][x] = image3D->val[z][y][x];
+                        slice->Imax = image3D->val[z][y][x]>slice->Imax ? image3D->val[z][y][x] : slice->Imax;
                     }
                 }
             }
 
             else if(directionVertical == -1 && directionHorizontal == 1){
                 indexY = 0;
+
                 for(y=image3D->ny-1; y >= 0 ; y--){
                     for(x=0; x < image3D->nx; x++){
                         slice->val[indexY][x] = image3D->val[z][y][x];
+                        if(slice->val[indexY][x] > slice->Imax){
+                            slice->Imax = slice->val[indexY][x];
+                        }
                     }
                     indexY++;
                 }
@@ -31,10 +38,12 @@ GrayImage *getSliceZPositive(int z, char axisVertical, int directionVertical,cha
             else if(directionVertical == -1 && directionHorizontal == -1){
                 indexY = 0;
                 indexX = 0;
+
                 for(y=image3D->ny-1; y >= 0 ; y--){
                     for(x=image3D->nx-1; x >= 0; x--){
                         slice->val[indexY][indexX] = image3D->val[z][y][x];
                         indexX++;
+                        slice->Imax = image3D->val[z][y][x]>slice->Imax ? image3D->val[z][y][x] : slice->Imax;
                     }
                     indexX = 0;
                     indexY++;
@@ -46,6 +55,7 @@ GrayImage *getSliceZPositive(int z, char axisVertical, int directionVertical,cha
                 for(y=0; y < image3D->ny ; y++){
                     for(x=image3D->nx-1; x >= 0; x--){
                         slice->val[y][indexX] = image3D->val[z][y][x];
+                        slice->Imax = image3D->val[z][y][x]>slice->Imax ? image3D->val[z][y][x] : slice->Imax;
                         indexX++;
                     }
                     indexX = 0;
@@ -62,10 +72,12 @@ GrayImage *getSliceZPositive(int z, char axisVertical, int directionVertical,cha
         if (axisHorizontal == 'y') {
 
             slice = CreateGrayImage(image3D->ny, image3D->nx);
+            slice->Imax = 0;
             if (directionVertical == 1 && directionHorizontal == 1) {
                 for (y = 0; y < image3D->ny; y++) {
                     for (x = 0; x < image3D->nx; x++) {
                         slice->val[x][y] = image3D->val[z][y][x];
+                        slice->Imax = image3D->val[z][y][x]>slice->Imax ? image3D->val[z][y][x] : slice->Imax;
                     }
                 }
             }
@@ -75,6 +87,7 @@ GrayImage *getSliceZPositive(int z, char axisVertical, int directionVertical,cha
                 for (y = image3D->ny - 1; y >= 0; y--) {
                     for (x = 0; x < image3D->nx; x++) {
                         slice->val[x][indexY] = image3D->val[z][y][x];
+                        slice->Imax = image3D->val[z][y][x]>slice->Imax ? image3D->val[z][y][x] : slice->Imax;
                     }
                     indexY++;
                 }
@@ -86,6 +99,7 @@ GrayImage *getSliceZPositive(int z, char axisVertical, int directionVertical,cha
                 for (y = image3D->ny - 1; y >= 0; y--) {
                     for (x = image3D->nx - 1; x >= 0; x--) {
                         slice->val[indexX][indexY] = image3D->val[z][y][x];
+                        slice->Imax = image3D->val[z][y][x]>slice->Imax ? image3D->val[z][y][x] : slice->Imax;
                         indexX++;
                     }
                     indexX = 0;
@@ -98,6 +112,7 @@ GrayImage *getSliceZPositive(int z, char axisVertical, int directionVertical,cha
                 for (y = 0; y < image3D->ny; y++) {
                     for (x = image3D->nx - 1; x >= 0; x--) {
                         slice->val[indexX][y] = image3D->val[z][y][x];
+                        slice->Imax = image3D->val[z][y][x]>slice->Imax ? image3D->val[z][y][x] : slice->Imax;
                         indexX++;
                     }
                     indexX = 0;
@@ -126,10 +141,12 @@ GrayImage *getSliceYPositive(int y, char axisVertical, int directionVertical,cha
     if(axisVertical == 'z'){
         if(axisHorizontal == 'x'){
             slice = CreateGrayImage(image3D->nx,image3D->nz);
+            slice->Imax = 0;
             if(directionVertical == 1 && directionHorizontal == 1){
                 for(z=0; z < image3D->nz ; z++){
                     for(x=0; x < image3D->nx; x++){
                         slice->val[z][x] = image3D->val[z][y][x];
+                        slice->Imax = image3D->val[z][y][x]>slice->Imax ? image3D->val[z][y][x] : slice->Imax;
                     }
                 }
 
@@ -139,6 +156,7 @@ GrayImage *getSliceYPositive(int y, char axisVertical, int directionVertical,cha
                 for(z=image3D->nz-1; z >= 0 ; z--){
                     for(x=0; x < image3D->nx; x++){
                         slice->val[indexZ][x] = image3D->val[z][y][x];
+                        slice->Imax = image3D->val[z][y][x]>slice->Imax ? image3D->val[z][y][x] : slice->Imax;
                     }
                     indexZ++;
                 }
@@ -150,6 +168,7 @@ GrayImage *getSliceYPositive(int y, char axisVertical, int directionVertical,cha
                 for(z=image3D->nz-1; z >= 0 ; z--){
                     for(x=image3D->nx-1; x >= 0; x--){
                         slice->val[indexZ][indexX] = image3D->val[z][y][x];
+                        slice->Imax = image3D->val[z][y][x]>slice->Imax ? image3D->val[z][y][x] : slice->Imax;
                         indexX++;
                     }
                     indexX = 0;
@@ -162,6 +181,7 @@ GrayImage *getSliceYPositive(int y, char axisVertical, int directionVertical,cha
                 for(z=0; z < image3D->nz ; z++){
                     for(x=image3D->nx-1; x >= 0; x--){
                         slice->val[z][indexX] = image3D->val[z][y][x];
+                        slice->Imax = image3D->val[z][y][x]>slice->Imax ? image3D->val[z][y][x] : slice->Imax;
                         indexX++;
                     }
                     indexX = 0;
@@ -177,10 +197,12 @@ GrayImage *getSliceYPositive(int y, char axisVertical, int directionVertical,cha
     }else if(axisVertical == 'x'){
         if(axisHorizontal == 'z') {
             slice = CreateGrayImage(image3D->nz, image3D->nx);
+            slice->Imax = 0;
             if (directionVertical == 1 && directionHorizontal == 1) {
                 for (z = 0; z < image3D->nz; z++) {
                     for (x = 0; x < image3D->nx; x++) {
                         slice->val[x][z] = image3D->val[z][y][x];
+                        slice->Imax = image3D->val[z][y][x]>slice->Imax ? image3D->val[z][y][x] : slice->Imax;
                     }
                 }
             }
@@ -190,6 +212,7 @@ GrayImage *getSliceYPositive(int y, char axisVertical, int directionVertical,cha
                 for (z = image3D->nz - 1; z >= 0; z--) {
                     for (x = 0; x < image3D->nx; x++) {
                         slice->val[x][indexZ] = image3D->val[z][y][x];
+                        slice->Imax = image3D->val[z][y][x]>slice->Imax ? image3D->val[z][y][x] : slice->Imax;
                     }
                     indexZ++;
                 }
@@ -201,6 +224,7 @@ GrayImage *getSliceYPositive(int y, char axisVertical, int directionVertical,cha
                 for (z = image3D->nz - 1; z >= 0; z--) {
                     for (x = image3D->nx - 1; x >= 0; x--) {
                         slice->val[indexX][indexZ] = image3D->val[z][y][x];
+                        slice->Imax = image3D->val[z][y][x]>slice->Imax ? image3D->val[z][y][x] : slice->Imax;
                         indexX ++;
                     }
                     indexX = 0;
@@ -213,6 +237,7 @@ GrayImage *getSliceYPositive(int y, char axisVertical, int directionVertical,cha
                 for (z = 0; z < image3D->nz; z++) {
                     for (x = image3D->nx - 1; x >= 0; x--) {
                         slice->val[indexX][z] = image3D->val[z][y][x];
+                        slice->Imax = image3D->val[z][y][x]>slice->Imax ? image3D->val[z][y][x] : slice->Imax;
                         indexX++;
                     }
                     indexX = 0;
@@ -239,10 +264,12 @@ GrayImage *getSliceXPositive(int x, char axisVertical, int directionVertical,cha
     if(axisVertical == 'y'){
         if(axisHorizontal == 'z'){
             slice = CreateGrayImage(image3D->nz,image3D->ny);
+            slice->Imax = 0;
             if(directionVertical == 1 && directionHorizontal == 1){
                 for(y=0; y < image3D->ny ; y++){
                     for(z=0; z < image3D->nz; z++){
                         slice->val[y][z] = image3D->val[z][y][x];
+                        slice->Imax = image3D->val[z][y][x]>slice->Imax ? image3D->val[z][y][x] : slice->Imax;
                     }
                 }
             }
@@ -252,6 +279,7 @@ GrayImage *getSliceXPositive(int x, char axisVertical, int directionVertical,cha
                 for(y=image3D->ny-1; y >= 0 ; y--){
                     for(z=0; z < image3D->nz; z++){
                         slice->val[indexY][z] = image3D->val[z][y][x];
+                        slice->Imax = image3D->val[z][y][x]>slice->Imax ? image3D->val[z][y][x] : slice->Imax;
                     }
                     indexY++;
                 }
@@ -263,6 +291,7 @@ GrayImage *getSliceXPositive(int x, char axisVertical, int directionVertical,cha
                 for(y=image3D->ny-1; y >= 0 ; y--){
                     for(z=image3D->nz-1; z >= 0; z--){
                         slice->val[indexY][indexZ] = image3D->val[z][y][x];
+                        slice->Imax = image3D->val[z][y][x]>slice->Imax ? image3D->val[z][y][x] : slice->Imax;
                         indexZ++;
                     }
                     indexY++;
@@ -275,6 +304,7 @@ GrayImage *getSliceXPositive(int x, char axisVertical, int directionVertical,cha
                 for(y=0; y < image3D->ny ; y++){
                     for(z=image3D->nz-1; z >= 0; z--){
                         slice->val[y][indexZ] = image3D->val[z][y][x];
+                        slice->Imax = image3D->val[z][y][x]>slice->Imax ? image3D->val[z][y][x] : slice->Imax;
                         indexZ++;
                     }
                     indexZ = 0;
@@ -290,10 +320,12 @@ GrayImage *getSliceXPositive(int x, char axisVertical, int directionVertical,cha
     }else if(axisVertical == 'z') {
         if (axisHorizontal == 'y') {
             slice = CreateGrayImage(image3D->ny, image3D->nz);
+            slice->Imax = 0;
             if (directionVertical == 1 && directionHorizontal == 1) {
                 for (y = 0; y < image3D->ny; y++) {
                     for (z = 0; z < image3D->nz; z++) {
                         slice->val[z][y] = image3D->val[z][y][x];
+                        slice->Imax = image3D->val[z][y][x]>slice->Imax ? image3D->val[z][y][x] : slice->Imax;
                     }
                 }
             }
@@ -303,6 +335,7 @@ GrayImage *getSliceXPositive(int x, char axisVertical, int directionVertical,cha
                 for (y = image3D->ny - 1; y >= 0; y--) {
                     for (z = 0; z < image3D->nz; z++) {
                         slice->val[z][indexY] = image3D->val[z][y][x];
+                        slice->Imax = image3D->val[z][y][x]>slice->Imax ? image3D->val[z][y][x] : slice->Imax;
                     }
                     indexY++;
                 }
@@ -314,6 +347,7 @@ GrayImage *getSliceXPositive(int x, char axisVertical, int directionVertical,cha
                 for (y = image3D->ny - 1; y >= 0; y--) {
                     for (z = image3D->nz - 1; z >= 0; z--) {
                         slice->val[indexZ][indexY] = image3D->val[z][y][x];
+                        slice->Imax = image3D->val[z][y][x]>slice->Imax ? image3D->val[z][y][x] : slice->Imax;
                         indexZ++;
                     }
                     indexY++;
@@ -326,6 +360,7 @@ GrayImage *getSliceXPositive(int x, char axisVertical, int directionVertical,cha
                 for (y = 0; y < image3D->ny; y++) {
                     for (z = image3D->nz - 1; z >= 0; z--) {
                         slice->val[indexZ][y] = image3D->val[z][y][x];
+                        slice->Imax = image3D->val[z][y][x]>slice->Imax ? image3D->val[z][y][x] : slice->Imax;
                         indexZ++;
                     }
                     indexZ = 0;

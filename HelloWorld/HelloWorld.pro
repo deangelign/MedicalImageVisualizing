@@ -25,7 +25,8 @@ SOURCES += main.cpp\
     adjacency.cpp \
     slicer.cpp \
     displaymanager.cpp \
-    eventmanager.cpp
+    eventmanager.cpp \
+    brightcontrastdialog.cpp
 
 HEADERS  += mainwindow.h \
     spectrum.h \
@@ -39,9 +40,11 @@ HEADERS  += mainwindow.h \
     gqueue.h \
     slicer.h \
     displaymanager.h \
-    eventmanager.h
+    eventmanager.h \
+    brightcontrastdialog.h
 
-FORMS    += mainwindow.ui
+FORMS    += mainwindow.ui \
+    brightcontrastdialog.ui
 
 unix:!macx: LIBS += -lpng
 #-fsanitize=address

@@ -35,10 +35,11 @@ typedef struct _DImage{
 /* Implementacoes matriciais */
 
 typedef struct _grayimage {
-    int   nx,ny;    /* dimensoes da imagem */
-    int   **val;    /* matriz com os valores dos pixels */
-    float dx,dy;    /* tamanho do pixel em unidades de comprimento */
-    char  unid[10]; /* unidade de comprimento */
+  int   nx,ny;    /* dimensoes da imagem */
+  int   **val;    /* matriz com os valores dos pixels */
+  float dx,dy;    /* tamanho do pixel em unidades de comprimento */
+  int   Imax;     /* image depth*/
+  char  unid[10]; /* unidade de comprimento */
 } GrayImage;
 
 typedef struct _cor {

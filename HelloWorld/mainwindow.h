@@ -2,6 +2,7 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include "brightcontrastdialog.h"
 
 namespace Ui {
 class MainWindow;
@@ -14,6 +15,7 @@ class MainWindow : public QMainWindow
 public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
+    void testeFunction();
 
 private slots:
     void on_action3D_Image_triggered();
@@ -35,13 +37,19 @@ private slots:
 
     void on_labelFigureZ_customContextMenuRequested(const QPoint &pos);
 
-
     void on_labelFigureY_customContextMenuRequested(const QPoint &pos);
 
     void on_labelFigureX_customContextMenuRequested(const QPoint &pos);
 
+
+    void on_pushButton_clicked();
+    void updateImagesNewBrightContrast();
+    void displayNegativeImage();
+    void displayNormalizedImage();
+
 private:
     Ui::MainWindow *ui;
+    BrightContrastDialog *brightContrastDialogForm;
 };
 
 #endif // MAINWINDOW_H

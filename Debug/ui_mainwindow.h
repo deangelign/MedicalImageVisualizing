@@ -43,6 +43,7 @@ public:
     QPushButton *mirrorZ;
     QPushButton *rotateY_90Anticlockwise;
     QPushButton *rotateY_90Anticlockwise_2;
+    QPushButton *pushButton;
     QToolBar *mainToolBar;
     QStatusBar *statusBar;
     QMenuBar *menuBar;
@@ -131,6 +132,9 @@ public:
         rotateY_90Anticlockwise_2->setStyleSheet(QStringLiteral("background-color: rgb(255, 255, 255);"));
         rotateY_90Anticlockwise_2->setIcon(icon);
         rotateY_90Anticlockwise_2->setIconSize(QSize(20, 20));
+        pushButton = new QPushButton(centralWidget);
+        pushButton->setObjectName(QStringLiteral("pushButton"));
+        pushButton->setGeometry(QRect(440, 100, 30, 30));
         MainWindow->setCentralWidget(centralWidget);
         mainToolBar = new QToolBar(MainWindow);
         mainToolBar->setObjectName(QStringLiteral("mainToolBar"));
@@ -170,6 +174,7 @@ public:
         mirrorZ->setText(QString());
         rotateY_90Anticlockwise->setText(QString());
         rotateY_90Anticlockwise_2->setText(QString());
+        pushButton->setText(QApplication::translate("MainWindow", "BC", 0));
         menuFile->setTitle(QApplication::translate("MainWindow", "File", 0));
         menuImport->setTitle(QApplication::translate("MainWindow", "Import", 0));
     } // retranslateUi

@@ -18,6 +18,13 @@ QImage *imageX;
 ViewDisplay *viewZ;
 ViewDisplay *viewY;
 ViewDisplay *viewX;
+int defaultMaxValue = 4095;
+int NegativeType = 4;
+bool negativeActive = false;
+int NormalizationType = 5;
+bool NormalizationActive = false;
+
+
 
 
 
@@ -40,6 +47,8 @@ void init(){
     viewZ->slice = 0;
     viewZ->rgbColorTable = NULL;
     viewZ->type = 1;
+    updateContrastBrightParameters(viewZ,0,defaultMaxValue,0,defaultMaxValue);
+
 
     //zx plan
     viewY = (ViewDisplay *)calloc(1,sizeof(ViewDisplay));
@@ -51,6 +60,8 @@ void init(){
     viewY->slice = 0;
     viewY->rgbColorTable = NULL;
     viewY->type = 1;
+    updateContrastBrightParameters(viewY,0,defaultMaxValue,0,defaultMaxValue);
+
 
     //zy plan
     viewX = (ViewDisplay *)calloc(1,sizeof(ViewDisplay));
@@ -62,6 +73,9 @@ void init(){
     viewX->slice = 0;
     viewX->rgbColorTable = NULL;
     viewX->type = 1;
+    updateContrastBrightParameters(viewX,0,defaultMaxValue,0,defaultMaxValue);
+
+
 }
 
 MainWindow::MainWindow(QWidget *parent) :
@@ -100,10 +114,21 @@ void MainWindow::on_action3D_Image_triggered()
 
         viewZ->slice = image3D->nz/2;
         viewZ->type = 1;
+        viewZ->k2 = image3D->maxValue;
+        updateContrastBrightParameters(viewZ,image3D->maxValue/2.0,image3D->maxValue);
+
         viewY->slice = image3D->ny/2;
         viewY->type = 1;
+        viewY->k2 = image3D->maxValue;
+        updateContrastBrightParameters(viewY,image3D->maxValue/2.0,image3D->maxValue);
+
+
         viewX->slice = image3D->nx/2;
         viewX->type = 1;
+        viewX->k2 = image3D->maxValue;
+        updateContrastBrightParameters(viewX,image3D->maxValue/2.0,image3D->maxValue);
+
+
 
         ui->spinBoxImageZ->setMaximum(image3D->nz-1);
         ui->spinBoxImageZ->setValue(viewZ->slice);
@@ -173,11 +198,11 @@ void MainWindow::on_action3D_Image_triggered()
     }
 }
 
-void MainWindow::on_spinBoxImageZ_valueChanged(int arg1)
+void MainWindow::on_spinBoxImageZ_valueChanged(int newValue)
 {
     try{
         if(imageZ != NULL && image3D != NULL){
-            viewZ->slice = ui->spinBoxImageZ->text().toInt();
+            viewZ->slice = newValue;
             getQImageFromView(viewZ,image3D,labelImage,&imageZ);
             displayImageOnLabel(imageZ,ui->labelFigureZ);
         }
@@ -187,11 +212,11 @@ void MainWindow::on_spinBoxImageZ_valueChanged(int arg1)
 
 }
 
-void MainWindow::on_spinBoxImageY_valueChanged(int arg1)
+void MainWindow::on_spinBoxImageY_valueChanged(int newValue)
 {
     try{
         if(imageY != NULL && image3D != NULL){
-            viewY->slice = ui->spinBoxImageY->text().toInt();
+            viewY->slice = newValue;
             getQImageFromView(viewY,image3D,labelImage,&imageY);
             displayImageOnLabel(imageY,ui->labelFigureY);
         }
@@ -200,11 +225,11 @@ void MainWindow::on_spinBoxImageY_valueChanged(int arg1)
     }
 }
 
-void MainWindow::on_spinBoxImageX_valueChanged(int arg1)
+void MainWindow::on_spinBoxImageX_valueChanged(int newValue)
 {
     try{
         if(imageX != NULL && image3D != NULL){
-            viewX->slice = ui->spinBoxImageX->text().toInt();
+            viewX->slice = newValue;
             getQImageFromView(viewX,image3D,labelImage,&imageX);
             displayImageOnLabel(imageX,ui->labelFigureX);
         }
@@ -266,20 +291,38 @@ void MainWindow::on_actionLabel_map_triggered()
                 destroyRGBColorMap(&viewZ->rgbColorTable);
                 destroyRGBColorMap(&viewY->rgbColorTable);
                 destroyRGBColorMap(&viewX->rgbColorTable);
-                destroyRGBColorMap(&viewZ->yCbCrColorTable);
-                destroyRGBColorMap(&viewY->yCbCrColorTable);
-                destroyRGBColorMap(&viewX->yCbCrColorTable);
+                destroyYCgCoColorMap(&viewZ->yCgCoColorTable);
+                destroyYCgCoColorMap(&viewY->yCgCoColorTable);
+                destroyYCgCoColorMap(&viewX->yCgCoColorTable);
             }
             labelImage = ReadMedicalImage(fileName.toLatin1().data());
 
             //TODO: checar se as dimensoes sao iguais labelImage-3Dimage
-            viewZ->rgbColorTable = generateRGBColorMap(labelImage);
+            viewZ->rgbColorTable = generateRGBColorMap(labelImage,4095);
             copyColorMap(viewZ->rgbColorTable,&viewY->rgbColorTable);
             copyColorMap(viewZ->rgbColorTable,&viewX->rgbColorTable);
 
-            convertRGBColorMap2YCbCrColorMap(viewZ->rgbColorTable,&viewZ->yCbCrColorTable);
-            convertRGBColorMap2YCbCrColorMap(viewY->rgbColorTable,&viewY->yCbCrColorTable);
-            convertRGBColorMap2YCbCrColorMap(viewX->rgbColorTable,&viewX->yCbCrColorTable);
+//            for(int i=0; i<viewZ->rgbColorTable->numberRows; i++){
+//                for(int j=0; j<viewZ->rgbColorTable->numberColumns; j++){
+//                    fprintf(stderr,"%d ",viewZ->rgbColorTable->table[i][j]);
+//                }
+//                fprintf(stderr,"\n");
+//            }
+//            fprintf(stderr,"\n");
+
+
+
+            convertRGBColorMap2YCgCoColorMap(viewZ->rgbColorTable,&viewZ->yCgCoColorTable, 4095);
+            convertRGBColorMap2YCgCoColorMap(viewY->rgbColorTable,&viewY->yCgCoColorTable, 4095);
+            convertRGBColorMap2YCgCoColorMap(viewX->rgbColorTable,&viewX->yCgCoColorTable, 4095);
+
+//            for(int i=0; i<viewZ->rgbColorTable->numberRows; i++){
+//                for(int j=0; j<viewZ->rgbColorTable->numberColumns; j++){
+//                    fprintf(stderr,"%f ",viewZ->yCgCoColorTable->table[i][j]);
+//                }
+//                fprintf(stderr,"\n");
+//            }
+//            fprintf(stderr,"\n");
 
             viewZ->type = 3;
             viewY->type = 3;
@@ -342,3 +385,95 @@ void MainWindow::on_labelFigureX_customContextMenuRequested(const QPoint &pos)
         displayImageOnLabel(imageX,ui->labelFigureX);
     }
 }
+
+
+
+void MainWindow::on_pushButton_clicked()
+{
+
+    if(image3D != NULL){
+        brightContrastDialogForm = new BrightContrastDialog(this,viewZ->bright,viewZ->contrast,image3D->maxValue,negativeActive, NormalizationActive);
+        brightContrastDialogForm->setAttribute( Qt::WA_DeleteOnClose );
+        brightContrastDialogForm->show();
+        connect(brightContrastDialogForm,SIGNAL(brightSignal(float)),this,SLOT(updateImagesNewBrightContrast()));
+        connect(brightContrastDialogForm,SIGNAL(contrastSignal(float)),this,SLOT(updateImagesNewBrightContrast()));
+        connect(brightContrastDialogForm,SIGNAL(negativeSignal(bool)),this,SLOT(displayNegativeImage()));
+        connect(brightContrastDialogForm,SIGNAL(normalizationSignal(bool)),this,SLOT(displayNormalizedImage()));
+    }else{
+        brightContrastDialogForm = new BrightContrastDialog(this,viewZ->bright,viewZ->contrast,defaultMaxValue, negativeActive,NormalizationActive);
+        brightContrastDialogForm->setAttribute( Qt::WA_DeleteOnClose );
+        brightContrastDialogForm->show();
+        connect(brightContrastDialogForm,SIGNAL(brightSignal(float)),this,SLOT(updateImagesNewBrightContrast()));
+        connect(brightContrastDialogForm,SIGNAL(contrastSignal(float)),this,SLOT(updateImagesNewBrightContrast()));
+        connect(brightContrastDialogForm,SIGNAL(negativeSignal(bool)),this,SLOT(displayNegativeImage()));
+        connect(brightContrastDialogForm,SIGNAL(normalizationSignal(bool)),this,SLOT(displayNormalizedImage()));
+    }
+}
+
+void MainWindow::updateImagesNewBrightContrast(){
+    viewZ->bright = brightContrastDialogForm->brightValue;
+    viewZ->contrast = brightContrastDialogForm->contrastValue;
+
+    viewZ->I1 = viewZ->bright - (viewZ->contrast/2);
+    viewZ->I2 = viewZ->contrast - viewZ->I1;
+
+    viewY->bright = viewZ->bright;
+    viewY->contrast = viewZ->contrast;
+    viewY->I1 = viewZ->I1;
+    viewY->I2 = viewZ->I2;
+
+    viewX->bright = viewZ->bright;
+    viewX->contrast = viewZ->contrast;
+    viewX->I1 = viewZ->I1;
+    viewX->I2 = viewZ->I2;
+    getQImageFromView(viewZ,image3D,labelImage,&imageZ);
+    displayImageOnLabel(imageZ,ui->labelFigureZ);
+
+    getQImageFromView(viewY,image3D,labelImage,&imageY);
+    displayImageOnLabel(imageY,ui->labelFigureY);
+
+    getQImageFromView(viewX,image3D,labelImage,&imageX);
+    displayImageOnLabel(imageX,ui->labelFigureX);
+}
+
+void MainWindow::displayNegativeImage(){
+    negativeActive = brightContrastDialogForm->negative;
+    viewZ->type = NegativeType + viewZ->type;
+    NegativeType = viewZ->type - NegativeType;
+    viewZ->type = viewZ->type - NegativeType;
+    viewY->type = viewZ->type;
+    viewX->type = viewZ->type;
+
+    if(image3D != NULL){
+        getQImageFromView(viewZ,image3D,labelImage,&imageZ);
+        displayImageOnLabel(imageZ,ui->labelFigureZ);
+
+        getQImageFromView(viewY,image3D,labelImage,&imageY);
+        displayImageOnLabel(imageY,ui->labelFigureY);
+
+        getQImageFromView(viewX,image3D,labelImage,&imageX);
+        displayImageOnLabel(imageX,ui->labelFigureX);
+    }
+}
+
+void MainWindow::displayNormalizedImage(){
+    NormalizationActive = brightContrastDialogForm->normalization;
+    viewZ->type = NormalizationType + viewZ->type;
+    NormalizationType = viewZ->type - NormalizationType;
+    viewZ->type = viewZ->type - NormalizationType;
+    viewY->type = viewZ->type;
+    viewX->type = viewZ->type;
+
+    if(image3D != NULL){
+        getQImageFromView(viewZ,image3D,labelImage,&imageZ);
+        displayImageOnLabel(imageZ,ui->labelFigureZ);
+
+        getQImageFromView(viewY,image3D,labelImage,&imageY);
+        displayImageOnLabel(imageY,ui->labelFigureY);
+
+        getQImageFromView(viewX,image3D,labelImage,&imageX);
+        displayImageOnLabel(imageX,ui->labelFigureX);
+    }
+}
+
+
