@@ -121,7 +121,10 @@ GrayImage *getSliceYPositive(int z, char axisVertical, int directionVertial,char
 GrayImage *getSliceXPositive(int z, char axisVertical, int directionVertial,char axisHorizontal, int directionHorizontal, MedicalImage *image3D);
 GrayImage* getSlice(char verticalAxis, int directionVertial, char horizontalAxis, int directionHorizontal, MedicalImage *image3D, int sliceDepth);
 void bitsAdjustment(GrayImage *grayImage,int nbits, int saturation);
+<<<<<<< HEAD
 
 
+=======
+>>>>>>> 249dfc9db503030ab8ab8964a0bc36b1ed79bf58
 
 #endif

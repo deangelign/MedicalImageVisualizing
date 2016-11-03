@@ -3,7 +3,10 @@
 
 #include <QMainWindow>
 #include "brightcontrastdialog.h"
+<<<<<<< HEAD
 #include "refactformdialog.h"
+=======
+>>>>>>> 249dfc9db503030ab8ab8964a0bc36b1ed79bf58
 
 namespace Ui {
 class MainWindow;
@@ -42,10 +45,15 @@ private slots:
 
     void on_labelFigureX_customContextMenuRequested(const QPoint &pos);
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> 249dfc9db503030ab8ab8964a0bc36b1ed79bf58
     void on_pushButton_clicked();
     void updateImagesNewBrightContrast();
     void displayNegativeImage();
     void displayNormalizedImage();
+<<<<<<< HEAD
     void refactScene();
 
     void on_pushButton_2_clicked();
@@ -65,12 +73,17 @@ private slots:
     void on_SpinBoxVectorZ_valueChanged(double arg1);
 
     void on_actionGenerate_New_Volume_triggered();
+=======
+>>>>>>> 249dfc9db503030ab8ab8964a0bc36b1ed79bf58
 
 private:
     Ui::MainWindow *ui;
     BrightContrastDialog *brightContrastDialogForm;
+<<<<<<< HEAD
     RefactFormDialog *refactFormDialog;
 
+=======
+>>>>>>> 249dfc9db503030ab8ab8964a0bc36b1ed79bf58
 };
 
 #endif // MAINWINDOW_H

@@ -5,21 +5,30 @@
 #include <QTextStream>
 #include <QImageReader>
 #include <QMessageBox>
+<<<<<<< HEAD
 #include <QTime>
+=======
+>>>>>>> 249dfc9db503030ab8ab8964a0bc36b1ed79bf58
 #include "mc920.h"
 
 
 
+<<<<<<< HEAD
 
 
 
+=======
+>>>>>>> 249dfc9db503030ab8ab8964a0bc36b1ed79bf58
 //global variable to mainwindow
 MedicalImage *image3D;
 MedicalImage *labelImage;
 QImage *imageZ;
 QImage *imageY;
 QImage *imageX;
+<<<<<<< HEAD
 QImage *imageXYZ;
+=======
+>>>>>>> 249dfc9db503030ab8ab8964a0bc36b1ed79bf58
 ViewDisplay *viewZ;
 ViewDisplay *viewY;
 ViewDisplay *viewX;
@@ -28,7 +37,10 @@ int NegativeType = 4;
 bool negativeActive = false;
 int NormalizationType = 5;
 bool NormalizationActive = false;
+<<<<<<< HEAD
 bool startDrawXYZImage = false;
+=======
+>>>>>>> 249dfc9db503030ab8ab8964a0bc36b1ed79bf58
 
 
 
@@ -81,6 +93,10 @@ void init(){
     viewX->type = 1;
     updateContrastBrightParameters(viewX,0,defaultMaxValue,0,defaultMaxValue);
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> 249dfc9db503030ab8ab8964a0bc36b1ed79bf58
 }
 
 MainWindow::MainWindow(QWidget *parent) :
@@ -112,8 +128,13 @@ void MainWindow::on_action3D_Image_triggered()
             imageZ = NULL;
             imageY = NULL;
             imageX = NULL;
+<<<<<<< HEAD
         }
 
+=======
+
+        }
+>>>>>>> 249dfc9db503030ab8ab8964a0bc36b1ed79bf58
         image3D = ReadMedicalImage(fileName.toLatin1().data());//reading 3d image
 
 
@@ -134,6 +155,10 @@ void MainWindow::on_action3D_Image_triggered()
         updateContrastBrightParameters(viewX,image3D->maxValue/2.0,image3D->maxValue);
 
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> 249dfc9db503030ab8ab8964a0bc36b1ed79bf58
         ui->spinBoxImageZ->setMaximum(image3D->nz-1);
         ui->spinBoxImageZ->setValue(viewZ->slice);
 
@@ -156,6 +181,45 @@ void MainWindow::on_action3D_Image_triggered()
             displayImageOnLabel(imageZ,ui->labelFigureZ);
             displayImageOnLabel(imageY,ui->labelFigureY);
             displayImageOnLabel(imageX,ui->labelFigureX);
+<<<<<<< HEAD
+=======
+        }if(solution == 2){
+
+            //sliceZ = getSlice(viewZ->verticalAxis,viewZ->verticalDirection,viewZ->horizontalAxis, viewZ->horizontalDirection, image3D, viewZ->slice);
+            //sliceY = getSlice(viewY->verticalAxis,viewY->verticalDirection,viewY->horizontalAxis, viewY->horizontalDirection, image3D, viewY->slice);
+            //sliceX = getSlice(viewX->verticalAxis,viewX->verticalDirection,viewX->horizontalAxis, viewX->horizontalDirection, image3D, viewX->slice);
+
+
+            //            int nbits = 8;
+            //            if(image3D->nbits > 8){
+            //                nbits = 16;
+            //            }
+            //            bitsAdjustment(sliceZ,11, true);
+            //            bitsAdjustment(sliceY,11, true);
+            //            bitsAdjustment(sliceX,11, true);
+
+            //            writeGrayImagePng(sliceZ,nbits, "Z_axis.png");
+            //            writeGrayImagePng(sliceY,nbits, "Y_axis.png");
+            //            writeGrayImagePng(sliceX,nbits, "X_axis.png");
+            //            imageZ = new QImage();
+            //            imageY = new QImage();
+            //            imageX = new QImage();
+
+            //            QString localFilename;
+            //            localFilename = "Z_axis.png";
+            //            QImageReader *reader = new QImageReader(localFilename);
+            //            reader->setAutoTransform(true);
+            //            reader->read(imageZ);
+            //            reader->setFileName("Y_axis.png");
+            //            reader->read(imageY);
+            //            reader->setFileName("X_axis.png");
+            //            reader->read(imageX);
+
+            //            ui->labelFigureZ->setPixmap(QPixmap::fromImage((*imageZ)));
+            //            ui->labelFigureY->setPixmap(QPixmap::fromImage((*imageY)));
+            //            ui->labelFigureX->setPixmap(QPixmap::fromImage((*imageX)));
+
+>>>>>>> 249dfc9db503030ab8ab8964a0bc36b1ed79bf58
         }
 
     }
@@ -164,11 +228,14 @@ void MainWindow::on_action3D_Image_triggered()
         messageBox.critical(0,"Error","File is empty");
         messageBox.setFixedSize(500,200);
     }
+<<<<<<< HEAD
 
     ui->SpinBoxPointX->setValue(image3D->nx/2);
     ui->SpinBoxPointY->setValue(image3D->ny/2);
     startDrawXYZImage = true;
     ui->SpinBoxPointZ->setValue(image3D->nz/2);
+=======
+>>>>>>> 249dfc9db503030ab8ab8964a0bc36b1ed79bf58
 }
 
 void MainWindow::on_spinBoxImageZ_valueChanged(int newValue)
@@ -275,6 +342,7 @@ void MainWindow::on_actionLabel_map_triggered()
             copyColorMap(viewZ->rgbColorTable,&viewY->rgbColorTable);
             copyColorMap(viewZ->rgbColorTable,&viewX->rgbColorTable);
 
+<<<<<<< HEAD
             //            for(int i=0; i<viewZ->rgbColorTable->numberRows; i++){
             //                for(int j=0; j<viewZ->rgbColorTable->numberColumns; j++){
             //                    fprintf(stderr,"%d ",viewZ->rgbColorTable->table[i][j]);
@@ -282,6 +350,15 @@ void MainWindow::on_actionLabel_map_triggered()
             //                fprintf(stderr,"\n");
             //            }
             //            fprintf(stderr,"\n");
+=======
+//            for(int i=0; i<viewZ->rgbColorTable->numberRows; i++){
+//                for(int j=0; j<viewZ->rgbColorTable->numberColumns; j++){
+//                    fprintf(stderr,"%d ",viewZ->rgbColorTable->table[i][j]);
+//                }
+//                fprintf(stderr,"\n");
+//            }
+//            fprintf(stderr,"\n");
+>>>>>>> 249dfc9db503030ab8ab8964a0bc36b1ed79bf58
 
 
 
@@ -289,6 +366,7 @@ void MainWindow::on_actionLabel_map_triggered()
             convertRGBColorMap2YCgCoColorMap(viewY->rgbColorTable,&viewY->yCgCoColorTable, 4095);
             convertRGBColorMap2YCgCoColorMap(viewX->rgbColorTable,&viewX->yCgCoColorTable, 4095);
 
+<<<<<<< HEAD
             //            for(int i=0; i<viewZ->rgbColorTable->numberRows; i++){
             //                for(int j=0; j<viewZ->rgbColorTable->numberColumns; j++){
             //                    fprintf(stderr,"%f ",viewZ->yCgCoColorTable->table[i][j]);
@@ -296,6 +374,15 @@ void MainWindow::on_actionLabel_map_triggered()
             //                fprintf(stderr,"\n");
             //            }
             //            fprintf(stderr,"\n");
+=======
+//            for(int i=0; i<viewZ->rgbColorTable->numberRows; i++){
+//                for(int j=0; j<viewZ->rgbColorTable->numberColumns; j++){
+//                    fprintf(stderr,"%f ",viewZ->yCgCoColorTable->table[i][j]);
+//                }
+//                fprintf(stderr,"\n");
+//            }
+//            fprintf(stderr,"\n");
+>>>>>>> 249dfc9db503030ab8ab8964a0bc36b1ed79bf58
 
             viewZ->type = 3;
             viewY->type = 3;
@@ -450,6 +537,7 @@ void MainWindow::displayNormalizedImage(){
 }
 
 
+<<<<<<< HEAD
 
 void MainWindow::on_pushButton_2_clicked()
 {
@@ -782,3 +870,5 @@ void MainWindow::on_actionGenerate_New_Volume_triggered()
 \
     }
 }
+=======
+>>>>>>> 249dfc9db503030ab8ab8964a0bc36b1ed79bf58

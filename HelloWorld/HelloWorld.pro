@@ -26,11 +26,15 @@ SOURCES += main.cpp\
     slicer.cpp \
     displaymanager.cpp \
     eventmanager.cpp \
+<<<<<<< HEAD
     brightcontrastdialog.cpp \
     atlas.cpp \
     iftMatrix.cpp \
     refactformdialog.cpp \
     createvolumedialogform.cpp
+=======
+    brightcontrastdialog.cpp
+>>>>>>> 249dfc9db503030ab8ab8964a0bc36b1ed79bf58
 
 HEADERS  += mainwindow.h \
     spectrum.h \
@@ -45,6 +49,7 @@ HEADERS  += mainwindow.h \
     slicer.h \
     displaymanager.h \
     eventmanager.h \
+<<<<<<< HEAD
     brightcontrastdialog.h \
     atlas.h \
     iftMatrix.h \
@@ -87,3 +92,12 @@ else:win32-g++:CONFIG(debug, debug|release): PRE_TARGETDEPS += $$PWD/../../../..
 else:win32:!win32-g++:CONFIG(release, debug|release): PRE_TARGETDEPS += $$PWD/../../../../../usr/lib/libblas/release/blas.lib
 else:win32:!win32-g++:CONFIG(debug, debug|release): PRE_TARGETDEPS += $$PWD/../../../../../usr/lib/libblas/debug/blas.lib
 else:unix: PRE_TARGETDEPS += $$PWD/../../../../../usr/lib/libblas/libblas.a
+=======
+    brightcontrastdialog.h
+
+FORMS    += mainwindow.ui \
+    brightcontrastdialog.ui
+
+unix:!macx: LIBS += -lpng
+#-fsanitize=address
+>>>>>>> 249dfc9db503030ab8ab8964a0bc36b1ed79bf58

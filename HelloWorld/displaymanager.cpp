@@ -77,6 +77,15 @@ ColorMap* generateRGBColorMap(MedicalImage *labelImage,int maximumValue){
     for(int i=1;i<RGBColorTable->numberRows; i++){
         for(int j=0; j<RGBColorTable->numberColumns; j++){
             value = rand() % (maximumValue+1);
+<<<<<<< HEAD
+=======
+            if(value < 800){
+                value += 800;
+            }
+            if(value > 3500){
+                value - 600;
+            }
+>>>>>>> 249dfc9db503030ab8ab8964a0bc36b1ed79bf58
             RGBColorTable->table[i][j] = value;
         }
     }
@@ -194,8 +203,14 @@ ColorImage *generateColorImageFromLabelImage(GrayImage *labelImage,ColorMap *rgb
 ColorImage *generateColorImageFromLabelImage(GrayImage *grayImage, GrayImage *labelImage, ColorMapFloat *yCgCoColorTable, float maximumValue){
     ColorImage *colorImage = CreateColorImage(labelImage->nx,labelImage->ny);
     float newY;
+<<<<<<< HEAD
     float scalingFactor = 255;
     int colorTableRow;
+=======
+    int scalingFactor = 255;
+    int colorTableRow;
+    float alpha = 1;
+>>>>>>> 249dfc9db503030ab8ab8964a0bc36b1ed79bf58
     float beta = 30.65;
     for(int y=0; y<labelImage->ny; y++){
         for(int x=0; x<labelImage->nx; x++){
@@ -207,6 +222,7 @@ ColorImage *generateColorImageFromLabelImage(GrayImage *grayImage, GrayImage *la
            colorImage->cor[y][x].val[2] = round((newY -yCgCoColorTable->table[colorTableRow][1] - yCgCoColorTable->table[colorTableRow][2] )*scalingFactor);
 
 
+<<<<<<< HEAD
 
 //          if(colorImage->cor[y][x].val[0] > 3000){
 //              colorImage->cor[y][x].val[0] -= (500);
@@ -218,6 +234,8 @@ ColorImage *generateColorImageFromLabelImage(GrayImage *grayImage, GrayImage *la
 //              colorImage->cor[y][x].val[2] -= (500);
 //          }
 
+=======
+>>>>>>> 249dfc9db503030ab8ab8964a0bc36b1ed79bf58
           colorImage->cor[y][x].val[0] = colorTableRow==0?0:log(colorImage->cor[y][x].val[0]+1)*beta;
           colorImage->cor[y][x].val[1] = colorTableRow==0?0:log(colorImage->cor[y][x].val[1]+1)*beta;
           colorImage->cor[y][x].val[2] = colorTableRow==0?0:log(colorImage->cor[y][x].val[2]+1)*beta;
@@ -350,6 +368,7 @@ void LimiarizationGrayImage(GrayImage *img, int th, float maximumValue){
                 imgOut->val[y][x] = ((K2 - K1)/(I2 - I1))*(val - I1)+K1;
         }
 }
+<<<<<<< HEAD
 
 
 float computeVolumeDiagonal(int nx,int ny, int nz){
@@ -476,3 +495,5 @@ void getSliceGivenVectorViewer(MedicalImage *image3D, float x, float y, float z)
 }
 
 
+=======
+>>>>>>> 249dfc9db503030ab8ab8964a0bc36b1ed79bf58

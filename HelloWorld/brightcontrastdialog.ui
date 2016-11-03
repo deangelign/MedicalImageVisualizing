@@ -155,7 +155,11 @@
   <widget class="QSpinBox" name="spinBoxLimiarizacao">
    <property name="geometry">
     <rect>
+<<<<<<< HEAD
      <x>280</x>
+=======
+     <x>130</x>
+>>>>>>> 249dfc9db503030ab8ab8964a0bc36b1ed79bf58
      <y>145</y>
      <width>47</width>
      <height>23</height>
@@ -165,6 +169,7 @@
     <number>100</number>
    </property>
   </widget>
+<<<<<<< HEAD
   <widget class="QSlider" name="horizontalSlider">
    <property name="geometry">
     <rect>
@@ -178,6 +183,8 @@
     <enum>Qt::Horizontal</enum>
    </property>
   </widget>
+=======
+>>>>>>> 249dfc9db503030ab8ab8964a0bc36b1ed79bf58
  </widget>
  <resources/>
  <connections>

@@ -13,7 +13,10 @@
 #include <QtWidgets/QAction>
 #include <QtWidgets/QApplication>
 #include <QtWidgets/QButtonGroup>
+<<<<<<< HEAD
 #include <QtWidgets/QDoubleSpinBox>
+=======
+>>>>>>> 249dfc9db503030ab8ab8964a0bc36b1ed79bf58
 #include <QtWidgets/QHeaderView>
 #include <QtWidgets/QLabel>
 #include <QtWidgets/QMainWindow>
@@ -33,8 +36,11 @@ public:
     QAction *actionFile;
     QAction *action3D_Image;
     QAction *actionLabel_map;
+<<<<<<< HEAD
     QAction *actionRefactor;
     QAction *actionGenerate_New_Volume;
+=======
+>>>>>>> 249dfc9db503030ab8ab8964a0bc36b1ed79bf58
     QWidget *centralWidget;
     QLabel *labelFigureZ;
     QLabel *labelFigureY;
@@ -47,6 +53,7 @@ public:
     QPushButton *rotateY_90Anticlockwise;
     QPushButton *rotateY_90Anticlockwise_2;
     QPushButton *pushButton;
+<<<<<<< HEAD
     QLabel *labelFigureXYZ;
     QPushButton *pushButton_2;
     QDoubleSpinBox *SpinBoxPointX;
@@ -57,18 +64,27 @@ public:
     QDoubleSpinBox *SpinBoxVectorZ;
     QLabel *label;
     QLabel *label_2;
+=======
+>>>>>>> 249dfc9db503030ab8ab8964a0bc36b1ed79bf58
     QToolBar *mainToolBar;
     QStatusBar *statusBar;
     QMenuBar *menuBar;
     QMenu *menuFile;
     QMenu *menuImport;
+<<<<<<< HEAD
     QMenu *menuTools;
+=======
+>>>>>>> 249dfc9db503030ab8ab8964a0bc36b1ed79bf58
 
     void setupUi(QMainWindow *MainWindow)
     {
         if (MainWindow->objectName().isEmpty())
             MainWindow->setObjectName(QStringLiteral("MainWindow"));
+<<<<<<< HEAD
         MainWindow->resize(1161, 854);
+=======
+        MainWindow->resize(1044, 800);
+>>>>>>> 249dfc9db503030ab8ab8964a0bc36b1ed79bf58
         MainWindow->setStyleSheet(QStringLiteral("background-color: rgb(170, 170, 127);"));
         actionFile = new QAction(MainWindow);
         actionFile->setObjectName(QStringLiteral("actionFile"));
@@ -76,10 +92,13 @@ public:
         action3D_Image->setObjectName(QStringLiteral("action3D_Image"));
         actionLabel_map = new QAction(MainWindow);
         actionLabel_map->setObjectName(QStringLiteral("actionLabel_map"));
+<<<<<<< HEAD
         actionRefactor = new QAction(MainWindow);
         actionRefactor->setObjectName(QStringLiteral("actionRefactor"));
         actionGenerate_New_Volume = new QAction(MainWindow);
         actionGenerate_New_Volume->setObjectName(QStringLiteral("actionGenerate_New_Volume"));
+=======
+>>>>>>> 249dfc9db503030ab8ab8964a0bc36b1ed79bf58
         centralWidget = new QWidget(MainWindow);
         centralWidget->setObjectName(QStringLiteral("centralWidget"));
         labelFigureZ = new QLabel(centralWidget);
@@ -153,6 +172,7 @@ public:
         pushButton = new QPushButton(centralWidget);
         pushButton->setObjectName(QStringLiteral("pushButton"));
         pushButton->setGeometry(QRect(440, 100, 30, 30));
+<<<<<<< HEAD
         labelFigureXYZ = new QLabel(centralWidget);
         labelFigureXYZ->setObjectName(QStringLiteral("labelFigureXYZ"));
         labelFigureXYZ->setGeometry(QRect(580, 372, 400, 350));
@@ -205,6 +225,8 @@ public:
         label_2 = new QLabel(centralWidget);
         label_2->setObjectName(QStringLiteral("label_2"));
         label_2->setGeometry(QRect(1080, 430, 16, 16));
+=======
+>>>>>>> 249dfc9db503030ab8ab8964a0bc36b1ed79bf58
         MainWindow->setCentralWidget(centralWidget);
         mainToolBar = new QToolBar(MainWindow);
         mainToolBar->setObjectName(QStringLiteral("mainToolBar"));
@@ -214,11 +236,16 @@ public:
         MainWindow->setStatusBar(statusBar);
         menuBar = new QMenuBar(MainWindow);
         menuBar->setObjectName(QStringLiteral("menuBar"));
+<<<<<<< HEAD
         menuBar->setGeometry(QRect(0, 0, 1161, 19));
+=======
+        menuBar->setGeometry(QRect(0, 0, 1044, 19));
+>>>>>>> 249dfc9db503030ab8ab8964a0bc36b1ed79bf58
         menuFile = new QMenu(menuBar);
         menuFile->setObjectName(QStringLiteral("menuFile"));
         menuImport = new QMenu(menuFile);
         menuImport->setObjectName(QStringLiteral("menuImport"));
+<<<<<<< HEAD
         menuTools = new QMenu(menuBar);
         menuTools->setObjectName(QStringLiteral("menuTools"));
         MainWindow->setMenuBar(menuBar);
@@ -230,6 +257,14 @@ public:
         menuImport->addAction(actionLabel_map);
         menuTools->addAction(actionRefactor);
         menuTools->addAction(actionGenerate_New_Volume);
+=======
+        MainWindow->setMenuBar(menuBar);
+
+        menuBar->addAction(menuFile->menuAction());
+        menuFile->addAction(menuImport->menuAction());
+        menuImport->addAction(action3D_Image);
+        menuImport->addAction(actionLabel_map);
+>>>>>>> 249dfc9db503030ab8ab8964a0bc36b1ed79bf58
 
         retranslateUi(MainWindow);
 
@@ -242,8 +277,11 @@ public:
         actionFile->setText(QApplication::translate("MainWindow", "File", 0));
         action3D_Image->setText(QApplication::translate("MainWindow", "3D Image", 0));
         actionLabel_map->setText(QApplication::translate("MainWindow", "Label map", 0));
+<<<<<<< HEAD
         actionRefactor->setText(QApplication::translate("MainWindow", "Refactor", 0));
         actionGenerate_New_Volume->setText(QApplication::translate("MainWindow", "Generate New Volume", 0));
+=======
+>>>>>>> 249dfc9db503030ab8ab8964a0bc36b1ed79bf58
         labelFigureZ->setText(QString());
         labelFigureY->setText(QString());
         labelFigureX->setText(QString());
@@ -252,6 +290,7 @@ public:
         rotateY_90Anticlockwise->setText(QString());
         rotateY_90Anticlockwise_2->setText(QString());
         pushButton->setText(QApplication::translate("MainWindow", "BC", 0));
+<<<<<<< HEAD
         labelFigureXYZ->setText(QString());
         pushButton_2->setText(QApplication::translate("MainWindow", "PushButton", 0));
         label->setText(QApplication::translate("MainWindow", "P", 0));
@@ -259,6 +298,10 @@ public:
         menuFile->setTitle(QApplication::translate("MainWindow", "File", 0));
         menuImport->setTitle(QApplication::translate("MainWindow", "Import", 0));
         menuTools->setTitle(QApplication::translate("MainWindow", "Tools", 0));
+=======
+        menuFile->setTitle(QApplication::translate("MainWindow", "File", 0));
+        menuImport->setTitle(QApplication::translate("MainWindow", "Import", 0));
+>>>>>>> 249dfc9db503030ab8ab8964a0bc36b1ed79bf58
     } // retranslateUi
 
 };

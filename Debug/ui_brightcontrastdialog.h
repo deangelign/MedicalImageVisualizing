@@ -37,7 +37,10 @@ public:
     QSpinBox *spinBoxContrast;
     QCheckBox *checkBoxLimiarizacao;
     QSpinBox *spinBoxLimiarizacao;
+<<<<<<< HEAD
     QSlider *horizontalSlider;
+=======
+>>>>>>> 249dfc9db503030ab8ab8964a0bc36b1ed79bf58
 
     void setupUi(QDialog *BrightContrastDialog)
     {
@@ -84,12 +87,17 @@ public:
         checkBoxLimiarizacao->setGeometry(QRect(10, 150, 101, 20));
         spinBoxLimiarizacao = new QSpinBox(BrightContrastDialog);
         spinBoxLimiarizacao->setObjectName(QStringLiteral("spinBoxLimiarizacao"));
+<<<<<<< HEAD
         spinBoxLimiarizacao->setGeometry(QRect(280, 145, 47, 23));
         spinBoxLimiarizacao->setMaximum(100);
         horizontalSlider = new QSlider(BrightContrastDialog);
         horizontalSlider->setObjectName(QStringLiteral("horizontalSlider"));
         horizontalSlider->setGeometry(QRect(110, 150, 160, 16));
         horizontalSlider->setOrientation(Qt::Horizontal);
+=======
+        spinBoxLimiarizacao->setGeometry(QRect(130, 145, 47, 23));
+        spinBoxLimiarizacao->setMaximum(100);
+>>>>>>> 249dfc9db503030ab8ab8964a0bc36b1ed79bf58
 
         retranslateUi(BrightContrastDialog);
         QObject::connect(buttonBox, SIGNAL(accepted()), BrightContrastDialog, SLOT(accept()));
