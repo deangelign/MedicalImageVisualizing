@@ -453,53 +453,62 @@ void MainWindow::displayNormalizedImage(){
 
 void MainWindow::on_pushButton_2_clicked()
 {
-    iftMatrix<float> *vec = createMatrix(1,4,(float)0);
 
-    vec->elements[0] = 1;
-    vec->elements[1] = 1;
-    vec->elements[2] = 1;
-    vec->elements[3] = 0;
+     MedicalImage* image3D_aux = ReadMedicalImage("brain.scn");
+    //test1
+//    iftMatrix<float> *vec = createMatrix(1,4,(float)0);
+//    vec->elements[0] = 1;
+//    vec->elements[1] = 1;
+//    vec->elements[2] = 1;
+//    vec->elements[3] = 0;
+//    iftMatrix<float> *p = createMatrix(1,4,(float)0);
+//    p->elements[0] = 157/2.;
+//    p->elements[1] = 255/2.;
+//    p->elements[2] = 255/2.;
+//    p->elements[3] = 1;
+//    iftMatrix<float> *p2 = createMatrix(1,4,(float)0);
+//    p2->elements[0] = 157;
+//    p2->elements[1] = 255;
+//    p2->elements[2] = 255;
+//    p2->elements[3] = 1;
+//    QTime myTimer;
+//    int nMilliseconds;
+//    myTimer.start();
+//    MedicalImage* out = refactoreScene(p,p2,image3D_aux,100);
+//    WriteMedicalImage(out,"teste.scn");
+//    nMilliseconds = myTimer.elapsed();
+//    fprintf(stderr,"took %d mseconds to execute \n", nMilliseconds);
 
-    iftMatrix<float> *p = createMatrix(1,4,(float)0);
 
-    p->elements[0] = 157/2.;
-    p->elements[1] = 255/2.;
-    p->elements[2] = 255/2.;
-    p->elements[3] = 1;
+    //test2
+     iftMatrix<float> *p = createMatrix(5,4,(float)0);
+     p->elements[0] = image3D_aux->nx/2;
+     p->elements[1] = image3D_aux->ny/2;
+     p->elements[2] = 0;
+     p->elements[3] = 1;
 
+     p->elements[4] = image3D_aux->nx/2;
+     p->elements[5] = image3D_aux->ny/2;
+     p->elements[6] = image3D_aux->nz;
+     p->elements[7] = 1;
 
-    iftMatrix<float> *p2 = createMatrix(1,4,(float)0);
-    p2->elements[0] = 157;
-    p2->elements[1] = 255;
-    p2->elements[2] = 255;
-    p2->elements[3] = 1;
+     p->elements[8] = image3D_aux->nx/2;
+     p->elements[9] = 0;
+     p->elements[10] = image3D_aux->nz/2;
+     p->elements[11] = 1;
 
+     p->elements[12] = image3D_aux->nx/2;
+     p->elements[13] = image3D_aux->ny;
+     p->elements[14] = image3D_aux->nz/2;
+     p->elements[15] = 1;
 
+     p->elements[16] = image3D_aux->nx/2;
+     p->elements[17] = image3D_aux->ny;
+     p->elements[18] = 0;
+     p->elements[19] = 1;
 
-    QTime myTimer;
-    int nMilliseconds;
-    MedicalImage* image3D_aux = ReadMedicalImage("brain.scn");
-
-    myTimer.start();
-    MedicalImage* out = refactoreScene(p,p2,vec,image3D_aux,100);
+    MedicalImage* out = refactoreScene(p,image3D_aux,50);
     WriteMedicalImage(out,"teste.scn");
-    nMilliseconds = myTimer.elapsed();
-    fprintf(stderr,"took %d mseconds to execute \n", nMilliseconds);
-//    myTimer.start();
-//    getPlanarSlice(p,vec,image3D_aux);
-//    nMilliseconds = myTimer.elapsed();
-//    fprintf(stderr,"took %d mseconds to execute \n", nMilliseconds);
-
-    //    myTimer.start();
-    //    refactoreImage(image3D,image3D->dx/2.,image3D->dy/2.,image3D->dz/2.);
-    //    nMilliseconds = myTimer.elapsed();
-    //    fprintf(stderr,"took %d mseconds to execute \n", nMilliseconds);
-
-
-//    myTimer.start();
-//    refactoreImage2(image3D_aux,image3D_aux->dx/2.,image3D_aux->dy/2.,image3D_aux->dz/2.);
-//    nMilliseconds = myTimer.elapsed();
-//    fprintf(stderr,"took %d mseconds to execute \n", nMilliseconds);
 }
 
 void MainWindow::on_actionRefactor_triggered()

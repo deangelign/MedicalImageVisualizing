@@ -628,7 +628,8 @@ float computeDiogonal(float nx, float ny, float nz){
     return sqrt((nx*nx) + (ny*ny) + (nz*nz));
 }
 
-void myDDAVersion(float x1, float y1, float x2, float y2, GrayImage* grayImage){
+void myDDAVersion(float x1, float y1, float x2, float y2, GrayImage* grayImage,
+                  int value){
     float eplison = 0.0001;
     if(fabs(x2-x1) < eplison){
         x1 += eplison;
@@ -651,10 +652,12 @@ void myDDAVersion(float x1, float y1, float x2, float y2, GrayImage* grayImage){
         }
 
         int y_int;
-        for (x_int; x_int < xFinal_int; x_int++) {
+        for (; x_int < xFinal_int; x_int++) {
             y_int = (slope*x_int)+b;
             if(y_int < grayImage->ny && x_int < grayImage->nx){
-                grayImage->val[y_int][x_int] = 4095;
+                if(y_int >= 0 && x_int > 0){
+                    grayImage->val[y_int][x_int] = value;
+                }
             }
         }
     }else{
@@ -670,16 +673,348 @@ void myDDAVersion(float x1, float y1, float x2, float y2, GrayImage* grayImage){
         }
 
         int x_int;
-        for (y_int; y_int < yFinal_int; y_int++) {
+        for (; y_int < yFinal_int; y_int++) {
             x_int = (y_int-b)/slope;
             if(y_int < grayImage->ny && x_int < grayImage->nx){
-                grayImage->val[y_int][x_int] = 4095;
+                if(y_int >= 0 && x_int > 0){
+                    grayImage->val[y_int][x_int] = value;
+                }
             }
         }
     }
 }
 
-void drawWireFrame(iftMatrix<float> *transformationMatrix, GrayImage* grayImage, MedicalImage* image3D){
+
+void drawInterWireFrame(iftMatrix<float> *transformationMatrix, GrayImage* grayImage, MedicalImage* image3D,
+                        float zFront,float zBack,float yFront,float yBack,float xFront,float xBack, int value){
+    iftMatrix<float>*viewVectors = createMatrix(6,4,(float)0);
+    iftMatrix<float>*normalViewPlaneVector = createMatrix(4,1,(float)0);
+    //x view
+    viewVectors->elements[0] = 1;
+    viewVectors->elements[4] = -1;
+    //y view
+    viewVectors->elements[9] = 1;
+    viewVectors->elements[13] = -1;
+    //z view
+    viewVectors->elements[18] = 1;
+    viewVectors->elements[22] = -1;
+
+    //view plane
+    normalViewPlaneVector->elements[2] = -1;
+
+    iftMatrix<float>* rotateViews = matrixMultiplicationF(viewVectors,transformationMatrix, 1.0, 0.0, CblasNoTrans, CblasTrans);
+    iftMatrix<float>* innerProductsMatrix = matrixMultiplicationF(rotateViews,normalViewPlaneVector);
+    //-z is visible
+    if(innerProductsMatrix->elements[5] > 0){
+        iftMatrix<float>* facesPoints = createMatrix(4,4,(float)0);
+        //(0,0,0,1)
+        facesPoints->elements[0] = 0;
+        facesPoints->elements[1] = 0;
+        facesPoints->elements[2] = zFront;
+        facesPoints->elements[3] = 1;
+        //(nx,0,0,1)
+        facesPoints->elements[4] = image3D->nx;
+        facesPoints->elements[5] = 0;
+        facesPoints->elements[6] = zFront;
+        facesPoints->elements[7] = 1;
+        //(0,ny,0,1)
+        facesPoints->elements[8] = 0;
+        facesPoints->elements[9] = image3D->ny;
+        facesPoints->elements[10] = zFront;
+        facesPoints->elements[11] = 1;
+
+        //(nx,ny,0,1)
+        facesPoints->elements[12] = image3D->nx;
+        facesPoints->elements[13] = image3D->ny;
+        facesPoints->elements[14] = zFront;
+        facesPoints->elements[15] = 1;
+
+        iftMatrix<float>*facesPointsMZOnViewPlane = matrixMultiplicationF(facesPoints,transformationMatrix, 1.0, 0.0, CblasNoTrans, CblasTrans);
+        myDDAVersion(facesPointsMZOnViewPlane->elements[0],
+                facesPointsMZOnViewPlane->elements[1],
+                facesPointsMZOnViewPlane->elements[4],
+                facesPointsMZOnViewPlane->elements[5], grayImage, value);
+
+        myDDAVersion(facesPointsMZOnViewPlane->elements[0],
+                facesPointsMZOnViewPlane->elements[1],
+                facesPointsMZOnViewPlane->elements[8],
+                facesPointsMZOnViewPlane->elements[9], grayImage,value);
+
+        myDDAVersion(facesPointsMZOnViewPlane->elements[4],
+                facesPointsMZOnViewPlane->elements[5],
+                facesPointsMZOnViewPlane->elements[12],
+                facesPointsMZOnViewPlane->elements[13], grayImage,value);
+
+        myDDAVersion(facesPointsMZOnViewPlane->elements[8],
+                facesPointsMZOnViewPlane->elements[9],
+                facesPointsMZOnViewPlane->elements[12],
+                facesPointsMZOnViewPlane->elements[13], grayImage,value);
+
+        destroyMatrix(&facesPointsMZOnViewPlane);
+        destroyMatrix(&facesPoints);
+
+    }
+
+    //z is visible
+    if(innerProductsMatrix->elements[4] > 0){
+        iftMatrix<float>* facesPoints = createMatrix(4,4,(float)0);
+        //(0,0,nz,1)
+        facesPoints->elements[0] = 0;
+        facesPoints->elements[1] = 0;
+        facesPoints->elements[2] = zBack;
+        facesPoints->elements[3] = 1;
+        //(nx,0,nz,1)
+        facesPoints->elements[4] = image3D->nx;
+        facesPoints->elements[5] = 0;
+        facesPoints->elements[6] = zBack;
+        facesPoints->elements[7] = 1;
+        //(0,ny,nz,1)
+        facesPoints->elements[8] = 0;
+        facesPoints->elements[9] = image3D->ny;
+        facesPoints->elements[10] = zBack;
+        facesPoints->elements[11] = 1;
+        //(nx,ny,nz,1)
+        facesPoints->elements[12] = image3D->nx;
+        facesPoints->elements[13] = image3D->ny;
+        facesPoints->elements[14] = zBack;
+        facesPoints->elements[15] = 1;
+
+        iftMatrix<float>*facesPointsMZOnViewPlane = matrixMultiplicationF(facesPoints,transformationMatrix, 1.0, 0.0, CblasNoTrans, CblasTrans);
+        myDDAVersion(facesPointsMZOnViewPlane->elements[0],
+                facesPointsMZOnViewPlane->elements[1],
+                facesPointsMZOnViewPlane->elements[4],
+                facesPointsMZOnViewPlane->elements[5], grayImage,value);
+
+        myDDAVersion(facesPointsMZOnViewPlane->elements[0],
+                facesPointsMZOnViewPlane->elements[1],
+                facesPointsMZOnViewPlane->elements[8],
+                facesPointsMZOnViewPlane->elements[9], grayImage,value);
+
+        myDDAVersion(facesPointsMZOnViewPlane->elements[4],
+                facesPointsMZOnViewPlane->elements[5],
+                facesPointsMZOnViewPlane->elements[12],
+                facesPointsMZOnViewPlane->elements[13], grayImage,value);
+
+        myDDAVersion(facesPointsMZOnViewPlane->elements[8],
+                facesPointsMZOnViewPlane->elements[9],
+                facesPointsMZOnViewPlane->elements[12],
+                facesPointsMZOnViewPlane->elements[13], grayImage,value);
+
+        destroyMatrix(&facesPointsMZOnViewPlane);
+        destroyMatrix(&facesPoints);
+    }
+
+    //-y is visible
+    if(innerProductsMatrix->elements[3]>0){
+        iftMatrix<float>* facesPoints = createMatrix(4,4,(float)0);
+        //(0,0,0,1)
+        facesPoints->elements[0] = 0;
+        facesPoints->elements[1] = yFront;
+        facesPoints->elements[2] = 0;
+        facesPoints->elements[3] = 1;
+        //(nx,0,0,1)
+        facesPoints->elements[4] = image3D->nx;
+        facesPoints->elements[5] = yFront;
+        facesPoints->elements[6] = 0;
+        facesPoints->elements[7] = 1;
+        //(0,0,nz,1)
+        facesPoints->elements[8] = 0;
+        facesPoints->elements[9] = yFront;
+        facesPoints->elements[10] = image3D->nz;
+        facesPoints->elements[11] = 1;
+
+        //(nx,0,nz,1)
+        facesPoints->elements[12] = image3D->nx;
+        facesPoints->elements[13] = yFront;
+        facesPoints->elements[14] = image3D->nz;
+        facesPoints->elements[15] = 1;
+
+        iftMatrix<float>*facesPointsMZOnViewPlane = matrixMultiplicationF(facesPoints,transformationMatrix, 1.0, 0.0, CblasNoTrans, CblasTrans);
+        myDDAVersion(facesPointsMZOnViewPlane->elements[0],
+                facesPointsMZOnViewPlane->elements[1],
+                facesPointsMZOnViewPlane->elements[4],
+                facesPointsMZOnViewPlane->elements[5], grayImage,value);
+
+        myDDAVersion(facesPointsMZOnViewPlane->elements[0],
+                facesPointsMZOnViewPlane->elements[1],
+                facesPointsMZOnViewPlane->elements[8],
+                facesPointsMZOnViewPlane->elements[9], grayImage,value);
+
+        myDDAVersion(facesPointsMZOnViewPlane->elements[4],
+                facesPointsMZOnViewPlane->elements[5],
+                facesPointsMZOnViewPlane->elements[12],
+                facesPointsMZOnViewPlane->elements[13], grayImage,value);
+
+        myDDAVersion(facesPointsMZOnViewPlane->elements[8],
+                facesPointsMZOnViewPlane->elements[9],
+                facesPointsMZOnViewPlane->elements[12],
+                facesPointsMZOnViewPlane->elements[13], grayImage,value);
+
+        destroyMatrix(&facesPointsMZOnViewPlane);
+        destroyMatrix(&facesPoints);
+    }
+
+    //y is visible
+    if(innerProductsMatrix->elements[2]>0){
+        iftMatrix<float>* facesPoints = createMatrix(4,4,(float)0);
+        //(0,ny,0,1)
+        facesPoints->elements[0] = 0;
+        facesPoints->elements[1] = yBack;
+        facesPoints->elements[2] = 0;
+        facesPoints->elements[3] = 1;
+        //(nx,ny,0,1)
+        facesPoints->elements[4] = image3D->nx;
+        facesPoints->elements[5] = yBack;
+        facesPoints->elements[6] = 0;
+        facesPoints->elements[7] = 1;
+        //(0,ny,nz,1)
+        facesPoints->elements[8] = 0;
+        facesPoints->elements[9] = yBack;
+        facesPoints->elements[10] = image3D->nz;
+        facesPoints->elements[11] = 1;
+
+        //(nx,ny,nz,1)
+        facesPoints->elements[12] = image3D->nx;
+        facesPoints->elements[13] = yBack;
+        facesPoints->elements[14] = image3D->nz;
+        facesPoints->elements[15] = 1;
+
+        iftMatrix<float>*facesPointsMZOnViewPlane = matrixMultiplicationF(facesPoints,transformationMatrix, 1.0, 0.0, CblasNoTrans, CblasTrans);
+        myDDAVersion(facesPointsMZOnViewPlane->elements[0],
+                facesPointsMZOnViewPlane->elements[1],
+                facesPointsMZOnViewPlane->elements[4],
+                facesPointsMZOnViewPlane->elements[5], grayImage,value);
+
+        myDDAVersion(facesPointsMZOnViewPlane->elements[0],
+                facesPointsMZOnViewPlane->elements[1],
+                facesPointsMZOnViewPlane->elements[8],
+                facesPointsMZOnViewPlane->elements[9], grayImage,value);
+
+        myDDAVersion(facesPointsMZOnViewPlane->elements[4],
+                facesPointsMZOnViewPlane->elements[5],
+                facesPointsMZOnViewPlane->elements[12],
+                facesPointsMZOnViewPlane->elements[13], grayImage,value);
+
+        myDDAVersion(facesPointsMZOnViewPlane->elements[8],
+                facesPointsMZOnViewPlane->elements[9],
+                facesPointsMZOnViewPlane->elements[12],
+                facesPointsMZOnViewPlane->elements[13], grayImage,value);
+
+        destroyMatrix(&facesPointsMZOnViewPlane);
+        destroyMatrix(&facesPoints);
+    }
+
+    //-x is visible
+    if(innerProductsMatrix->elements[1]>0){
+        iftMatrix<float>* facesPoints = createMatrix(4,4,(float)0);
+        //(0,0,0,1)
+        facesPoints->elements[0] = xFront;
+        facesPoints->elements[1] = 0;
+        facesPoints->elements[2] = 0;
+        facesPoints->elements[3] = 1;
+        //(0,ny,0,1)
+        facesPoints->elements[4] = xFront;
+        facesPoints->elements[5] = image3D->ny;
+        facesPoints->elements[6] = 0;
+        facesPoints->elements[7] = 1;
+        //(0,0,nz,1)
+        facesPoints->elements[8] = xFront;
+        facesPoints->elements[9] = 0;
+        facesPoints->elements[10] = image3D->nz;
+        facesPoints->elements[11] = 1;
+
+        //(0,ny,nz,1)
+        facesPoints->elements[12] = xFront;
+        facesPoints->elements[13] = image3D->ny;
+        facesPoints->elements[14] = image3D->nz;
+        facesPoints->elements[15] = 1;
+
+        iftMatrix<float>*facesPointsMZOnViewPlane = matrixMultiplicationF(facesPoints,transformationMatrix, 1.0, 0.0, CblasNoTrans, CblasTrans);
+        myDDAVersion(facesPointsMZOnViewPlane->elements[0],
+                facesPointsMZOnViewPlane->elements[1],
+                facesPointsMZOnViewPlane->elements[4],
+                facesPointsMZOnViewPlane->elements[5], grayImage,value);
+
+        myDDAVersion(facesPointsMZOnViewPlane->elements[0],
+                facesPointsMZOnViewPlane->elements[1],
+                facesPointsMZOnViewPlane->elements[8],
+                facesPointsMZOnViewPlane->elements[9], grayImage,value);
+
+        myDDAVersion(facesPointsMZOnViewPlane->elements[4],
+                facesPointsMZOnViewPlane->elements[5],
+                facesPointsMZOnViewPlane->elements[12],
+                facesPointsMZOnViewPlane->elements[13], grayImage,value);
+
+        myDDAVersion(facesPointsMZOnViewPlane->elements[8],
+                facesPointsMZOnViewPlane->elements[9],
+                facesPointsMZOnViewPlane->elements[12],
+                facesPointsMZOnViewPlane->elements[13], grayImage,value);
+
+        destroyMatrix(&facesPointsMZOnViewPlane);
+        destroyMatrix(&facesPoints);
+    }
+
+    //x is visible
+    if(innerProductsMatrix->elements[0]>0){
+        iftMatrix<float>* facesPoints = createMatrix(4,4,(float)0);
+        //(nx,ny,0,1)
+        facesPoints->elements[0] = xBack;
+        facesPoints->elements[1] = 0;
+        facesPoints->elements[2] = 0;
+        facesPoints->elements[3] = 1;
+        //(nx,ny,0,1)
+        facesPoints->elements[4] = xBack;
+        facesPoints->elements[5] = image3D->ny;
+        facesPoints->elements[6] = 0;
+        facesPoints->elements[7] = 1;
+        //(nx,0,nz,1)
+        facesPoints->elements[8] = xBack;
+        facesPoints->elements[9] = 0;
+        facesPoints->elements[10] = image3D->nz;
+        facesPoints->elements[11] = 1;
+
+        //(nx,ny,nz,1)
+        facesPoints->elements[12] = xBack;
+        facesPoints->elements[13] = image3D->ny;
+        facesPoints->elements[14] = image3D->nz;
+        facesPoints->elements[15] = 1;
+
+        iftMatrix<float>*facesPointsMZOnViewPlane = matrixMultiplicationF(facesPoints,transformationMatrix, 1.0, 0.0, CblasNoTrans, CblasTrans);
+        myDDAVersion(facesPointsMZOnViewPlane->elements[0],
+                facesPointsMZOnViewPlane->elements[1],
+                facesPointsMZOnViewPlane->elements[4],
+                facesPointsMZOnViewPlane->elements[5], grayImage,value);
+
+        myDDAVersion(facesPointsMZOnViewPlane->elements[0],
+                facesPointsMZOnViewPlane->elements[1],
+                facesPointsMZOnViewPlane->elements[8],
+                facesPointsMZOnViewPlane->elements[9], grayImage,value);
+
+        myDDAVersion(facesPointsMZOnViewPlane->elements[4],
+                facesPointsMZOnViewPlane->elements[5],
+                facesPointsMZOnViewPlane->elements[12],
+                facesPointsMZOnViewPlane->elements[13], grayImage,value);
+
+        myDDAVersion(facesPointsMZOnViewPlane->elements[8],
+                facesPointsMZOnViewPlane->elements[9],
+                facesPointsMZOnViewPlane->elements[12],
+                facesPointsMZOnViewPlane->elements[13], grayImage,value);
+
+        destroyMatrix(&facesPointsMZOnViewPlane);
+        destroyMatrix(&facesPoints);
+    }
+
+
+
+    destroyMatrix(&viewVectors);
+    destroyMatrix(&normalViewPlaneVector);
+    destroyMatrix(&rotateViews);
+    destroyMatrix(&innerProductsMatrix);
+
+}
+
+void drawWireFrame(iftMatrix<float> *transformationMatrix, GrayImage* grayImage, MedicalImage* image3D,
+                   int value){
     iftMatrix<float>*viewVectors = createMatrix(6,4,(float)0);
     iftMatrix<float>*normalViewPlaneVector = createMatrix(4,1,(float)0);
     //x view
@@ -726,22 +1061,22 @@ void drawWireFrame(iftMatrix<float> *transformationMatrix, GrayImage* grayImage,
         myDDAVersion(facesPointsMZOnViewPlane->elements[0],
                 facesPointsMZOnViewPlane->elements[1],
                 facesPointsMZOnViewPlane->elements[4],
-                facesPointsMZOnViewPlane->elements[5], grayImage);
+                facesPointsMZOnViewPlane->elements[5], grayImage,value);
 
         myDDAVersion(facesPointsMZOnViewPlane->elements[0],
                 facesPointsMZOnViewPlane->elements[1],
                 facesPointsMZOnViewPlane->elements[8],
-                facesPointsMZOnViewPlane->elements[9], grayImage);
+                facesPointsMZOnViewPlane->elements[9], grayImage,value);
 
         myDDAVersion(facesPointsMZOnViewPlane->elements[4],
                 facesPointsMZOnViewPlane->elements[5],
                 facesPointsMZOnViewPlane->elements[12],
-                facesPointsMZOnViewPlane->elements[13], grayImage);
+                facesPointsMZOnViewPlane->elements[13], grayImage,value);
 
         myDDAVersion(facesPointsMZOnViewPlane->elements[8],
                 facesPointsMZOnViewPlane->elements[9],
                 facesPointsMZOnViewPlane->elements[12],
-                facesPointsMZOnViewPlane->elements[13], grayImage);
+                facesPointsMZOnViewPlane->elements[13], grayImage,value);
 
         destroyMatrix(&facesPointsMZOnViewPlane);
         destroyMatrix(&facesPoints);
@@ -776,22 +1111,22 @@ void drawWireFrame(iftMatrix<float> *transformationMatrix, GrayImage* grayImage,
         myDDAVersion(facesPointsMZOnViewPlane->elements[0],
                 facesPointsMZOnViewPlane->elements[1],
                 facesPointsMZOnViewPlane->elements[4],
-                facesPointsMZOnViewPlane->elements[5], grayImage);
+                facesPointsMZOnViewPlane->elements[5], grayImage,value);
 
         myDDAVersion(facesPointsMZOnViewPlane->elements[0],
                 facesPointsMZOnViewPlane->elements[1],
                 facesPointsMZOnViewPlane->elements[8],
-                facesPointsMZOnViewPlane->elements[9], grayImage);
+                facesPointsMZOnViewPlane->elements[9], grayImage,value);
 
         myDDAVersion(facesPointsMZOnViewPlane->elements[4],
                 facesPointsMZOnViewPlane->elements[5],
                 facesPointsMZOnViewPlane->elements[12],
-                facesPointsMZOnViewPlane->elements[13], grayImage);
+                facesPointsMZOnViewPlane->elements[13], grayImage,value);
 
         myDDAVersion(facesPointsMZOnViewPlane->elements[8],
                 facesPointsMZOnViewPlane->elements[9],
                 facesPointsMZOnViewPlane->elements[12],
-                facesPointsMZOnViewPlane->elements[13], grayImage);
+                facesPointsMZOnViewPlane->elements[13], grayImage,value);
 
         destroyMatrix(&facesPointsMZOnViewPlane);
         destroyMatrix(&facesPoints);
@@ -826,22 +1161,22 @@ void drawWireFrame(iftMatrix<float> *transformationMatrix, GrayImage* grayImage,
         myDDAVersion(facesPointsMZOnViewPlane->elements[0],
                 facesPointsMZOnViewPlane->elements[1],
                 facesPointsMZOnViewPlane->elements[4],
-                facesPointsMZOnViewPlane->elements[5], grayImage);
+                facesPointsMZOnViewPlane->elements[5], grayImage,value);
 
         myDDAVersion(facesPointsMZOnViewPlane->elements[0],
                 facesPointsMZOnViewPlane->elements[1],
                 facesPointsMZOnViewPlane->elements[8],
-                facesPointsMZOnViewPlane->elements[9], grayImage);
+                facesPointsMZOnViewPlane->elements[9], grayImage,value);
 
         myDDAVersion(facesPointsMZOnViewPlane->elements[4],
                 facesPointsMZOnViewPlane->elements[5],
                 facesPointsMZOnViewPlane->elements[12],
-                facesPointsMZOnViewPlane->elements[13], grayImage);
+                facesPointsMZOnViewPlane->elements[13], grayImage,value);
 
         myDDAVersion(facesPointsMZOnViewPlane->elements[8],
                 facesPointsMZOnViewPlane->elements[9],
                 facesPointsMZOnViewPlane->elements[12],
-                facesPointsMZOnViewPlane->elements[13], grayImage);
+                facesPointsMZOnViewPlane->elements[13], grayImage,value);
 
         destroyMatrix(&facesPointsMZOnViewPlane);
         destroyMatrix(&facesPoints);
@@ -876,22 +1211,22 @@ void drawWireFrame(iftMatrix<float> *transformationMatrix, GrayImage* grayImage,
         myDDAVersion(facesPointsMZOnViewPlane->elements[0],
                 facesPointsMZOnViewPlane->elements[1],
                 facesPointsMZOnViewPlane->elements[4],
-                facesPointsMZOnViewPlane->elements[5], grayImage);
+                facesPointsMZOnViewPlane->elements[5], grayImage,value);
 
         myDDAVersion(facesPointsMZOnViewPlane->elements[0],
                 facesPointsMZOnViewPlane->elements[1],
                 facesPointsMZOnViewPlane->elements[8],
-                facesPointsMZOnViewPlane->elements[9], grayImage);
+                facesPointsMZOnViewPlane->elements[9], grayImage,value);
 
         myDDAVersion(facesPointsMZOnViewPlane->elements[4],
                 facesPointsMZOnViewPlane->elements[5],
                 facesPointsMZOnViewPlane->elements[12],
-                facesPointsMZOnViewPlane->elements[13], grayImage);
+                facesPointsMZOnViewPlane->elements[13], grayImage,value);
 
         myDDAVersion(facesPointsMZOnViewPlane->elements[8],
                 facesPointsMZOnViewPlane->elements[9],
                 facesPointsMZOnViewPlane->elements[12],
-                facesPointsMZOnViewPlane->elements[13], grayImage);
+                facesPointsMZOnViewPlane->elements[13], grayImage,value);
 
         destroyMatrix(&facesPointsMZOnViewPlane);
         destroyMatrix(&facesPoints);
@@ -926,22 +1261,22 @@ void drawWireFrame(iftMatrix<float> *transformationMatrix, GrayImage* grayImage,
         myDDAVersion(facesPointsMZOnViewPlane->elements[0],
                 facesPointsMZOnViewPlane->elements[1],
                 facesPointsMZOnViewPlane->elements[4],
-                facesPointsMZOnViewPlane->elements[5], grayImage);
+                facesPointsMZOnViewPlane->elements[5], grayImage,value);
 
         myDDAVersion(facesPointsMZOnViewPlane->elements[0],
                 facesPointsMZOnViewPlane->elements[1],
                 facesPointsMZOnViewPlane->elements[8],
-                facesPointsMZOnViewPlane->elements[9], grayImage);
+                facesPointsMZOnViewPlane->elements[9], grayImage,value);
 
         myDDAVersion(facesPointsMZOnViewPlane->elements[4],
                 facesPointsMZOnViewPlane->elements[5],
                 facesPointsMZOnViewPlane->elements[12],
-                facesPointsMZOnViewPlane->elements[13], grayImage);
+                facesPointsMZOnViewPlane->elements[13], grayImage,value);
 
         myDDAVersion(facesPointsMZOnViewPlane->elements[8],
                 facesPointsMZOnViewPlane->elements[9],
                 facesPointsMZOnViewPlane->elements[12],
-                facesPointsMZOnViewPlane->elements[13], grayImage);
+                facesPointsMZOnViewPlane->elements[13], grayImage,value);
 
         destroyMatrix(&facesPointsMZOnViewPlane);
         destroyMatrix(&facesPoints);
@@ -976,22 +1311,22 @@ void drawWireFrame(iftMatrix<float> *transformationMatrix, GrayImage* grayImage,
         myDDAVersion(facesPointsMZOnViewPlane->elements[0],
                 facesPointsMZOnViewPlane->elements[1],
                 facesPointsMZOnViewPlane->elements[4],
-                facesPointsMZOnViewPlane->elements[5], grayImage);
+                facesPointsMZOnViewPlane->elements[5], grayImage,value);
 
         myDDAVersion(facesPointsMZOnViewPlane->elements[0],
                 facesPointsMZOnViewPlane->elements[1],
                 facesPointsMZOnViewPlane->elements[8],
-                facesPointsMZOnViewPlane->elements[9], grayImage);
+                facesPointsMZOnViewPlane->elements[9], grayImage,value);
 
         myDDAVersion(facesPointsMZOnViewPlane->elements[4],
                 facesPointsMZOnViewPlane->elements[5],
                 facesPointsMZOnViewPlane->elements[12],
-                facesPointsMZOnViewPlane->elements[13], grayImage);
+                facesPointsMZOnViewPlane->elements[13], grayImage,value);
 
         myDDAVersion(facesPointsMZOnViewPlane->elements[8],
                 facesPointsMZOnViewPlane->elements[9],
                 facesPointsMZOnViewPlane->elements[12],
-                facesPointsMZOnViewPlane->elements[13], grayImage);
+                facesPointsMZOnViewPlane->elements[13], grayImage,value);
 
         destroyMatrix(&facesPointsMZOnViewPlane);
         destroyMatrix(&facesPoints);
@@ -1061,7 +1396,7 @@ GrayImage* getPlanarSlice(iftMatrix<Type> *point, iftMatrix<Type> *vector,
     GrayImage *outputImage = CreateGrayImage(h,h);
 
     k=0;
-    int width = 1;
+    //int width = 1;
     for (int v = 0; v < h; ++v) {
         for (int u = 0; u < h; ++u) {
             outputImage->val[v][u] = 0;
@@ -1082,7 +1417,8 @@ GrayImage* getPlanarSlice(iftMatrix<Type> *point, iftMatrix<Type> *vector,
     }
 
     if(drawFrame){
-        drawWireFrame(T,outputImage, image3D);
+        //drawInterWireFrame(T,outputImage, image3D,point->elements[2],image3D->nz,point->elements[1],image3D->ny, point->elements[0],image3D->nx, 2048);
+        drawWireFrame(T,outputImage, image3D,4095);
     }
     //WriteGrayImage(outputImage,"bujao.pgm");
 
@@ -1199,9 +1535,6 @@ MedicalImage* refactoreImage2(MedicalImage *image3D, float newDx, float newDy,fl
     int lastz = (int)(((float)(image3D->nz-1)*image3D->dz)/newDz);
 
     float Ip;
-    int xfloor,xceil;
-    int yfloor,yceil;
-    int zfloor,zceil;
     float dx,dy,dz;
     float xf,yf,zf;
     float stepSizeX = 1/image3D->dx;
@@ -1252,7 +1585,7 @@ void insertSliceInScene(MedicalImage* image3D,GrayImage* grayImage,int z){
 }
 
 MedicalImage* refactoreScene(iftMatrix<float> *point1, iftMatrix<float> *point2,
-                             iftMatrix<float> *vector, MedicalImage *image3D, int n){
+                               MedicalImage *image3D, int n){
     iftMatrix<float>* stepSize = matrixSubtraction(point2,point1);
     divideMatrixByScalar(stepSize, n);
     iftMatrix<float>* pk = copyMatrix(point1);
@@ -1270,6 +1603,54 @@ MedicalImage* refactoreScene(iftMatrix<float> *point1, iftMatrix<float> *point2,
         matrixAddition(pk,stepSize);
         DestroyGrayImage(&currentSlice);
     }
+    destroyMatrix(&stepSize);
+    destroyMatrix(&pk);
+    return outputScene;
+
+}
+
+MedicalImage* refactoreScene(iftMatrix<float> *points, MedicalImage *image3D, int n){
+
+    int lastIndex = points->numberRows*points->numberCols;
+    int k=4;
+    iftMatrix<float>*p1 = createMatrix(1,points->numberCols,(float)0);
+    iftMatrix<float>*p2 = createMatrix(1,points->numberCols,(float)0);
+    int h = (int)computeDiogonal(image3D->nx,image3D->ny,image3D->nz);
+
+    MedicalImage *outputScene = CreateMedicalImage(h,h,n*(points->numberRows-1));
+    outputScene->maxValue = image3D->maxValue;
+    outputScene->nbits = image3D->nbits;
+    for (int i = 0; i < 10; ++i) {
+        outputScene->unid[i] = image3D->unid[i];
+    }
+    GrayImage *currentSlice = NULL;
+
+    while(k < lastIndex){
+        p1->elements[0] = points->elements[k-4];
+        p1->elements[1] = points->elements[k+1-4];
+        p1->elements[2] = points->elements[k+2-4];
+        p1->elements[3] = points->elements[k+3-4];
+        p2->elements[0] = points->elements[k];
+        p2->elements[1] = points->elements[k+1];
+        p2->elements[2] = points->elements[k+2];
+        p2->elements[3] = points->elements[k+3];
+        iftMatrix<float>* stepSize = matrixSubtraction(p2,p1);
+        divideMatrixByScalar(stepSize, n);
+        iftMatrix<float>* pk = copyMatrix(p1);
+        int shift = (k/4)-1;
+        int stride = (shift*n);
+        for (int i = 0; i < n; ++i) {
+            currentSlice = getPlanarSlice(pk,stepSize,image3D,false);
+            insertSliceInScene(outputScene,currentSlice,i + stride);
+            matrixAddition(pk,stepSize);
+            DestroyGrayImage(&currentSlice);
+        }
+        k += 4;
+        destroyMatrix(&stepSize);
+        destroyMatrix(&pk);
+    }
+    destroyMatrix(&p1);
+    destroyMatrix(&p2);
     return outputScene;
 
 }
