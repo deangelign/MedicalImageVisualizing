@@ -9,5 +9,10 @@
 #include "linear.h"
 #include "spectrum.h"
 #include "gqueue.h"
+#include "displaymanager.h"
+#include "eventmanager.h"
+
+#include "matrixfeia.h"
+
 
 #endif

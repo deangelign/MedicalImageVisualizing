@@ -7,9 +7,7 @@
 #include <math.h>
 #include <string.h>
 #include <limits.h>
-#include <png.h>
 #include <stdint.h>
-
 
 /* Error messages */
 
