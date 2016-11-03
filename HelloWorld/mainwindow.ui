@@ -6,13 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-<<<<<<< HEAD
     <width>1161</width>
     <height>854</height>
-=======
-    <width>1044</width>
-    <height>800</height>
->>>>>>> 249dfc9db503030ab8ab8964a0bc36b1ed79bf58
    </rect>
   </property>
   <property name="windowTitle">
@@ -263,7 +258,6 @@ background-color: rgb(0, 0, 0);</string>
     </property>
     <property name="text">
      <string>BC</string>
-<<<<<<< HEAD
     </property>
    </widget>
    <widget class="QLabel" name="labelFigureXYZ">
@@ -438,8 +432,6 @@ background-color: rgb(0, 0, 0);</string>
     </property>
     <property name="text">
      <string>V</string>
-=======
->>>>>>> 249dfc9db503030ab8ab8964a0bc36b1ed79bf58
     </property>
    </widget>
   </widget>
@@ -457,11 +449,7 @@ background-color: rgb(0, 0, 0);</string>
     <rect>
      <x>0</x>
      <y>0</y>
-<<<<<<< HEAD
      <width>1161</width>
-=======
-     <width>1044</width>
->>>>>>> 249dfc9db503030ab8ab8964a0bc36b1ed79bf58
      <height>19</height>
     </rect>
    </property>
@@ -478,7 +466,6 @@ background-color: rgb(0, 0, 0);</string>
     </widget>
     <addaction name="menuImport"/>
    </widget>
-<<<<<<< HEAD
    <widget class="QMenu" name="menuTools">
     <property name="title">
      <string>Tools</string>
@@ -488,9 +475,6 @@ background-color: rgb(0, 0, 0);</string>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuTools"/>
-=======
-   <addaction name="menuFile"/>
->>>>>>> 249dfc9db503030ab8ab8964a0bc36b1ed79bf58
   </widget>
   <action name="actionFile">
    <property name="text">
@@ -507,7 +491,6 @@ background-color: rgb(0, 0, 0);</string>
     <string>Label map</string>
    </property>
   </action>
-<<<<<<< HEAD
   <action name="actionRefactor">
    <property name="text">
     <string>Refactor</string>
@@ -518,8 +501,6 @@ background-color: rgb(0, 0, 0);</string>
     <string>Generate New Volume</string>
    </property>
   </action>
-=======
->>>>>>> 249dfc9db503030ab8ab8964a0bc36b1ed79bf58
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <resources/>

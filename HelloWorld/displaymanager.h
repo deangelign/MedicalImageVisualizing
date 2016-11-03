@@ -2,10 +2,7 @@
 #define DISPLAYMANAGER_H
 
 #include "image.h"
-<<<<<<< HEAD
 #include "iftMatrix.h"
-=======
->>>>>>> 249dfc9db503030ab8ab8964a0bc36b1ed79bf58
 
 
 
@@ -72,12 +69,9 @@ void WidthLevelGrayImage(GrayImage *img, float b, float c,int maximumValueScene)
 void NegativeGrayImage(GrayImage *img, int maximumValue);
 void normalizeGrayImage(GrayImage *grayImage, float minimumValue, float maximumValueSlice,float maximumValueAllowed);
 void LimiarizationGrayImage(GrayImage *img, int th, float maximumValue);
-<<<<<<< HEAD
 void alignVectorWithZ(float x, float y,float z, float *thetaX, float *thetaY);
 void getSliceGivenVectorViewer(MedicalImage *image3D, float x, float y, float z);
 
-=======
->>>>>>> 249dfc9db503030ab8ab8964a0bc36b1ed79bf58
 
 
 #endif // DISPLAYMANAGER_H

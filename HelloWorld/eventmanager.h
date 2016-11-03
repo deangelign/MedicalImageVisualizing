@@ -10,10 +10,7 @@
 #include <displaymanager.h>
 
 QImage *createGrayImage2LabelArea(GrayImage *grayImage);
-<<<<<<< HEAD
 QImage *createGrayImage2LabelArea(GrayImage *grayImage, int maximumValueScene);
-=======
->>>>>>> 249dfc9db503030ab8ab8964a0bc36b1ed79bf58
 
 QImage *create8bitsGrayImage2LabelArea(GrayImage *grayImage);
 void displayImageOnLabel(QImage *image,QLabel *imageArea);

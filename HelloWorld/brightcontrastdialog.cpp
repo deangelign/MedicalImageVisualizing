@@ -47,11 +47,7 @@ void BrightContrastDialog::on_horizontalSliderBrightDIalog_valueChanged(int valu
 void BrightContrastDialog::on_horizontalSliderContrastDialog_valueChanged(int value)
 {
 
-<<<<<<< HEAD
     this->contrastValue = (value)*this->maximumValue/100;
-=======
-    this->contrastValue = (100-value)*this->maximumValue/100;
->>>>>>> 249dfc9db503030ab8ab8964a0bc36b1ed79bf58
     ui->spinBoxContrast->setValue(value);
     emit brightSignal(this->brightValue);
     emit contrastSignal(this->contrastValue);
@@ -117,11 +113,7 @@ void BrightContrastDialog::on_spinBoxBright_valueChanged(int value)
 void BrightContrastDialog::on_spinBoxContrast_valueChanged(int value)
 {
     ui->horizontalSliderContrastDialog->setValue(value);
-<<<<<<< HEAD
     this->contrastValue = (value)*this->maximumValue/100;
-=======
-    this->contrastValue = (100-value)*this->maximumValue/100;
->>>>>>> 249dfc9db503030ab8ab8964a0bc36b1ed79bf58
     //emit brightSignal(this->brightValue);
     emit contrastSignal(this->contrastValue);
 }

@@ -757,32 +757,14 @@ void WriteMedicalImage(MedicalImage *I, char *filename)
 
 //    fclose(fp);
 //}
-<<<<<<< HEAD
-=======
 
->>>>>>> 249dfc9db503030ab8ab8964a0bc36b1ed79bf58
 
-//void writeColorImagePng(ColorImage *colorImage,int nbits, char *file_name){
-
-<<<<<<< HEAD
 //void writeColorImagePng(ColorImage *colorImage,int nbits, char *file_name){
 
 //    int width = colorImage->nx;
 //    int height = colorImage->ny;
-=======
-//    int width = colorImage->nx;
-//    int height = colorImage->ny;
 
->>>>>>> 249dfc9db503030ab8ab8964a0bc36b1ed79bf58
 
-//    png_bytep *row_pointers;
-//    if(nbits != 8 && nbits != 16){
-//        Error("Invalid number of bits","writePngImage");
-//    }
-//    int bytesColorSpace = 3;
-//    int byteshift = nbits/8;
-
-<<<<<<< HEAD
 //    png_bytep *row_pointers;
 //    if(nbits != 8 && nbits != 16){
 //        Error("Invalid number of bits","writePngImage");
@@ -836,92 +818,22 @@ void WriteMedicalImage(MedicalImage *I, char *filename)
 
 //    if (setjmp(png_jmpbuf(png_ptr)))
 //        Error("Internal Error: Error during init_io", "writeColorImagePng");
-=======
-//    size_t pixel_size = (bytesColorSpace) * byteshift;
-//    row_pointers = (png_bytep*) malloc(sizeof(png_bytep) * height);
-//    for (int y=0; y<height; y++){
-//        row_pointers[y] = (png_byte*) malloc(pixel_size*width);
-//    }
-
-
-//    for (int y = 0; y < height; ++y) {
-//        png_byte *row = row_pointers[y];
-//        for (int x=0; x<width; x++) {
-
-//            png_byte* ptr = &(row[x*3*byteshift]);
-//            ptr[0*byteshift] = colorImage->cor[y][x].val[0] & 0xFF;//get first byte
-//            ptr[1*byteshift] = colorImage->cor[y][x].val[1] & 0xFF;
-//            ptr[2*byteshift] = colorImage->cor[y][x].val[2] & 0xFF;
-
-//            if(nbits==16) {//in 16bit image, we should store as big endian
-//                ptr[0*byteshift+1] = ptr[0*byteshift];
-//                ptr[1*byteshift+1] = ptr[1*byteshift];
-//                ptr[2*byteshift+1] = ptr[2*byteshift];
-
-//                ptr[0*byteshift] = ((colorImage->cor[y][x].val[0]>>8) & 0xFF);//get second byte
-//                ptr[1*byteshift] = ((colorImage->cor[y][x].val[1]>>8) & 0xFF);
-//                ptr[2*byteshift] = ((colorImage->cor[y][x].val[2]>>8) & 0xFF);
-//            }
-//        }
-//    }
-
-
-//    /* create file */
-//    FILE *fp = fopen(file_name, "wb");
-//    if (!fp)
-//        Error("Internal Error: File %s could not be opened for writing", "writeColorImagePng");
-
-//    /* initialize stuff */
-//    png_structp png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
-
-//    if (!png_ptr)
-//        Error("Internal Error: png_create_write_struct failed", "writeColorImagePng");
-
-//    png_infop info_ptr = png_create_info_struct(png_ptr);
-//    if (!info_ptr)
-//        Error("Internal Error: png_create_info_struct failed", "writeColorImagePng");
-
-//    if (setjmp(png_jmpbuf(png_ptr)))
-//        Error("Internal Error: Error during init_io", "writeColorImagePng");
-
-//    png_init_io(png_ptr, fp);
->>>>>>> 249dfc9db503030ab8ab8964a0bc36b1ed79bf58
 
 //    png_init_io(png_ptr, fp);
 
-<<<<<<< HEAD
 
 //    /* write header */
 //    if (setjmp(png_jmpbuf(png_ptr)))
 //        Error("Internal Error: Error during writing header", "writeColorImagePng");
-=======
-//    /* write header */
-//    if (setjmp(png_jmpbuf(png_ptr)))
-//        Error("Internal Error: Error during writing header", "writeColorImagePng");
 
->>>>>>> 249dfc9db503030ab8ab8964a0bc36b1ed79bf58
 
 //    png_set_IHDR(png_ptr, info_ptr, width, height,
 //                 nbits, PNG_COLOR_TYPE_RGB, PNG_INTERLACE_NONE,
 //                 PNG_COMPRESSION_TYPE_BASE, PNG_FILTER_TYPE_BASE);
 
-<<<<<<< HEAD
-//    png_set_IHDR(png_ptr, info_ptr, width, height,
-//                 nbits, PNG_COLOR_TYPE_RGB, PNG_INTERLACE_NONE,
-//                 PNG_COMPRESSION_TYPE_BASE, PNG_FILTER_TYPE_BASE);
-
-//    png_write_info(png_ptr, info_ptr);
-=======
 //    png_write_info(png_ptr, info_ptr);
 
->>>>>>> 249dfc9db503030ab8ab8964a0bc36b1ed79bf58
 
-//    /* write bytes */
-//    if (setjmp(png_jmpbuf(png_ptr))){
-//        Error("Internal Error: Error during writing bytes", "writeColorImagePng");
-//    }
-
-<<<<<<< HEAD
 //    /* write bytes */
 //    if (setjmp(png_jmpbuf(png_ptr))){
 //        Error("Internal Error: Error during writing bytes", "writeColorImagePng");
@@ -934,15 +846,6 @@ void WriteMedicalImage(MedicalImage *I, char *filename)
 //    if (setjmp(png_jmpbuf(png_ptr)))
 //        Error("Internal Error: Error during end of write", "writeColorImagePng");
 
-=======
-//    png_write_image(png_ptr, row_pointers);
-
-
-//    /* end write */
-//    if (setjmp(png_jmpbuf(png_ptr)))
-//        Error("Internal Error: Error during end of write", "writeColorImagePng");
-
->>>>>>> 249dfc9db503030ab8ab8964a0bc36b1ed79bf58
 //    png_write_end(png_ptr, NULL);
 
 //    png_destroy_write_struct(&png_ptr, &info_ptr);
@@ -969,9 +872,6 @@ MyImage *createMyImage(int nx, int ny, int nz){
     return myImage;
 }
 
-<<<<<<< HEAD
 
 
-=======
->>>>>>> 249dfc9db503030ab8ab8964a0bc36b1ed79bf58
 

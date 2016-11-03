@@ -11,11 +11,8 @@
 #include "gqueue.h"
 #include "displaymanager.h"
 #include "eventmanager.h"
-<<<<<<< HEAD
 
 #include "matrixfeia.h"
 
-=======
->>>>>>> 249dfc9db503030ab8ab8964a0bc36b1ed79bf58
 
 #endif

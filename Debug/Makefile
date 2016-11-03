@@ -15,11 +15,7 @@ CXX           = g++
 DEFINES       = -DQT_QML_DEBUG -DQT_WIDGETS_LIB -DQT_GUI_LIB -DQT_CORE_LIB
 CFLAGS        = -pipe -g -Wall -W -D_REENTRANT -fPIC $(DEFINES)
 CXXFLAGS      = -pipe -g -std=gnu++11 -Wall -W -D_REENTRANT -fPIC $(DEFINES)
-<<<<<<< HEAD
 INCPATH       = -I../HelloWorld -I. -I/usr/lib/lapack -I/usr/lib/libblas -I../../../Qt/5.7/gcc_64/include -I../../../Qt/5.7/gcc_64/include/QtWidgets -I../../../Qt/5.7/gcc_64/include/QtGui -I../../../Qt/5.7/gcc_64/include/QtCore -I. -I. -I../../../Qt/5.7/gcc_64/mkspecs/linux-g++
-=======
-INCPATH       = -I../HelloWorld -I. -I../../../Qt/5.7/gcc_64/include -I../../../Qt/5.7/gcc_64/include/QtWidgets -I../../../Qt/5.7/gcc_64/include/QtGui -I../../../Qt/5.7/gcc_64/include/QtCore -I. -I. -I../../../Qt/5.7/gcc_64/mkspecs/linux-g++
->>>>>>> 249dfc9db503030ab8ab8964a0bc36b1ed79bf58
 QMAKE         = /home/deangeli/Qt/5.7/gcc_64/bin/qmake
 DEL_FILE      = rm -f
 CHK_DIR_EXISTS= test -d
@@ -40,11 +36,7 @@ DISTNAME      = HelloWorld1.0.0
 DISTDIR = /home/deangeli/QtProjects/MedicalImageVisualizing/Debug/.tmp/HelloWorld1.0.0
 LINK          = g++
 LFLAGS        = -Wl,-rpath,/home/deangeli/Qt/5.7/gcc_64/lib
-<<<<<<< HEAD
 LIBS          = $(SUBLIBS) -lpng -L/home/deangeli/QtProjects/MedicalImageVisualizing/HelloWorld/../../../../../usr/lib/lapack/ -llapack -L/home/deangeli/QtProjects/MedicalImageVisualizing/HelloWorld/../../../../../usr/lib/libblas/ -lblas -L/home/deangeli/Qt/5.7/gcc_64/lib -lQt5Widgets -L/usr/lib64 -lQt5Gui -lQt5Core -lGL -lpthread 
-=======
-LIBS          = $(SUBLIBS) -lpng -L/home/deangeli/Qt/5.7/gcc_64/lib -lQt5Widgets -L/usr/lib64 -lQt5Gui -lQt5Core -lGL -lpthread 
->>>>>>> 249dfc9db503030ab8ab8964a0bc36b1ed79bf58
 AR            = ar cqs
 RANLIB        = 
 SED           = sed
@@ -69,7 +61,6 @@ SOURCES       = ../HelloWorld/main.cpp \
 		../HelloWorld/slicer.cpp \
 		../HelloWorld/displaymanager.cpp \
 		../HelloWorld/eventmanager.cpp \
-<<<<<<< HEAD
 		../HelloWorld/brightcontrastdialog.cpp \
 		../HelloWorld/atlas.cpp \
 		../HelloWorld/iftMatrix.cpp \
@@ -78,10 +69,6 @@ SOURCES       = ../HelloWorld/main.cpp \
 		moc_brightcontrastdialog.cpp \
 		moc_refactformdialog.cpp \
 		moc_createvolumedialogform.cpp
-=======
-		../HelloWorld/brightcontrastdialog.cpp moc_mainwindow.cpp \
-		moc_brightcontrastdialog.cpp
->>>>>>> 249dfc9db503030ab8ab8964a0bc36b1ed79bf58
 OBJECTS       = main.o \
 		mainwindow.o \
 		spectrum.o \
@@ -96,7 +83,6 @@ OBJECTS       = main.o \
 		displaymanager.o \
 		eventmanager.o \
 		brightcontrastdialog.o \
-<<<<<<< HEAD
 		atlas.o \
 		iftMatrix.o \
 		refactformdialog.o \
@@ -105,10 +91,6 @@ OBJECTS       = main.o \
 		moc_brightcontrastdialog.o \
 		moc_refactformdialog.o \
 		moc_createvolumedialogform.o
-=======
-		moc_mainwindow.o \
-		moc_brightcontrastdialog.o
->>>>>>> 249dfc9db503030ab8ab8964a0bc36b1ed79bf58
 DIST          = ../../../Qt/5.7/gcc_64/mkspecs/features/spec_pre.prf \
 		../../../Qt/5.7/gcc_64/mkspecs/common/unix.conf \
 		../../../Qt/5.7/gcc_64/mkspecs/common/linux.conf \
@@ -240,10 +222,6 @@ DIST          = ../../../Qt/5.7/gcc_64/mkspecs/features/spec_pre.prf \
 		../../../Qt/5.7/gcc_64/mkspecs/features/qt_config.prf \
 		../../../Qt/5.7/gcc_64/mkspecs/linux-g++/qmake.conf \
 		../../../Qt/5.7/gcc_64/mkspecs/features/spec_post.prf \
-<<<<<<< HEAD
-=======
-		../HelloWorld/.qmake.stash \
->>>>>>> 249dfc9db503030ab8ab8964a0bc36b1ed79bf58
 		../../../Qt/5.7/gcc_64/mkspecs/features/exclusive_builds.prf \
 		../../../Qt/5.7/gcc_64/mkspecs/features/default_pre.prf \
 		../../../Qt/5.7/gcc_64/mkspecs/features/resolve_config.prf \
@@ -274,16 +252,12 @@ DIST          = ../../../Qt/5.7/gcc_64/mkspecs/features/spec_pre.prf \
 		../HelloWorld/slicer.h \
 		../HelloWorld/displaymanager.h \
 		../HelloWorld/eventmanager.h \
-<<<<<<< HEAD
 		../HelloWorld/brightcontrastdialog.h \
 		../HelloWorld/atlas.h \
 		../HelloWorld/iftMatrix.h \
 		../HelloWorld/matrixfeia.h \
 		../HelloWorld/refactformdialog.h \
 		../HelloWorld/createvolumedialogform.h ../HelloWorld/main.cpp \
-=======
-		../HelloWorld/brightcontrastdialog.h ../HelloWorld/main.cpp \
->>>>>>> 249dfc9db503030ab8ab8964a0bc36b1ed79bf58
 		../HelloWorld/mainwindow.cpp \
 		../HelloWorld/spectrum.cpp \
 		../HelloWorld/linear.cpp \
@@ -296,15 +270,11 @@ DIST          = ../../../Qt/5.7/gcc_64/mkspecs/features/spec_pre.prf \
 		../HelloWorld/slicer.cpp \
 		../HelloWorld/displaymanager.cpp \
 		../HelloWorld/eventmanager.cpp \
-<<<<<<< HEAD
 		../HelloWorld/brightcontrastdialog.cpp \
 		../HelloWorld/atlas.cpp \
 		../HelloWorld/iftMatrix.cpp \
 		../HelloWorld/refactformdialog.cpp \
 		../HelloWorld/createvolumedialogform.cpp
-=======
-		../HelloWorld/brightcontrastdialog.cpp
->>>>>>> 249dfc9db503030ab8ab8964a0bc36b1ed79bf58
 QMAKE_TARGET  = HelloWorld
 DESTDIR       = 
 TARGET        = HelloWorld
@@ -313,11 +283,7 @@ TARGET        = HelloWorld
 first: all
 ####### Build rules
 
-<<<<<<< HEAD
 $(TARGET): /home/deangeli/QtProjects/MedicalImageVisualizing/HelloWorld/../../../../../usr/lib/lapack/liblapack.a /home/deangeli/QtProjects/MedicalImageVisualizing/HelloWorld/../../../../../usr/lib/libblas/libblas.a ui_mainwindow.h ui_brightcontrastdialog.h ui_refactformdialog.h ui_createvolumedialogform.h $(OBJECTS)  
-=======
-$(TARGET): ui_mainwindow.h ui_brightcontrastdialog.h $(OBJECTS)  
->>>>>>> 249dfc9db503030ab8ab8964a0bc36b1ed79bf58
 	$(LINK) $(LFLAGS) -o $(TARGET) $(OBJECTS) $(OBJCOMP) $(LIBS)
 
 Makefile: ../HelloWorld/HelloWorld.pro ../../../Qt/5.7/gcc_64/mkspecs/linux-g++/qmake.conf ../../../Qt/5.7/gcc_64/mkspecs/features/spec_pre.prf \
@@ -451,10 +417,6 @@ Makefile: ../HelloWorld/HelloWorld.pro ../../../Qt/5.7/gcc_64/mkspecs/linux-g++/
 		../../../Qt/5.7/gcc_64/mkspecs/features/qt_config.prf \
 		../../../Qt/5.7/gcc_64/mkspecs/linux-g++/qmake.conf \
 		../../../Qt/5.7/gcc_64/mkspecs/features/spec_post.prf \
-<<<<<<< HEAD
-=======
-		.qmake.stash \
->>>>>>> 249dfc9db503030ab8ab8964a0bc36b1ed79bf58
 		../../../Qt/5.7/gcc_64/mkspecs/features/exclusive_builds.prf \
 		../../../Qt/5.7/gcc_64/mkspecs/features/default_pre.prf \
 		../../../Qt/5.7/gcc_64/mkspecs/features/resolve_config.prf \
@@ -608,10 +570,6 @@ Makefile: ../HelloWorld/HelloWorld.pro ../../../Qt/5.7/gcc_64/mkspecs/linux-g++/
 ../../../Qt/5.7/gcc_64/mkspecs/features/qt_config.prf:
 ../../../Qt/5.7/gcc_64/mkspecs/linux-g++/qmake.conf:
 ../../../Qt/5.7/gcc_64/mkspecs/features/spec_post.prf:
-<<<<<<< HEAD
-=======
-.qmake.stash:
->>>>>>> 249dfc9db503030ab8ab8964a0bc36b1ed79bf58
 ../../../Qt/5.7/gcc_64/mkspecs/features/exclusive_builds.prf:
 ../../../Qt/5.7/gcc_64/mkspecs/features/default_pre.prf:
 ../../../Qt/5.7/gcc_64/mkspecs/features/resolve_config.prf:
@@ -647,15 +605,9 @@ dist: distdir FORCE
 distdir: FORCE
 	@test -d $(DISTDIR) || mkdir -p $(DISTDIR)
 	$(COPY_FILE) --parents $(DIST) $(DISTDIR)/
-<<<<<<< HEAD
 	$(COPY_FILE) --parents ../HelloWorld/mainwindow.h ../HelloWorld/spectrum.h ../HelloWorld/mc920.h ../HelloWorld/linear.h ../HelloWorld/kernel.h ../HelloWorld/image.h ../HelloWorld/comptime.h ../HelloWorld/common.h ../HelloWorld/adjacency.h ../HelloWorld/gqueue.h ../HelloWorld/slicer.h ../HelloWorld/displaymanager.h ../HelloWorld/eventmanager.h ../HelloWorld/brightcontrastdialog.h ../HelloWorld/atlas.h ../HelloWorld/iftMatrix.h ../HelloWorld/matrixfeia.h ../HelloWorld/refactformdialog.h ../HelloWorld/createvolumedialogform.h $(DISTDIR)/
 	$(COPY_FILE) --parents ../HelloWorld/main.cpp ../HelloWorld/mainwindow.cpp ../HelloWorld/spectrum.cpp ../HelloWorld/linear.cpp ../HelloWorld/kernel.cpp ../HelloWorld/image.cpp ../HelloWorld/gqueue.cpp ../HelloWorld/comptime.cpp ../HelloWorld/common.cpp ../HelloWorld/adjacency.cpp ../HelloWorld/slicer.cpp ../HelloWorld/displaymanager.cpp ../HelloWorld/eventmanager.cpp ../HelloWorld/brightcontrastdialog.cpp ../HelloWorld/atlas.cpp ../HelloWorld/iftMatrix.cpp ../HelloWorld/refactformdialog.cpp ../HelloWorld/createvolumedialogform.cpp $(DISTDIR)/
 	$(COPY_FILE) --parents ../HelloWorld/mainwindow.ui ../HelloWorld/brightcontrastdialog.ui ../HelloWorld/refactformdialog.ui ../HelloWorld/createvolumedialogform.ui $(DISTDIR)/
-=======
-	$(COPY_FILE) --parents ../HelloWorld/mainwindow.h ../HelloWorld/spectrum.h ../HelloWorld/mc920.h ../HelloWorld/linear.h ../HelloWorld/kernel.h ../HelloWorld/image.h ../HelloWorld/comptime.h ../HelloWorld/common.h ../HelloWorld/adjacency.h ../HelloWorld/gqueue.h ../HelloWorld/slicer.h ../HelloWorld/displaymanager.h ../HelloWorld/eventmanager.h ../HelloWorld/brightcontrastdialog.h $(DISTDIR)/
-	$(COPY_FILE) --parents ../HelloWorld/main.cpp ../HelloWorld/mainwindow.cpp ../HelloWorld/spectrum.cpp ../HelloWorld/linear.cpp ../HelloWorld/kernel.cpp ../HelloWorld/image.cpp ../HelloWorld/gqueue.cpp ../HelloWorld/comptime.cpp ../HelloWorld/common.cpp ../HelloWorld/adjacency.cpp ../HelloWorld/slicer.cpp ../HelloWorld/displaymanager.cpp ../HelloWorld/eventmanager.cpp ../HelloWorld/brightcontrastdialog.cpp $(DISTDIR)/
-	$(COPY_FILE) --parents ../HelloWorld/mainwindow.ui ../HelloWorld/brightcontrastdialog.ui $(DISTDIR)/
->>>>>>> 249dfc9db503030ab8ab8964a0bc36b1ed79bf58
 
 
 clean: compiler_clean 
@@ -681,15 +633,9 @@ benchmark: first
 
 compiler_rcc_make_all:
 compiler_rcc_clean:
-<<<<<<< HEAD
 compiler_moc_header_make_all: moc_mainwindow.cpp moc_brightcontrastdialog.cpp moc_refactformdialog.cpp moc_createvolumedialogform.cpp
 compiler_moc_header_clean:
 	-$(DEL_FILE) moc_mainwindow.cpp moc_brightcontrastdialog.cpp moc_refactformdialog.cpp moc_createvolumedialogform.cpp
-=======
-compiler_moc_header_make_all: moc_mainwindow.cpp moc_brightcontrastdialog.cpp
-compiler_moc_header_clean:
-	-$(DEL_FILE) moc_mainwindow.cpp moc_brightcontrastdialog.cpp
->>>>>>> 249dfc9db503030ab8ab8964a0bc36b1ed79bf58
 moc_mainwindow.cpp: ../../../Qt/5.7/gcc_64/include/QtWidgets/QMainWindow \
 		../../../Qt/5.7/gcc_64/include/QtWidgets/qmainwindow.h \
 		../../../Qt/5.7/gcc_64/include/QtWidgets/qwidget.h \
@@ -793,16 +739,10 @@ moc_mainwindow.cpp: ../../../Qt/5.7/gcc_64/include/QtWidgets/QMainWindow \
 		../HelloWorld/brightcontrastdialog.h \
 		../../../Qt/5.7/gcc_64/include/QtWidgets/QDialog \
 		../../../Qt/5.7/gcc_64/include/QtWidgets/qdialog.h \
-<<<<<<< HEAD
 		../HelloWorld/refactformdialog.h \
 		../HelloWorld/mainwindow.h \
 		../../../Qt/5.7/gcc_64/bin/moc
 	/home/deangeli/Qt/5.7/gcc_64/bin/moc $(DEFINES) -I/home/deangeli/Qt/5.7/gcc_64/mkspecs/linux-g++ -I/home/deangeli/QtProjects/MedicalImageVisualizing/HelloWorld -I/usr/lib/lapack -I/usr/lib/libblas -I/home/deangeli/Qt/5.7/gcc_64/include -I/home/deangeli/Qt/5.7/gcc_64/include/QtWidgets -I/home/deangeli/Qt/5.7/gcc_64/include/QtGui -I/home/deangeli/Qt/5.7/gcc_64/include/QtCore -I. -I/usr/include/c++/5 -I/usr/include/x86_64-linux-gnu/c++/5 -I/usr/include/c++/5/backward -I/usr/lib/gcc/x86_64-linux-gnu/5/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/5/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include ../HelloWorld/mainwindow.h -o moc_mainwindow.cpp
-=======
-		../HelloWorld/mainwindow.h \
-		../../../Qt/5.7/gcc_64/bin/moc
-	/home/deangeli/Qt/5.7/gcc_64/bin/moc $(DEFINES) -I/home/deangeli/Qt/5.7/gcc_64/mkspecs/linux-g++ -I/home/deangeli/QtProjects/MedicalImageVisualizing/HelloWorld -I/home/deangeli/Qt/5.7/gcc_64/include -I/home/deangeli/Qt/5.7/gcc_64/include/QtWidgets -I/home/deangeli/Qt/5.7/gcc_64/include/QtGui -I/home/deangeli/Qt/5.7/gcc_64/include/QtCore -I. -I/usr/include/c++/5 -I/usr/include/x86_64-linux-gnu/c++/5 -I/usr/include/c++/5/backward -I/usr/lib/gcc/x86_64-linux-gnu/5/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/5/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include ../HelloWorld/mainwindow.h -o moc_mainwindow.cpp
->>>>>>> 249dfc9db503030ab8ab8964a0bc36b1ed79bf58
 
 moc_brightcontrastdialog.cpp: ../../../Qt/5.7/gcc_64/include/QtWidgets/QDialog \
 		../../../Qt/5.7/gcc_64/include/QtWidgets/qdialog.h \
@@ -904,7 +844,6 @@ moc_brightcontrastdialog.cpp: ../../../Qt/5.7/gcc_64/include/QtWidgets/QDialog \
 		../../../Qt/5.7/gcc_64/include/QtGui/qtouchdevice.h \
 		../HelloWorld/brightcontrastdialog.h \
 		../../../Qt/5.7/gcc_64/bin/moc
-<<<<<<< HEAD
 	/home/deangeli/Qt/5.7/gcc_64/bin/moc $(DEFINES) -I/home/deangeli/Qt/5.7/gcc_64/mkspecs/linux-g++ -I/home/deangeli/QtProjects/MedicalImageVisualizing/HelloWorld -I/usr/lib/lapack -I/usr/lib/libblas -I/home/deangeli/Qt/5.7/gcc_64/include -I/home/deangeli/Qt/5.7/gcc_64/include/QtWidgets -I/home/deangeli/Qt/5.7/gcc_64/include/QtGui -I/home/deangeli/Qt/5.7/gcc_64/include/QtCore -I. -I/usr/include/c++/5 -I/usr/include/x86_64-linux-gnu/c++/5 -I/usr/include/c++/5/backward -I/usr/lib/gcc/x86_64-linux-gnu/5/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/5/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include ../HelloWorld/brightcontrastdialog.h -o moc_brightcontrastdialog.cpp
 
 moc_refactformdialog.cpp: ../../../Qt/5.7/gcc_64/include/QtWidgets/QDialog \
@@ -1116,15 +1055,6 @@ compiler_moc_source_clean:
 compiler_uic_make_all: ui_mainwindow.h ui_brightcontrastdialog.h ui_refactformdialog.h ui_createvolumedialogform.h
 compiler_uic_clean:
 	-$(DEL_FILE) ui_mainwindow.h ui_brightcontrastdialog.h ui_refactformdialog.h ui_createvolumedialogform.h
-=======
-	/home/deangeli/Qt/5.7/gcc_64/bin/moc $(DEFINES) -I/home/deangeli/Qt/5.7/gcc_64/mkspecs/linux-g++ -I/home/deangeli/QtProjects/MedicalImageVisualizing/HelloWorld -I/home/deangeli/Qt/5.7/gcc_64/include -I/home/deangeli/Qt/5.7/gcc_64/include/QtWidgets -I/home/deangeli/Qt/5.7/gcc_64/include/QtGui -I/home/deangeli/Qt/5.7/gcc_64/include/QtCore -I. -I/usr/include/c++/5 -I/usr/include/x86_64-linux-gnu/c++/5 -I/usr/include/c++/5/backward -I/usr/lib/gcc/x86_64-linux-gnu/5/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/5/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include ../HelloWorld/brightcontrastdialog.h -o moc_brightcontrastdialog.cpp
-
-compiler_moc_source_make_all:
-compiler_moc_source_clean:
-compiler_uic_make_all: ui_mainwindow.h ui_brightcontrastdialog.h
-compiler_uic_clean:
-	-$(DEL_FILE) ui_mainwindow.h ui_brightcontrastdialog.h
->>>>>>> 249dfc9db503030ab8ab8964a0bc36b1ed79bf58
 ui_mainwindow.h: ../HelloWorld/mainwindow.ui \
 		../../../Qt/5.7/gcc_64/bin/uic
 	/home/deangeli/Qt/5.7/gcc_64/bin/uic ../HelloWorld/mainwindow.ui -o ui_mainwindow.h
@@ -1133,7 +1063,6 @@ ui_brightcontrastdialog.h: ../HelloWorld/brightcontrastdialog.ui \
 		../../../Qt/5.7/gcc_64/bin/uic
 	/home/deangeli/Qt/5.7/gcc_64/bin/uic ../HelloWorld/brightcontrastdialog.ui -o ui_brightcontrastdialog.h
 
-<<<<<<< HEAD
 ui_refactformdialog.h: ../HelloWorld/refactformdialog.ui \
 		../../../Qt/5.7/gcc_64/bin/uic
 	/home/deangeli/Qt/5.7/gcc_64/bin/uic ../HelloWorld/refactformdialog.ui -o ui_refactformdialog.h
@@ -1142,8 +1071,6 @@ ui_createvolumedialogform.h: ../HelloWorld/createvolumedialogform.ui \
 		../../../Qt/5.7/gcc_64/bin/uic
 	/home/deangeli/Qt/5.7/gcc_64/bin/uic ../HelloWorld/createvolumedialogform.ui -o ui_createvolumedialogform.h
 
-=======
->>>>>>> 249dfc9db503030ab8ab8964a0bc36b1ed79bf58
 compiler_yacc_decl_make_all:
 compiler_yacc_decl_clean:
 compiler_yacc_impl_make_all:
@@ -1258,10 +1185,7 @@ main.o: ../HelloWorld/main.cpp ../HelloWorld/mainwindow.h \
 		../HelloWorld/brightcontrastdialog.h \
 		../../../Qt/5.7/gcc_64/include/QtWidgets/QDialog \
 		../../../Qt/5.7/gcc_64/include/QtWidgets/qdialog.h \
-<<<<<<< HEAD
 		../HelloWorld/refactformdialog.h \
-=======
->>>>>>> 249dfc9db503030ab8ab8964a0bc36b1ed79bf58
 		../../../Qt/5.7/gcc_64/include/QtWidgets/QApplication \
 		../../../Qt/5.7/gcc_64/include/QtWidgets/qapplication.h \
 		../../../Qt/5.7/gcc_64/include/QtCore/qcoreapplication.h \
@@ -1375,58 +1299,8 @@ mainwindow.o: ../HelloWorld/mainwindow.cpp ../HelloWorld/mainwindow.h \
 		../HelloWorld/brightcontrastdialog.h \
 		../../../Qt/5.7/gcc_64/include/QtWidgets/QDialog \
 		../../../Qt/5.7/gcc_64/include/QtWidgets/qdialog.h \
-<<<<<<< HEAD
 		../HelloWorld/refactformdialog.h \
 		ui_mainwindow.h \
-=======
-		ui_mainwindow.h \
-		../../../Qt/5.7/gcc_64/include/QtCore/QVariant \
-		../../../Qt/5.7/gcc_64/include/QtWidgets/QAction \
-		../../../Qt/5.7/gcc_64/include/QtWidgets/qaction.h \
-		../../../Qt/5.7/gcc_64/include/QtWidgets/qactiongroup.h \
-		../../../Qt/5.7/gcc_64/include/QtWidgets/QApplication \
-		../../../Qt/5.7/gcc_64/include/QtWidgets/qapplication.h \
-		../../../Qt/5.7/gcc_64/include/QtCore/qcoreapplication.h \
-		../../../Qt/5.7/gcc_64/include/QtCore/qeventloop.h \
-		../../../Qt/5.7/gcc_64/include/QtWidgets/qdesktopwidget.h \
-		../../../Qt/5.7/gcc_64/include/QtGui/qguiapplication.h \
-		../../../Qt/5.7/gcc_64/include/QtGui/qinputmethod.h \
-		../../../Qt/5.7/gcc_64/include/QtWidgets/QButtonGroup \
-		../../../Qt/5.7/gcc_64/include/QtWidgets/qbuttongroup.h \
-		../../../Qt/5.7/gcc_64/include/QtWidgets/QHeaderView \
-		../../../Qt/5.7/gcc_64/include/QtWidgets/qheaderview.h \
-		../../../Qt/5.7/gcc_64/include/QtWidgets/qabstractitemview.h \
-		../../../Qt/5.7/gcc_64/include/QtWidgets/qabstractscrollarea.h \
-		../../../Qt/5.7/gcc_64/include/QtWidgets/qframe.h \
-		../../../Qt/5.7/gcc_64/include/QtCore/qabstractitemmodel.h \
-		../../../Qt/5.7/gcc_64/include/QtCore/qitemselectionmodel.h \
-		../../../Qt/5.7/gcc_64/include/QtWidgets/qabstractitemdelegate.h \
-		../../../Qt/5.7/gcc_64/include/QtWidgets/qstyleoption.h \
-		../../../Qt/5.7/gcc_64/include/QtWidgets/qabstractspinbox.h \
-		../../../Qt/5.7/gcc_64/include/QtGui/qvalidator.h \
-		../../../Qt/5.7/gcc_64/include/QtCore/qregularexpression.h \
-		../../../Qt/5.7/gcc_64/include/QtWidgets/qslider.h \
-		../../../Qt/5.7/gcc_64/include/QtWidgets/qabstractslider.h \
-		../../../Qt/5.7/gcc_64/include/QtWidgets/qstyle.h \
-		../../../Qt/5.7/gcc_64/include/QtWidgets/qtabbar.h \
-		../../../Qt/5.7/gcc_64/include/QtWidgets/qrubberband.h \
-		../../../Qt/5.7/gcc_64/include/QtWidgets/QLabel \
-		../../../Qt/5.7/gcc_64/include/QtWidgets/qlabel.h \
-		../../../Qt/5.7/gcc_64/include/QtWidgets/QMenu \
-		../../../Qt/5.7/gcc_64/include/QtWidgets/qmenu.h \
-		../../../Qt/5.7/gcc_64/include/QtWidgets/QMenuBar \
-		../../../Qt/5.7/gcc_64/include/QtWidgets/qmenubar.h \
-		../../../Qt/5.7/gcc_64/include/QtWidgets/QPushButton \
-		../../../Qt/5.7/gcc_64/include/QtWidgets/qpushbutton.h \
-		../../../Qt/5.7/gcc_64/include/QtWidgets/qabstractbutton.h \
-		../../../Qt/5.7/gcc_64/include/QtWidgets/QSpinBox \
-		../../../Qt/5.7/gcc_64/include/QtWidgets/qspinbox.h \
-		../../../Qt/5.7/gcc_64/include/QtWidgets/QStatusBar \
-		../../../Qt/5.7/gcc_64/include/QtWidgets/qstatusbar.h \
-		../../../Qt/5.7/gcc_64/include/QtWidgets/QToolBar \
-		../../../Qt/5.7/gcc_64/include/QtWidgets/qtoolbar.h \
-		../../../Qt/5.7/gcc_64/include/QtWidgets/QWidget \
->>>>>>> 249dfc9db503030ab8ab8964a0bc36b1ed79bf58
 		../../../Qt/5.7/gcc_64/include/QtWidgets/QFileDialog \
 		../../../Qt/5.7/gcc_64/include/QtWidgets/qfiledialog.h \
 		../../../Qt/5.7/gcc_64/include/QtCore/qdir.h \
@@ -1436,22 +1310,16 @@ mainwindow.o: ../HelloWorld/mainwindow.cpp ../HelloWorld/mainwindow.h \
 		../../../Qt/5.7/gcc_64/include/QtCore/QTextStream \
 		../../../Qt/5.7/gcc_64/include/QtGui/QImageReader \
 		../../../Qt/5.7/gcc_64/include/QtGui/qimagereader.h \
-<<<<<<< HEAD
 		../../../Qt/5.7/gcc_64/include/QtCore/qcoreapplication.h \
 		../../../Qt/5.7/gcc_64/include/QtCore/qeventloop.h \
-=======
->>>>>>> 249dfc9db503030ab8ab8964a0bc36b1ed79bf58
 		../../../Qt/5.7/gcc_64/include/QtGui/qimageiohandler.h \
 		../../../Qt/5.7/gcc_64/include/QtCore/qplugin.h \
 		../../../Qt/5.7/gcc_64/include/QtCore/qpointer.h \
 		../../../Qt/5.7/gcc_64/include/QtCore/qjsonobject.h \
 		../../../Qt/5.7/gcc_64/include/QtCore/qjsonvalue.h \
 		../../../Qt/5.7/gcc_64/include/QtCore/qfactoryinterface.h \
-<<<<<<< HEAD
 		../../../Qt/5.7/gcc_64/include/QtCore/QTime \
 		../../../Qt/5.7/gcc_64/include/QtCore/qdatetime.h \
-=======
->>>>>>> 249dfc9db503030ab8ab8964a0bc36b1ed79bf58
 		../HelloWorld/mc920.h \
 		../HelloWorld/common.h \
 		../HelloWorld/comptime.h \
@@ -1462,7 +1330,6 @@ mainwindow.o: ../HelloWorld/mainwindow.cpp ../HelloWorld/mainwindow.h \
 		../HelloWorld/spectrum.h \
 		../HelloWorld/gqueue.h \
 		../HelloWorld/displaymanager.h \
-<<<<<<< HEAD
 		../HelloWorld/iftMatrix.h \
 		../HelloWorld/eventmanager.h \
 		../../../Qt/5.7/gcc_64/include/QtGui/QImage \
@@ -1476,11 +1343,6 @@ mainwindow.o: ../HelloWorld/mainwindow.cpp ../HelloWorld/mainwindow.h \
 		../../../Qt/5.7/gcc_64/include/QtWidgets/qactiongroup.h \
 		../../../Qt/5.7/gcc_64/include/QtWidgets/QAction \
 		../HelloWorld/matrixfeia.h
-=======
-		../HelloWorld/eventmanager.h \
-		../../../Qt/5.7/gcc_64/include/QtGui/QImage \
-		../../../Qt/5.7/gcc_64/include/QtGui/QPixmap
->>>>>>> 249dfc9db503030ab8ab8964a0bc36b1ed79bf58
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o mainwindow.o ../HelloWorld/mainwindow.cpp
 
 spectrum.o: ../HelloWorld/spectrum.cpp ../HelloWorld/spectrum.h \
@@ -1526,12 +1388,8 @@ slicer.o: ../HelloWorld/slicer.cpp ../HelloWorld/slicer.h \
 
 displaymanager.o: ../HelloWorld/displaymanager.cpp ../HelloWorld/displaymanager.h \
 		../HelloWorld/image.h \
-<<<<<<< HEAD
 		../HelloWorld/common.h \
 		../HelloWorld/iftMatrix.h
-=======
-		../HelloWorld/common.h
->>>>>>> 249dfc9db503030ab8ab8964a0bc36b1ed79bf58
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o displaymanager.o ../HelloWorld/displaymanager.cpp
 
 eventmanager.o: ../HelloWorld/eventmanager.cpp ../HelloWorld/eventmanager.h \
@@ -1644,12 +1502,8 @@ eventmanager.o: ../HelloWorld/eventmanager.cpp ../HelloWorld/eventmanager.h \
 		../../../Qt/5.7/gcc_64/include/QtWidgets/qaction.h \
 		../../../Qt/5.7/gcc_64/include/QtWidgets/qactiongroup.h \
 		../../../Qt/5.7/gcc_64/include/QtWidgets/QAction \
-<<<<<<< HEAD
 		../HelloWorld/displaymanager.h \
 		../HelloWorld/iftMatrix.h
-=======
-		../HelloWorld/displaymanager.h
->>>>>>> 249dfc9db503030ab8ab8964a0bc36b1ed79bf58
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o eventmanager.o ../HelloWorld/eventmanager.cpp
 
 brightcontrastdialog.o: ../HelloWorld/brightcontrastdialog.cpp ../HelloWorld/brightcontrastdialog.h \
@@ -1754,7 +1608,6 @@ brightcontrastdialog.o: ../HelloWorld/brightcontrastdialog.cpp ../HelloWorld/bri
 		ui_brightcontrastdialog.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o brightcontrastdialog.o ../HelloWorld/brightcontrastdialog.cpp
 
-<<<<<<< HEAD
 atlas.o: ../HelloWorld/atlas.cpp 
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o atlas.o ../HelloWorld/atlas.cpp
 
@@ -1965,23 +1818,18 @@ createvolumedialogform.o: ../HelloWorld/createvolumedialogform.cpp ../HelloWorld
 		ui_createvolumedialogform.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o createvolumedialogform.o ../HelloWorld/createvolumedialogform.cpp
 
-=======
->>>>>>> 249dfc9db503030ab8ab8964a0bc36b1ed79bf58
 moc_mainwindow.o: moc_mainwindow.cpp 
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o moc_mainwindow.o moc_mainwindow.cpp
 
 moc_brightcontrastdialog.o: moc_brightcontrastdialog.cpp 
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o moc_brightcontrastdialog.o moc_brightcontrastdialog.cpp
 
-<<<<<<< HEAD
 moc_refactformdialog.o: moc_refactformdialog.cpp 
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o moc_refactformdialog.o moc_refactformdialog.cpp
 
 moc_createvolumedialogform.o: moc_createvolumedialogform.cpp 
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o moc_createvolumedialogform.o moc_createvolumedialogform.cpp
 
-=======
->>>>>>> 249dfc9db503030ab8ab8964a0bc36b1ed79bf58
 ####### Install
 
 install:  FORCE
