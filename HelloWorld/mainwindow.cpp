@@ -157,6 +157,10 @@ void MainWindow::on_action3D_Image_triggered()
             displayImageOnLabel(imageY,ui->labelFigureY);
             displayImageOnLabel(imageX,ui->labelFigureX);
         }
+        ui->SpinBoxPointX->setValue(image3D->nx/2);
+        ui->SpinBoxPointY->setValue(image3D->ny/2);
+        startDrawXYZImage = true;
+        ui->SpinBoxPointZ->setValue(image3D->nz/2);
 
     }
     else{
@@ -165,10 +169,7 @@ void MainWindow::on_action3D_Image_triggered()
         messageBox.setFixedSize(500,200);
     }
 
-    ui->SpinBoxPointX->setValue(image3D->nx/2);
-    ui->SpinBoxPointY->setValue(image3D->ny/2);
-    startDrawXYZImage = true;
-    ui->SpinBoxPointZ->setValue(image3D->nz/2);
+
 }
 
 void MainWindow::on_spinBoxImageZ_valueChanged(int newValue)
@@ -480,35 +481,38 @@ void MainWindow::on_pushButton_2_clicked()
 //    fprintf(stderr,"took %d mseconds to execute \n", nMilliseconds);
 
 
-    //test2
-     iftMatrix<float> *p = createMatrix(5,4,(float)0);
-     p->elements[0] = image3D_aux->nx/2;
-     p->elements[1] = image3D_aux->ny/2;
-     p->elements[2] = 0;
-     p->elements[3] = 1;
+//    //test2
+//     iftMatrix<float> *p = createMatrix(5,4,(float)0);
+//     p->elements[0] = 68;//image3D_aux->nx/2;
+//     p->elements[1] = 67;//image3D_aux->ny/2;
+//     p->elements[2] = 55;//0;
+//     p->elements[3] = 1;
 
-     p->elements[4] = image3D_aux->nx/2;
-     p->elements[5] = image3D_aux->ny/2;
-     p->elements[6] = image3D_aux->nz;
-     p->elements[7] = 1;
+//     p->elements[4] = 78;//image3D_aux->nx/2;
+//     p->elements[5] = 19;//image3D_aux->ny/2;
+//     p->elements[6] = 55;//image3D_aux->nz;
+//     p->elements[7] = 1;
 
-     p->elements[8] = image3D_aux->nx/2;
-     p->elements[9] = 0;
-     p->elements[10] = image3D_aux->nz/2;
-     p->elements[11] = 1;
+//     p->elements[8] = 104;//image3D_aux->nx/2;
+//     p->elements[9] = 7;////0;
+//     p->elements[10] = 55;//image3D_aux->nz/2;
+//     p->elements[11] = 1;
 
-     p->elements[12] = image3D_aux->nx/2;
-     p->elements[13] = image3D_aux->ny;
-     p->elements[14] = image3D_aux->nz/2;
-     p->elements[15] = 1;
+//     p->elements[12] = 133;//image3D_aux->nx/2;
+//     p->elements[13] = 38;//image3D_aux->ny;
+//     p->elements[14] = 55;//image3D_aux->nz/2;
+//     p->elements[15] = 1;
 
-     p->elements[16] = image3D_aux->nx/2;
-     p->elements[17] = image3D_aux->ny;
-     p->elements[18] = 0;
-     p->elements[19] = 1;
+//     p->elements[16] = 131;//image3D_aux->nx/2;
+//     p->elements[17] = 70;//image3D_aux->ny;
+//     p->elements[18] = 55;//0;
+//     p->elements[19] = 1;
 
-    MedicalImage* out = refactoreScene(p,image3D_aux,50);
-    WriteMedicalImage(out,"teste.scn");
+//    MedicalImage* out = refactoreScene(p,image3D_aux,50);
+//    WriteMedicalImage(out,"teste.scn");
+
+//    //teste3
+    maximumIntensityProjection(image3D_aux,0,45);
 }
 
 void MainWindow::on_actionRefactor_triggered()
