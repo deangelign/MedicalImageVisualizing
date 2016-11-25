@@ -7,7 +7,7 @@
 #include <QMessageBox>
 #include <QTime>
 #include "mc920.h"
-
+#include "matrixfeia.h"
 
 
 
@@ -29,6 +29,7 @@ bool negativeActive = false;
 int NormalizationType = 5;
 bool NormalizationActive = false;
 bool startDrawXYZImage = false;
+int renderingOption;
 
 
 
@@ -81,6 +82,7 @@ void init(){
     viewX->type = 1;
     updateContrastBrightParameters(viewX,0,defaultMaxValue,0,defaultMaxValue);
 
+    renderingOption=0;
 }
 
 MainWindow::MainWindow(QWidget *parent) :
@@ -455,63 +457,63 @@ void MainWindow::displayNormalizedImage(){
 void MainWindow::on_pushButton_2_clicked()
 {
 
-     MedicalImage* image3D_aux = ReadMedicalImage("brain.scn");
+    MedicalImage* image3D_aux = ReadMedicalImage("brain.scn");
     //test1
-//    iftMatrix<float> *vec = createMatrix(1,4,(float)0);
-//    vec->elements[0] = 1;
-//    vec->elements[1] = 1;
-//    vec->elements[2] = 1;
-//    vec->elements[3] = 0;
-//    iftMatrix<float> *p = createMatrix(1,4,(float)0);
-//    p->elements[0] = 157/2.;
-//    p->elements[1] = 255/2.;
-//    p->elements[2] = 255/2.;
-//    p->elements[3] = 1;
-//    iftMatrix<float> *p2 = createMatrix(1,4,(float)0);
-//    p2->elements[0] = 157;
-//    p2->elements[1] = 255;
-//    p2->elements[2] = 255;
-//    p2->elements[3] = 1;
-//    QTime myTimer;
-//    int nMilliseconds;
-//    myTimer.start();
-//    MedicalImage* out = refactoreScene(p,p2,image3D_aux,100);
-//    WriteMedicalImage(out,"teste.scn");
-//    nMilliseconds = myTimer.elapsed();
-//    fprintf(stderr,"took %d mseconds to execute \n", nMilliseconds);
+    //    iftMatrix<float> *vec = createMatrix(1,4,(float)0);
+    //    vec->elements[0] = 1;
+    //    vec->elements[1] = 1;
+    //    vec->elements[2] = 1;
+    //    vec->elements[3] = 0;
+    //    iftMatrix<float> *p = createMatrix(1,4,(float)0);
+    //    p->elements[0] = 157/2.;
+    //    p->elements[1] = 255/2.;
+    //    p->elements[2] = 255/2.;
+    //    p->elements[3] = 1;
+    //    iftMatrix<float> *p2 = createMatrix(1,4,(float)0);
+    //    p2->elements[0] = 157;
+    //    p2->elements[1] = 255;
+    //    p2->elements[2] = 255;
+    //    p2->elements[3] = 1;
+    //    QTime myTimer;
+    //    int nMilliseconds;
+    //    myTimer.start();
+    //    MedicalImage* out = refactoreScene(p,p2,image3D_aux,100);
+    //    WriteMedicalImage(out,"teste.scn");
+    //    nMilliseconds = myTimer.elapsed();
+    //    fprintf(stderr,"took %d mseconds to execute \n", nMilliseconds);
 
 
-//    //test2
-//     iftMatrix<float> *p = createMatrix(5,4,(float)0);
-//     p->elements[0] = 68;//image3D_aux->nx/2;
-//     p->elements[1] = 67;//image3D_aux->ny/2;
-//     p->elements[2] = 55;//0;
-//     p->elements[3] = 1;
+    //    //test2
+    //     iftMatrix<float> *p = createMatrix(5,4,(float)0);
+    //     p->elements[0] = 68;//image3D_aux->nx/2;
+    //     p->elements[1] = 67;//image3D_aux->ny/2;
+    //     p->elements[2] = 55;//0;
+    //     p->elements[3] = 1;
 
-//     p->elements[4] = 78;//image3D_aux->nx/2;
-//     p->elements[5] = 19;//image3D_aux->ny/2;
-//     p->elements[6] = 55;//image3D_aux->nz;
-//     p->elements[7] = 1;
+    //     p->elements[4] = 78;//image3D_aux->nx/2;
+    //     p->elements[5] = 19;//image3D_aux->ny/2;
+    //     p->elements[6] = 55;//image3D_aux->nz;
+    //     p->elements[7] = 1;
 
-//     p->elements[8] = 104;//image3D_aux->nx/2;
-//     p->elements[9] = 7;////0;
-//     p->elements[10] = 55;//image3D_aux->nz/2;
-//     p->elements[11] = 1;
+    //     p->elements[8] = 104;//image3D_aux->nx/2;
+    //     p->elements[9] = 7;////0;
+    //     p->elements[10] = 55;//image3D_aux->nz/2;
+    //     p->elements[11] = 1;
 
-//     p->elements[12] = 133;//image3D_aux->nx/2;
-//     p->elements[13] = 38;//image3D_aux->ny;
-//     p->elements[14] = 55;//image3D_aux->nz/2;
-//     p->elements[15] = 1;
+    //     p->elements[12] = 133;//image3D_aux->nx/2;
+    //     p->elements[13] = 38;//image3D_aux->ny;
+    //     p->elements[14] = 55;//image3D_aux->nz/2;
+    //     p->elements[15] = 1;
 
-//     p->elements[16] = 131;//image3D_aux->nx/2;
-//     p->elements[17] = 70;//image3D_aux->ny;
-//     p->elements[18] = 55;//0;
-//     p->elements[19] = 1;
+    //     p->elements[16] = 131;//image3D_aux->nx/2;
+    //     p->elements[17] = 70;//image3D_aux->ny;
+    //     p->elements[18] = 55;//0;
+    //     p->elements[19] = 1;
 
-//    MedicalImage* out = refactoreScene(p,image3D_aux,50);
-//    WriteMedicalImage(out,"teste.scn");
+    //    MedicalImage* out = refactoreScene(p,image3D_aux,50);
+    //    WriteMedicalImage(out,"teste.scn");
 
-//    //teste3
+    //    //teste3
     maximumIntensityProjection(image3D_aux,0,45);
 }
 
@@ -583,34 +585,36 @@ void MainWindow::on_SpinBoxPointX_valueChanged(double p_x)
 {
     ui->SpinBoxPointX->setValue(p_x);
     if(image3D != NULL){
-        iftMatrix<float> *vec = createMatrix(1,4,(float)0);
-        iftMatrix<float> *p = createMatrix(1,4,(float)0);
-        p->elements[0] = ui->SpinBoxPointX->value();
-        p->elements[1] = ui->SpinBoxPointY->value();
-        p->elements[2] = ui->SpinBoxPointZ->value();
-        p->elements[3] = 1;
+        if(renderingOption == 0){
+            iftMatrix<float> *vec = createMatrix(1,4,(float)0);
+            iftMatrix<float> *p = createMatrix(1,4,(float)0);
+            p->elements[0] = ui->SpinBoxPointX->value();
+            p->elements[1] = ui->SpinBoxPointY->value();
+            p->elements[2] = ui->SpinBoxPointZ->value();
+            p->elements[3] = 1;
 
-        vec->elements[0] = ui->SpinBoxVectorX->value();
-        vec->elements[1] = ui->SpinBoxVectorY->value();
-        vec->elements[2] = ui->SpinBoxVectorZ->value();
-        vec->elements[3] = 0;
+            vec->elements[0] = ui->SpinBoxVectorX->value();
+            vec->elements[1] = ui->SpinBoxVectorY->value();
+            vec->elements[2] = ui->SpinBoxVectorZ->value();
+            vec->elements[3] = 0;
 
-        GrayImage *sliceXYZ = getPlanarSlice(p,vec,image3D,true);
-        ViewDisplay *viewXYZ = (ViewDisplay *)calloc(1,sizeof(ViewDisplay));
-        viewXYZ->k1 = 0;
-        viewXYZ->k2 = image3D->maxValue;
-        //WidthLevelGrayImage(slice, view->bright, view->contrast,image3D->maxValue);
-        //updateContrastBrightParameters(viewXYZ,image3D->maxValue/2.0,image3D->maxValue);
-        //WidthLevelGrayImage(slice, viewXYZ->bright, viewXYZ->contrast,image3D->maxValue);
+            GrayImage *sliceXYZ = getPlanarSlice(p,vec,image3D,true);
+            ViewDisplay *viewXYZ = (ViewDisplay *)calloc(1,sizeof(ViewDisplay));
+            viewXYZ->k1 = 0;
+            viewXYZ->k2 = image3D->maxValue;
+            //WidthLevelGrayImage(slice, view->bright, view->contrast,image3D->maxValue);
+            //updateContrastBrightParameters(viewXYZ,image3D->maxValue/2.0,image3D->maxValue);
+            //WidthLevelGrayImage(slice, viewXYZ->bright, viewXYZ->contrast,image3D->maxValue);
 
-        if(image3D->nbits > 8){
-            imageXYZ = createGrayImage2LabelArea(sliceXYZ,image3D->maxValue);
-        }else{
-            imageXYZ = create8bitsGrayImage2LabelArea(sliceXYZ);
+            if(image3D->nbits > 8){
+                imageXYZ = createGrayImage2LabelArea(sliceXYZ,image3D->maxValue);
+            }else{
+                imageXYZ = create8bitsGrayImage2LabelArea(sliceXYZ);
+            }
+
+            displayImageOnLabel(imageXYZ,ui->labelFigureXYZ);
+            DestroyGrayImage(&sliceXYZ);
         }
-
-        displayImageOnLabel(imageXYZ,ui->labelFigureXYZ);
-        DestroyGrayImage(&sliceXYZ);
     }
 }
 
@@ -618,34 +622,36 @@ void MainWindow::on_SpinBoxPointY_valueChanged(double p_y)
 {
     ui->SpinBoxPointY->setValue(p_y);
     if(image3D != NULL ){
-        iftMatrix<float> *vec = createMatrix(1,4,(float)0);
-        iftMatrix<float> *p = createMatrix(1,4,(float)0);
-        p->elements[0] = ui->SpinBoxPointX->value();
-        p->elements[1] = ui->SpinBoxPointY->value();
-        p->elements[2] = ui->SpinBoxPointZ->value();
-        p->elements[3] = 1;
+        if(renderingOption == 0){
+            iftMatrix<float> *vec = createMatrix(1,4,(float)0);
+            iftMatrix<float> *p = createMatrix(1,4,(float)0);
+            p->elements[0] = ui->SpinBoxPointX->value();
+            p->elements[1] = ui->SpinBoxPointY->value();
+            p->elements[2] = ui->SpinBoxPointZ->value();
+            p->elements[3] = 1;
 
-        vec->elements[0] = ui->SpinBoxVectorX->value();
-        vec->elements[1] = ui->SpinBoxVectorY->value();
-        vec->elements[2] = ui->SpinBoxVectorZ->value();
-        vec->elements[3] = 0;
+            vec->elements[0] = ui->SpinBoxVectorX->value();
+            vec->elements[1] = ui->SpinBoxVectorY->value();
+            vec->elements[2] = ui->SpinBoxVectorZ->value();
+            vec->elements[3] = 0;
 
-        GrayImage *slice = getPlanarSlice(p,vec,image3D,true);
-        ViewDisplay *viewXYZ = (ViewDisplay *)calloc(1,sizeof(ViewDisplay));
-        viewXYZ->k1 = 0;
-        viewXYZ->k2 = image3D->maxValue;
-        //WidthLevelGrayImage(slice, view->bright, view->contrast,image3D->maxValue);
-        updateContrastBrightParameters(viewXYZ,image3D->maxValue/2.0,image3D->maxValue);
-        WidthLevelGrayImage(slice, viewXYZ->bright, viewXYZ->contrast,image3D->maxValue);
+            GrayImage *slice = getPlanarSlice(p,vec,image3D,true);
+            ViewDisplay *viewXYZ = (ViewDisplay *)calloc(1,sizeof(ViewDisplay));
+            viewXYZ->k1 = 0;
+            viewXYZ->k2 = image3D->maxValue;
+            //WidthLevelGrayImage(slice, view->bright, view->contrast,image3D->maxValue);
+            updateContrastBrightParameters(viewXYZ,image3D->maxValue/2.0,image3D->maxValue);
+            WidthLevelGrayImage(slice, viewXYZ->bright, viewXYZ->contrast,image3D->maxValue);
 
-        if(image3D->nbits > 8){
-            imageXYZ = createGrayImage2LabelArea(slice,image3D->maxValue);
-        }else{
-            imageXYZ = create8bitsGrayImage2LabelArea(slice);
+            if(image3D->nbits > 8){
+                imageXYZ = createGrayImage2LabelArea(slice,image3D->maxValue);
+            }else{
+                imageXYZ = create8bitsGrayImage2LabelArea(slice);
+            }
+
+            displayImageOnLabel(imageXYZ,ui->labelFigureXYZ);
+            DestroyGrayImage(&slice);
         }
-
-        displayImageOnLabel(imageXYZ,ui->labelFigureXYZ);
-        DestroyGrayImage(&slice);
     }
 }
 
@@ -653,34 +659,36 @@ void MainWindow::on_SpinBoxPointZ_valueChanged(double p_z)
 {
     ui->SpinBoxPointZ->setValue(p_z);
     if(image3D != NULL){
-        iftMatrix<float> *vec = createMatrix(1,4,(float)0);
-        iftMatrix<float> *p = createMatrix(1,4,(float)0);
-        p->elements[0] = ui->SpinBoxPointX->value();
-        p->elements[1] = ui->SpinBoxPointY->value();
-        p->elements[2] = ui->SpinBoxPointZ->value();
-        p->elements[3] = 1;
+        if(renderingOption == 0){
+            iftMatrix<float> *vec = createMatrix(1,4,(float)0);
+            iftMatrix<float> *p = createMatrix(1,4,(float)0);
+            p->elements[0] = ui->SpinBoxPointX->value();
+            p->elements[1] = ui->SpinBoxPointY->value();
+            p->elements[2] = ui->SpinBoxPointZ->value();
+            p->elements[3] = 1;
 
-        vec->elements[0] = ui->SpinBoxVectorX->value();
-        vec->elements[1] = ui->SpinBoxVectorY->value();
-        vec->elements[2] = ui->SpinBoxVectorZ->value();
-        vec->elements[3] = 0;
+            vec->elements[0] = ui->SpinBoxVectorX->value();
+            vec->elements[1] = ui->SpinBoxVectorY->value();
+            vec->elements[2] = ui->SpinBoxVectorZ->value();
+            vec->elements[3] = 0;
 
-        GrayImage *slice = getPlanarSlice(p,vec,image3D,true);
-        ViewDisplay *viewXYZ = (ViewDisplay *)calloc(1,sizeof(ViewDisplay));
-        viewXYZ->k1 = 0;
-        viewXYZ->k2 = image3D->maxValue;
-        //WidthLevelGrayImage(slice, view->bright, view->contrast,image3D->maxValue);
-        updateContrastBrightParameters(viewXYZ,image3D->maxValue/2.0,image3D->maxValue);
-        WidthLevelGrayImage(slice, viewXYZ->bright, viewXYZ->contrast,image3D->maxValue);
+            GrayImage *slice = getPlanarSlice(p,vec,image3D,true);
+            ViewDisplay *viewXYZ = (ViewDisplay *)calloc(1,sizeof(ViewDisplay));
+            viewXYZ->k1 = 0;
+            viewXYZ->k2 = image3D->maxValue;
+            //WidthLevelGrayImage(slice, view->bright, view->contrast,image3D->maxValue);
+            updateContrastBrightParameters(viewXYZ,image3D->maxValue/2.0,image3D->maxValue);
+            WidthLevelGrayImage(slice, viewXYZ->bright, viewXYZ->contrast,image3D->maxValue);
 
-        if(image3D->nbits > 8){
-            imageXYZ = createGrayImage2LabelArea(slice,image3D->maxValue);
-        }else{
-            imageXYZ = create8bitsGrayImage2LabelArea(slice);
+            if(image3D->nbits > 8){
+                imageXYZ = createGrayImage2LabelArea(slice,image3D->maxValue);
+            }else{
+                imageXYZ = create8bitsGrayImage2LabelArea(slice);
+            }
+
+            displayImageOnLabel(imageXYZ,ui->labelFigureXYZ);
+            DestroyGrayImage(&slice);
         }
-
-        displayImageOnLabel(imageXYZ,ui->labelFigureXYZ);
-        DestroyGrayImage(&slice);
     }
 }
 
@@ -688,34 +696,36 @@ void MainWindow::on_SpinBoxVectorX_valueChanged(double v_x)
 {
     ui->SpinBoxVectorX->setValue(v_x);
     if(image3D != NULL){
-        iftMatrix<float> *vec = createMatrix(1,4,(float)0);
-        iftMatrix<float> *p = createMatrix(1,4,(float)0);
-        p->elements[0] = ui->SpinBoxPointX->value();
-        p->elements[1] = ui->SpinBoxPointY->value();
-        p->elements[2] = ui->SpinBoxPointZ->value();
-        p->elements[3] = 1;
+        if(renderingOption == 0){
+            iftMatrix<float> *vec = createMatrix(1,4,(float)0);
+            iftMatrix<float> *p = createMatrix(1,4,(float)0);
+            p->elements[0] = ui->SpinBoxPointX->value();
+            p->elements[1] = ui->SpinBoxPointY->value();
+            p->elements[2] = ui->SpinBoxPointZ->value();
+            p->elements[3] = 1;
 
-        vec->elements[0] = ui->SpinBoxVectorX->value();
-        vec->elements[1] = ui->SpinBoxVectorY->value();
-        vec->elements[2] = ui->SpinBoxVectorZ->value();
-        vec->elements[3] = 0;
+            vec->elements[0] = ui->SpinBoxVectorX->value();
+            vec->elements[1] = ui->SpinBoxVectorY->value();
+            vec->elements[2] = ui->SpinBoxVectorZ->value();
+            vec->elements[3] = 0;
 
-        GrayImage *sliceXYZ = getPlanarSlice(p,vec,image3D,true);
-        ViewDisplay *viewXYZ = (ViewDisplay *)calloc(1,sizeof(ViewDisplay));
-        viewXYZ->k1 = 0;
-        viewXYZ->k2 = image3D->maxValue;
-        //WidthLevelGrayImage(slice, view->bright, view->contrast,image3D->maxValue);
-        updateContrastBrightParameters(viewXYZ,image3D->maxValue/2.0,image3D->maxValue);
-        WidthLevelGrayImage(sliceXYZ, viewXYZ->bright, viewXYZ->contrast,image3D->maxValue);
+            GrayImage *sliceXYZ = getPlanarSlice(p,vec,image3D,true);
+            ViewDisplay *viewXYZ = (ViewDisplay *)calloc(1,sizeof(ViewDisplay));
+            viewXYZ->k1 = 0;
+            viewXYZ->k2 = image3D->maxValue;
+            //WidthLevelGrayImage(slice, view->bright, view->contrast,image3D->maxValue);
+            updateContrastBrightParameters(viewXYZ,image3D->maxValue/2.0,image3D->maxValue);
+            WidthLevelGrayImage(sliceXYZ, viewXYZ->bright, viewXYZ->contrast,image3D->maxValue);
 
-        if(image3D->nbits > 8){
-            imageXYZ = createGrayImage2LabelArea(sliceXYZ,image3D->maxValue);
-        }else{
-            imageXYZ = create8bitsGrayImage2LabelArea(sliceXYZ);
+            if(image3D->nbits > 8){
+                imageXYZ = createGrayImage2LabelArea(sliceXYZ,image3D->maxValue);
+            }else{
+                imageXYZ = create8bitsGrayImage2LabelArea(sliceXYZ);
+            }
+
+            displayImageOnLabel(imageXYZ,ui->labelFigureXYZ);
+            DestroyGrayImage(&sliceXYZ);
         }
-
-        displayImageOnLabel(imageXYZ,ui->labelFigureXYZ);
-        DestroyGrayImage(&sliceXYZ);
     }
 }
 
@@ -723,34 +733,36 @@ void MainWindow::on_SpinBoxVectorY_valueChanged(double v_y)
 {
     ui->SpinBoxVectorY->setValue(v_y);
     if(image3D != NULL){
-        iftMatrix<float> *vec = createMatrix(1,4,(float)0);
-        iftMatrix<float> *p = createMatrix(1,4,(float)0);
-        p->elements[0] = ui->SpinBoxPointX->value();
-        p->elements[1] = ui->SpinBoxPointY->value();
-        p->elements[2] = ui->SpinBoxPointZ->value();
-        p->elements[3] = 1;
+        if(renderingOption == 0){
+            iftMatrix<float> *vec = createMatrix(1,4,(float)0);
+            iftMatrix<float> *p = createMatrix(1,4,(float)0);
+            p->elements[0] = ui->SpinBoxPointX->value();
+            p->elements[1] = ui->SpinBoxPointY->value();
+            p->elements[2] = ui->SpinBoxPointZ->value();
+            p->elements[3] = 1;
 
-        vec->elements[0] = ui->SpinBoxVectorX->value();
-        vec->elements[1] = ui->SpinBoxVectorY->value();
-        vec->elements[2] = ui->SpinBoxVectorZ->value();
-        vec->elements[3] = 0;
+            vec->elements[0] = ui->SpinBoxVectorX->value();
+            vec->elements[1] = ui->SpinBoxVectorY->value();
+            vec->elements[2] = ui->SpinBoxVectorZ->value();
+            vec->elements[3] = 0;
 
-        GrayImage *sliceXYZ = getPlanarSlice(p,vec,image3D,true);
-        ViewDisplay *viewXYZ = (ViewDisplay *)calloc(1,sizeof(ViewDisplay));
-        viewXYZ->k1 = 0;
-        viewXYZ->k2 = image3D->maxValue;
-        //WidthLevelGrayImage(slice, view->bright, view->contrast,image3D->maxValue);
-        updateContrastBrightParameters(viewXYZ,image3D->maxValue/2.0,image3D->maxValue);
-        WidthLevelGrayImage(sliceXYZ, viewXYZ->bright, viewXYZ->contrast,image3D->maxValue);
+            GrayImage *sliceXYZ = getPlanarSlice(p,vec,image3D,true);
+            ViewDisplay *viewXYZ = (ViewDisplay *)calloc(1,sizeof(ViewDisplay));
+            viewXYZ->k1 = 0;
+            viewXYZ->k2 = image3D->maxValue;
+            //WidthLevelGrayImage(slice, view->bright, view->contrast,image3D->maxValue);
+            updateContrastBrightParameters(viewXYZ,image3D->maxValue/2.0,image3D->maxValue);
+            WidthLevelGrayImage(sliceXYZ, viewXYZ->bright, viewXYZ->contrast,image3D->maxValue);
 
-        if(image3D->nbits > 8){
-            imageXYZ = createGrayImage2LabelArea(sliceXYZ,image3D->maxValue);
-        }else{
-            imageXYZ = create8bitsGrayImage2LabelArea(sliceXYZ);
+            if(image3D->nbits > 8){
+                imageXYZ = createGrayImage2LabelArea(sliceXYZ,image3D->maxValue);
+            }else{
+                imageXYZ = create8bitsGrayImage2LabelArea(sliceXYZ);
+            }
+
+            displayImageOnLabel(imageXYZ,ui->labelFigureXYZ);
+            DestroyGrayImage(&sliceXYZ);
         }
-
-        displayImageOnLabel(imageXYZ,ui->labelFigureXYZ);
-        DestroyGrayImage(&sliceXYZ);
     }
 }
 
@@ -758,40 +770,81 @@ void MainWindow::on_SpinBoxVectorZ_valueChanged(double v_z)
 {
     ui->SpinBoxVectorZ->setValue(v_z);
     if(image3D != NULL){
-        iftMatrix<float> *vec = createMatrix(1,4,(float)0);
-        iftMatrix<float> *p = createMatrix(1,4,(float)0);
-        p->elements[0] = ui->SpinBoxPointX->value();
-        p->elements[1] = ui->SpinBoxPointY->value();
-        p->elements[2] = ui->SpinBoxPointZ->value();
-        p->elements[3] = 1;
+        if(renderingOption == 0){
 
-        vec->elements[0] = ui->SpinBoxVectorX->value();
-        vec->elements[1] = ui->SpinBoxVectorY->value();
-        vec->elements[2] = ui->SpinBoxVectorZ->value();
-        vec->elements[3] = 0;
+            iftMatrix<float> *vec = createMatrix(1,4,(float)0);
+            iftMatrix<float> *p = createMatrix(1,4,(float)0);
+            p->elements[0] = ui->SpinBoxPointX->value();
+            p->elements[1] = ui->SpinBoxPointY->value();
+            p->elements[2] = ui->SpinBoxPointZ->value();
+            p->elements[3] = 1;
 
-        GrayImage *sliceXYZ = getPlanarSlice(p,vec,image3D,true);
-        ViewDisplay *viewXYZ = (ViewDisplay *)calloc(1,sizeof(ViewDisplay));
-        viewXYZ->k1 = 0;
-        viewXYZ->k2 = image3D->maxValue;
-        //WidthLevelGrayImage(slice, view->bright, view->contrast,image3D->maxValue);
-        updateContrastBrightParameters(viewXYZ,image3D->maxValue/2.0,image3D->maxValue);
-        WidthLevelGrayImage(sliceXYZ, viewXYZ->bright, viewXYZ->contrast,image3D->maxValue);
+            vec->elements[0] = ui->SpinBoxVectorX->value();
+            vec->elements[1] = ui->SpinBoxVectorY->value();
+            vec->elements[2] = ui->SpinBoxVectorZ->value();
+            vec->elements[3] = 0;
 
-        if(image3D->nbits > 8){
-            imageXYZ = createGrayImage2LabelArea(sliceXYZ,image3D->maxValue);
-        }else{
-            imageXYZ = create8bitsGrayImage2LabelArea(sliceXYZ);
+            GrayImage *sliceXYZ = getPlanarSlice(p,vec,image3D,true);
+            ViewDisplay *viewXYZ = (ViewDisplay *)calloc(1,sizeof(ViewDisplay));
+            viewXYZ->k1 = 0;
+            viewXYZ->k2 = image3D->maxValue;
+            //WidthLevelGrayImage(slice, view->bright, view->contrast,image3D->maxValue);
+            updateContrastBrightParameters(viewXYZ,image3D->maxValue/2.0,image3D->maxValue);
+            WidthLevelGrayImage(sliceXYZ, viewXYZ->bright, viewXYZ->contrast,image3D->maxValue);
+
+            if(image3D->nbits > 8){
+                imageXYZ = createGrayImage2LabelArea(sliceXYZ,image3D->maxValue);
+            }else{
+                imageXYZ = create8bitsGrayImage2LabelArea(sliceXYZ);
+            }
+
+            displayImageOnLabel(imageXYZ,ui->labelFigureXYZ);
+            DestroyGrayImage(&sliceXYZ);
+
         }
-
-        displayImageOnLabel(imageXYZ,ui->labelFigureXYZ);
-        DestroyGrayImage(&sliceXYZ);
     }
 }
 
 void MainWindow::on_actionGenerate_New_Volume_triggered()
 {
     if(image3D != NULL){
-\
+        \
+    }
+}
+
+void MainWindow::on_labelFigureXYZ_customContextMenuRequested(const QPoint &pos)
+{
+    const QPoint globalMousePosition(pos.x() + ui->labelFigureXYZ->geometry().topLeft().x(), pos.y() + ui->labelFigureXYZ->geometry().topLeft().y());
+    renderingOption = createContextMenuForRedering(image3D,labelImage,globalMousePosition,this);
+    if(renderingOption == 0){
+        on_SpinBoxVectorZ_valueChanged(ui->SpinBoxVectorZ->value());
+    }else if(renderingOption == 1){
+        on_doubleSpinBoxThetaX_valueChanged(ui->doubleSpinBoxThetaX->value());
+    }
+}
+
+void MainWindow::on_doubleSpinBoxThetaX_valueChanged(double thetaX_degree)
+{
+    ui->doubleSpinBoxThetaX->setValue(thetaX_degree);
+    if(renderingOption == 1){
+        QTime myTimer;
+        int nMilliseconds;
+        myTimer.start();
+        GrayImage *sliceXYZ = maximumIntensityProjection(image3D,ui->doubleSpinBoxThetaX->value(),ui->doubleSpinBoxThetaY->value());
+        nMilliseconds = myTimer.elapsed();
+        fprintf(stderr,"MIP: %d\n",nMilliseconds);
+
+        ViewDisplay *viewXYZ = (ViewDisplay *)calloc(1,sizeof(ViewDisplay));
+        viewXYZ->k1 = 0;
+        viewXYZ->k2 = image3D->maxValue;
+        updateContrastBrightParameters(viewXYZ,image3D->maxValue/2.0,image3D->maxValue);
+        WidthLevelGrayImage(sliceXYZ, viewXYZ->bright, viewXYZ->contrast,image3D->maxValue);
+        if(image3D->nbits > 8){
+            imageXYZ = createGrayImage2LabelArea(sliceXYZ,image3D->maxValue);
+        }else{
+            imageXYZ = create8bitsGrayImage2LabelArea(sliceXYZ);
+        }
+        displayImageOnLabel(imageXYZ,ui->labelFigureXYZ);
+        DestroyGrayImage(&sliceXYZ);
     }
 }

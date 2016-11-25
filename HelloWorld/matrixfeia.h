@@ -8,6 +8,10 @@
 #include <stdlib.h>
 #include <math.h>
 #include <image.h>
+#include <limits>
+#include <QTime>
+#include <QThread>
+#include <vector>
 
 enum ConverstionTypes { INT2FLOAT=0, FLOAT2INT=1 };
 enum primitiveDataTypesId { INT=0, LONG=1, FLOAT=2, DOUBLE=3, LONG_DOUBLE=4  };
@@ -76,31 +80,31 @@ iftMatrix<T>* allocateMatrixPointer(int numberRows, int numberCols, T initialVal
     return matrix;
 }
 
-template <typename T>
-iftMatrix<T>* allocateAppropriatetMatrixPointer(int numberRows, int numberCols, int dataTypeId){
-    iftMatrix<T> *matrix = NULL;
-    switch (dataTypeId) {
-    case INT:
-        matrix = allocateMatrixPointer(numberRows, numberCols, (int)0);
-        break;
-    case LONG:
-        matrix = allocateMatrixPointer(numberRows, numberCols, (long)0);
-        break;
-    case FLOAT:
-        matrix = allocateMatrixPointer(numberRows, numberCols, (float)0);
-        break;
-    case DOUBLE:
-        matrix = allocateMatrixPointer(numberRows, numberCols, (double)0);
-        break;
-    case LONG_DOUBLE:
-        matrix = allocateMatrixPointer(numberRows, numberCols, (long double)0);
-        break;
-    default:
-        break;
-    }
-    return matrix;
+//template <typename T>
+//iftMatrix<T>* allocateAppropriatetMatrixPointer(int numberRows, int numberCols, int dataTypeId){
+//    iftMatrix<T> *matrix = NULL;
+//    switch (dataTypeId) {
+//    case INT:
+//        matrix = allocateMatrixPointer(numberRows, numberCols, (int)0);
+//        break;
+//    case LONG:
+//        matrix = allocateMatrixPointer(numberRows, numberCols, (long)0);
+//        break;
+//    case FLOAT:
+//        matrix = allocateMatrixPointer(numberRows, numberCols, (float)0);
+//        break;
+//    case DOUBLE:
+//        matrix = allocateMatrixPointer(numberRows, numberCols, (double)0);
+//        break;
+//    case LONG_DOUBLE:
+//        matrix = allocateMatrixPointer(numberRows, numberCols, (long double)0);
+//        break;
+//    default:
+//        break;
+//    }
+//    return matrix;
 
-}
+//}
 
 template <typename T>
 iftMatrix<T>* createMatrix(int numberRows, int numberCols, T initialValue){
@@ -1745,84 +1749,51 @@ void computeInnerProductsGivenVector(iftMatrix<type1> *A, iftMatrix<type1> *vec,
     }
 }
 
-void computeLambdasInplace(iftMatrix<float>*inners1,iftMatrix<float>*inners2,iftMatrix<float>*lambdas){
-    for (int i = 0; i < inners2->numberRows; ++i) {
-        if(fabs(inners2->elements[i]) < 0.00001){
-            inners2->elements[i] = 0.00001;
-        }
-        lambdas->elements[i] = inners1->elements[i]/inners2->elements[i];
-    }
-}
-
-void findPoints(iftMatrix<float>* lambdas, iftMatrix<float>* inners2, iftMatrix<float>*p0,
-                iftMatrix<float>*n_t, iftMatrix<float>* p1, iftMatrix<float>* pn){
-    float HighLambda = -9999999;
-    float lowLambda = 9999999;
-    int indexLow = -1;
-    int indexHigh = -1;
-
-    for (int i = 0; i < lambdas->numberRows; ++i) {
-        if(fabs(inners2->elements[i]) > 0.0001 ){
-
-            if(lambdas->elements[i] < lowLambda){
-                lowLambda = lambdas->elements[i];
-                indexLow = i;
-            }
-            if(lambdas->elements[i] > HighLambda){
-                HighLambda = lambdas->elements[i];
-                indexHigh = i;
-            }
-        }
-    }
-
-    p1->elements[0] = (int)(p0->elements[0] + lowLambda*n_t->elements[0]);
-    p1->elements[1] = (int)(p0->elements[1] + lowLambda*n_t->elements[1]);
-    p1->elements[2] = (int)(p0->elements[2] + lowLambda*n_t->elements[2]);
-    p1->elements[3] = 1;
-
-    pn->elements[0] = (int)(p0->elements[0] + HighLambda*n_t->elements[0]);
-    pn->elements[1] = (int)(p0->elements[1] + HighLambda*n_t->elements[1]);
-    pn->elements[2] = (int)(p0->elements[2] + HighLambda*n_t->elements[2]);
-    pn->elements[3] = 1;
-}
-
 
 float getMaximumIntensityOnLine(iftMatrix<float> *p0,iftMatrix<float>*pn,MedicalImage *image3D){
     float x,y,z;
+    p0->elements[0] = (p0->elements[0] >= image3D->nx-1) ? p0->elements[0]-1 :  p0->elements[0];
+    p0->elements[1] = (p0->elements[1] >= image3D->ny-1) ? p0->elements[1]-1 :  p0->elements[1];
+    p0->elements[2] = (p0->elements[2] >= image3D->nz-1) ? p0->elements[2]-1 :  p0->elements[2];
+
+    pn->elements[0] = (pn->elements[0] >= image3D->nx-1) ? pn->elements[0]-1 :  pn->elements[0];
+    pn->elements[1] = (pn->elements[1] >= image3D->ny-1) ? pn->elements[1]-1 :  pn->elements[1];
+    pn->elements[2] = (pn->elements[2] >= image3D->nx-1) ? pn->elements[2]-1 :  pn->elements[2];
+
     x = p0->elements[0];
     y = p0->elements[1];
     z = p0->elements[2];
     iftMatrix<float>* delta = matrixSubtraction(pn,p0);
     float diagonal = computeDiogonal(delta->elements[0],delta->elements[1],delta->elements[2]);
-    float diagonalD = computeDiogonal(image3D->dx,image3D->dy,image3D->dz);
-    int n = diagonal/diagonalD;
-    divideMatrixByScalar(delta,n);
-    float dx,dy,dz;
+    int n = diagonal;
+    divideMatrixByScalar(delta,diagonal);
     float maximumValue = 0;
     float value;
     for (int i = 0; i < n; ++i) {
-        if(x < image3D->nx-1){
-            if(y < image3D->ny-1){
-                if(z < image3D->nz-1){
+        //if(x < image3D->nx-1){
+            //if(y < image3D->ny-1){
+                //if(z < image3D->nz-1){
 
                     value = TrilinearInterpolation(x,y,z,image3D);
                     if(value > maximumValue){
                         maximumValue = value;
                     }
 
-                }
-            }
-        }
+                //}
+            //}
+        //}
 
         x += delta->elements[0];
         y += delta->elements[1];
         z += delta->elements[2];
+
+        //fprintf(stderr,"x: %f, y: %f, z: %f\n",x,y,z);
     }
     return maximumValue;
 }
 
 
-void maximumIntensityProjection(MedicalImage *image3D, float thetax_degree, float thetay_degree){
+GrayImage* maximumIntensityProjection(MedicalImage *image3D, float thetax_degree, float thetay_degree){
     //convert degree to rads
     float thetay_rad = thetay_degree*(M_PI)/180.;
     float thetax_rad = thetax_degree*(M_PI)/180.;
@@ -1846,6 +1817,7 @@ void maximumIntensityProjection(MedicalImage *image3D, float thetax_degree, floa
     iftMatrix<float> *T_inv = matrixMultiplicationF(pc,aux2);
     int h = (int)diagonal;
     GrayImage *image = CreateGrayImage(h,h);
+
 
     iftMatrix<float> *nj = createMatrix(6,4,(float)0);
     iftMatrix<float> *cj = createMatrix(6,4,(float)0);
@@ -1903,7 +1875,7 @@ void maximumIntensityProjection(MedicalImage *image3D, float thetax_degree, floa
     cj->elements[14] = image3D->nz/2.;
     cj->elements[15] = 1;
     //-x normal
-    cj->elements[16] = 0.;
+    cj->elements[16] = 0;
     cj->elements[17] = image3D->ny/2.;
     cj->elements[18] = image3D->nz/2.;
     cj->elements[19] = 1;
@@ -1925,54 +1897,353 @@ void maximumIntensityProjection(MedicalImage *image3D, float thetax_degree, floa
     iftMatrix<float>* p1 = createMatrix(1,4,(float)0);
     iftMatrix<float>* pn = createMatrix(1,4,(float)0);
     iftMatrix<float>* n_t = createMatrix(1,4,(float)0);
-    iftMatrix<float> *cj_copy = createMatrix(6,4,(float)0);
+    iftMatrix<float> *vec_aux = createMatrix(1,4,(float)0);
+    iftMatrix<float>* pointAux = createMatrix(1,4,(float)0);
 
+    float lambdaMax;
+    float lambdaMin;
+    int k;
+    float inn;
+    float inn2;
+    float lambda;
+    float MinFloat = std::numeric_limits<float>::min();
+    float MaxFloat = std::numeric_limits<float>::max();
 
+    matrixMultiplicationF_inPlace(n,T_inv,n_t,1.0, 0.0, CblasNoTrans, CblasTrans);
 
-    for (int v = 0; v < image->ny; ++v) {
-        for (int u = 0; u < image->nx; ++u) {
+    for (int v = 0; v < h; ++v) {
+        for (int u = 0; u < h; ++u) {
 
-            p0->elements[0] = 231;
-            p0->elements[1] = 71;
+            p0->elements[0] = u;
+            p0->elements[1] = v;
             p0->elements[2] = -diagonal/2.;
             p0->elements[3] = 1;
+
+            lambdaMax = MinFloat;
+            lambdaMin = MaxFloat;
             matrixMultiplicationF_inPlace(p0,T_inv,p0_t,1.0,0.0,CblasNoTrans, CblasTrans);
-            matrixMultiplicationF_inPlace(n,T_inv,n_t,1.0, 0.0, CblasNoTrans, CblasTrans);
-            copyMatrixInplace(cj,cj_copy);
-            matrixSubtractVector(cj_copy,p0_t);
-            computeInnerProducts(cj_copy,nj,inners1);
-            computeInnerProductsGivenVector(nj,n_t,inners2);
-            computeLambdasInplace(inners1,inners2,lambdas);
+            k = 0;
+            for (int i=0; i<6; i++){
 
+                k = i*4;
+                vec_aux->elements[0] = cj->elements[k+0] - p0_t->elements[0];
+                vec_aux->elements[1] = cj->elements[k+1] - p0_t->elements[1];
+                vec_aux->elements[2] = cj->elements[k+2] - p0_t->elements[2];
 
-            findPoints(lambdas,inners2, p0_t, n_t, p1, pn);
+                inn = nj->elements[k+0]*vec_aux->elements[0];
+                inn += nj->elements[k+1]*vec_aux->elements[1];
+                inn += nj->elements[k+2]*vec_aux->elements[2];
 
-            printMatrix(p1);
-            printMatrix(pn);
-            if(p1->elements[0] >= 0 && p1->elements[1] >= 0 && p1->elements[2] >= 0){
-                if(p1->elements[0] <= image3D->nx && p1->elements[1] <= image3D->ny && p1->elements[2] <= image3D->nz){
-                    if(pn->elements[0] >= 0 && pn->elements[1] >= 0 && pn->elements[2] >= 0){
-                        if(pn->elements[0] <= image3D->nx && pn->elements[1] <= image3D->ny && pn->elements[2] <= image3D->nz){
-                            image->val[v][u] = getMaximumIntensityOnLine(p1,pn,image3D);
+                inn2 = nj->elements[k+0]*n_t->elements[0];
+                inn2 += nj->elements[k+1]*n_t->elements[1];
+                inn2 += nj->elements[k+2]*n_t->elements[2];
+                inn2 = inn2 + 0.0000001;
+                lambda = inn/inn2;
+
+                pointAux->elements[0] = (int)(p0_t->elements[0] + n_t->elements[0]*lambda);
+                pointAux->elements[1] = (int)(p0_t->elements[1] + n_t->elements[1]*lambda);
+                pointAux->elements[2] = (int)(p0_t->elements[2] + n_t->elements[2]*lambda);
+                pointAux->elements[3] = 1;
+
+                if(pointAux->elements[0] < image3D->nx && pointAux->elements[1] < image3D->ny && pointAux->elements[2] < image3D->nz){
+                    if(pointAux->elements[0] >= 0 && pointAux->elements[1] >= 0 && pointAux->elements[2] >= 0){
+                        if(lambda>lambdaMax){
+                            lambdaMax = lambda;
                         }
+                        if(lambda < lambdaMin){
+                            lambdaMin = lambda;
+                        }
+
                     }
                 }
-            }
 
+            }
+            if(lambdaMax - lambdaMin > 0.01){
+                p1->elements[0] = (int)(p0_t->elements[0] + n_t->elements[0]*lambdaMin);
+                p1->elements[1] = (int)(p0_t->elements[1] + n_t->elements[1]*lambdaMin);
+                p1->elements[2] = (int)(p0_t->elements[2] + n_t->elements[2]*lambdaMin);
+                p1->elements[3] = 1;
+
+                pn->elements[0] = (int)(p0_t->elements[0] + n_t->elements[0]*lambdaMax);
+                pn->elements[1] = (int)(p0_t->elements[1] + n_t->elements[1]*lambdaMax);
+                pn->elements[2] = (int)(p0_t->elements[2] + n_t->elements[2]*lambdaMax);
+                pn->elements[3] = 1;
+
+                image->val[v][u] = getMaximumIntensityOnLine(p1,pn,image3D);
+            }
         }
     }
     destroyMatrix(&T_inv);
     destroyMatrix(&cj);
-    destroyMatrix(&cj_copy);
     destroyMatrix(&nj);
     destroyMatrix(&inners1);
     destroyMatrix(&inners2);
     destroyMatrix(&lambdas);
-    printMatrix(p1);
-    printMatrix(pn);
-    printMatrix(p0);
-    WriteGrayImage(image,"maximum.pgm");
+    destroyMatrix(&aux);
+    destroyMatrix(&aux2);
+    destroyMatrix(&Rx);
+    destroyMatrix(&Ry);
+    destroyMatrix(&pc_dash);
+    destroyMatrix(&pc);
+    destroyMatrix(&pointAux);
+    destroyMatrix(&vec_aux);
+    destroyMatrix(&n);
+    destroyMatrix(&n_t);
+    return image;
 }
 
+class ParallelMIP : public QThread
+{
+
+public:
+    MedicalImage* image3D;
+    GrayImage* grayImage;
+    iftMatrix<float> *T_inv;
+    float diagonal;
+    int start_u;
+    int end_u;
+    int start_v;
+    int end_v;
+
+    ParallelMIP(void){
+        this->image3D = NULL;
+        this->grayImage = NULL;
+        this->T_inv = NULL;
+        this->diagonal = 0;
+        this->start_u = -1;
+        this->end_u = -1;
+        this->start_v = -1;
+        this->end_v = -1;
+    }
+
+    ParallelMIP(MedicalImage* image3D, GrayImage* grayImage, iftMatrix<float> *T_inv,
+    float diagonal, int start_u, int end_u, int start_v, int end_v){
+        this->image3D = image3D;
+        this->grayImage = grayImage;
+        this->T_inv = T_inv;
+        this->diagonal = diagonal;
+        this->start_u = start_u;
+        this->end_u = end_u;
+        this->start_v = start_v;
+        this->end_v = end_v;
+    }
+    ~ParallelMIP(void){
+        DestroyMedicalImage(&this->image3D);
+        DestroyGrayImage(&this->grayImage);
+        destroyMatrix(&this->T_inv);
+    }
+
+
+private:
+        void run(){
+
+            iftMatrix<float> *nj = createMatrix(6,4,(float)0);
+            iftMatrix<float> *cj = createMatrix(6,4,(float)0);
+            iftMatrix<float> *n = createMatrix(1,4,(float)0);
+
+            //-z normal
+            nj->elements[0] = 0;
+            nj->elements[1] = 0;
+            nj->elements[2] = -1;
+            nj->elements[3] = 0;
+            //z normal
+            nj->elements[4] = 0;
+            nj->elements[5] = 0;
+            nj->elements[6] = 1;
+            nj->elements[7] = 0;
+            //-y normal
+            nj->elements[8] = 0;
+            nj->elements[9] = -1;
+            nj->elements[10] = 0;
+            nj->elements[11] = 0;
+            //y normal
+            nj->elements[12] = 0;
+            nj->elements[13] = 1;
+            nj->elements[14] = 0;
+            nj->elements[15] = 0;
+            //-x normal
+            nj->elements[16] = -1;
+            nj->elements[17] = 0;
+            nj->elements[18] = 0;
+            nj->elements[19] = 0;
+            //x normal
+            nj->elements[20] = -1;
+            nj->elements[21] = 0;
+            nj->elements[22] = 0;
+            nj->elements[23] = 0;
+            //-z normal
+            cj->elements[0] = image3D->nx/2.;
+            cj->elements[1] = image3D->ny/2.;
+            cj->elements[2] = 0;
+            cj->elements[3] = 1;
+            //z normal
+            cj->elements[4] = image3D->nx/2.;
+            cj->elements[5] = image3D->ny/2.;
+            cj->elements[6] = image3D->nz;
+            cj->elements[7] = 1;
+            //-y normal
+            cj->elements[8] = image3D->nx/2.;
+            cj->elements[9] = 0;
+            cj->elements[10] = image3D->nz/2.;
+            cj->elements[11] = 1;
+            //y normal
+            cj->elements[12] = image3D->nx/2.;
+            cj->elements[13] = image3D->ny;
+            cj->elements[14] = image3D->nz/2.;
+            cj->elements[15] = 1;
+            //-x normal
+            cj->elements[16] = 0;
+            cj->elements[17] = image3D->ny/2.;
+            cj->elements[18] = image3D->nz/2.;
+            cj->elements[19] = 1;
+            //x normal
+            cj->elements[20] = image3D->nx;
+            cj->elements[21] = image3D->ny/2.;
+            cj->elements[22] = image3D->nz/2.;
+            cj->elements[23] = 1;
+
+            n->elements[0] = 0;
+            n->elements[1] = 0;
+            n->elements[2] = 1;
+            n->elements[3] = 0;
+            iftMatrix<float>* inners1 = createMatrix(6,1,(float)0);
+            iftMatrix<float>* inners2 = createMatrix(6,1,(float)0);
+            iftMatrix<float>* lambdas = createMatrix(6,1,(float)0);
+            iftMatrix<float>* p0 = createMatrix(1,4,(float)0);
+            iftMatrix<float>* p0_t = createMatrix(1,4,(float)0);
+            iftMatrix<float>* p1 = createMatrix(1,4,(float)0);
+            iftMatrix<float>* pn = createMatrix(1,4,(float)0);
+            iftMatrix<float>* n_t = createMatrix(1,4,(float)0);
+            iftMatrix<float> *vec_aux = createMatrix(1,4,(float)0);
+            iftMatrix<float>* pointAux = createMatrix(1,4,(float)0);
+
+            float lambdaMax;
+            float lambdaMin;
+            int index;
+            int k;
+            float inn;
+            float inn2;
+            float lambda;
+
+
+
+            for (int v = start_v; v < end_v; ++v) {
+                for (int u = start_u; u < end_u; ++u) {
+
+                    p0->elements[0] = u;
+                    p0->elements[1] = v;
+                    p0->elements[2] = -diagonal/2.;
+                    p0->elements[3] = 1;
+
+                    lambdaMax = std::numeric_limits<float>::min();
+                    lambdaMin = std::numeric_limits<float>::max();
+                    index = 0;
+                    matrixMultiplicationF_inPlace(p0,T_inv,p0_t,1.0,0.0,CblasNoTrans, CblasTrans);
+                    matrixMultiplicationF_inPlace(n,T_inv,n_t,1.0, 0.0, CblasNoTrans, CblasTrans);
+                    k = 0;
+                    for (int i=0; i<6; i++){
+
+                        k = i*4;
+                        vec_aux->elements[0] = cj->elements[k+0] - p0_t->elements[0];
+                        vec_aux->elements[1] = cj->elements[k+1] - p0_t->elements[1];
+                        vec_aux->elements[2] = cj->elements[k+2] - p0_t->elements[2];
+
+                        inn = nj->elements[k+0]*vec_aux->elements[0];
+                        inn += nj->elements[k+1]*vec_aux->elements[1];
+                        inn += nj->elements[k+2]*vec_aux->elements[2];
+
+                        inn2 = nj->elements[k+0]*n_t->elements[0];
+                        inn2 += nj->elements[k+1]*n_t->elements[1];
+                        inn2 += nj->elements[k+2]*n_t->elements[2];
+                        inn2 = inn2 + 0.0000001;
+                        lambda = inn/inn2;
+
+                        pointAux->elements[0] = (int)(p0_t->elements[0] + n_t->elements[0]*lambda);
+                        pointAux->elements[1] = (int)(p0_t->elements[1] + n_t->elements[1]*lambda);
+                        pointAux->elements[2] = (int)(p0_t->elements[2] + n_t->elements[2]*lambda);
+                        pointAux->elements[3] = 1;
+
+                        if(pointAux->elements[0] < image3D->nx && pointAux->elements[1] < image3D->ny && pointAux->elements[2] < image3D->nz){
+                            if(pointAux->elements[0] >= 0 && pointAux->elements[1] >= 0 && pointAux->elements[2] >= 0){
+                                if(lambda>lambdaMax){
+                                    lambdaMax = lambda;
+                                }
+                                if(lambda < lambdaMin){
+                                    lambdaMin = lambda;
+                                }
+
+                            }
+                        }
+
+                    }
+                    if(lambdaMax - lambdaMin > 0.01){
+                        p1->elements[0] = (int)(p0_t->elements[0] + n_t->elements[0]*lambdaMin);
+                        p1->elements[1] = (int)(p0_t->elements[1] + n_t->elements[1]*lambdaMin);
+                        p1->elements[2] = (int)(p0_t->elements[2] + n_t->elements[2]*lambdaMin);
+                        p1->elements[3] = 1;
+
+                        pn->elements[0] = (int)(p0_t->elements[0] + n_t->elements[0]*lambdaMax);
+                        pn->elements[1] = (int)(p0_t->elements[1] + n_t->elements[1]*lambdaMax);
+                        pn->elements[2] = (int)(p0_t->elements[2] + n_t->elements[2]*lambdaMax);
+                        pn->elements[3] = 1;
+
+                        grayImage->val[v][u] = getMaximumIntensityOnLine(p1,pn,image3D);
+                    }
+                }
+            }
+            destroyMatrix(&T_inv);
+            destroyMatrix(&cj);
+            destroyMatrix(&nj);
+            destroyMatrix(&inners1);
+            destroyMatrix(&inners2);
+            destroyMatrix(&lambdas);
+            destroyMatrix(&pointAux);
+            destroyMatrix(&vec_aux);
+
+        }
+};
+
+void mipParallel(int nThreads,MedicalImage* image3D, float angleX_degree, float angleY_degree){
+//    float thetay_rad = angleY_degree*(M_PI)/180.;
+//    float thetax_rad = angleX_degree*(M_PI)/180.;
+//    iftMatrix<float> *Ry = createRotationMatrix(-thetay_rad,'y');
+//    iftMatrix<float> *Rx = createRotationMatrix(-thetax_rad,'x');
+//    float diagonal = computeDiogonal(image3D->nx,image3D->ny,image3D->nz);
+//    int h = (int)diagonal;
+//    GrayImage* grayImage = CreateGrayImage(h,h);
+
+//    iftMatrix<float>* pc_dash = createIdentityMatrix(4,4,FLOAT);
+//    iftMatrix<float>* pc = createIdentityMatrix(4,4,FLOAT);
+
+//    pc_dash->elements[3] = -diagonal/2.;
+//    pc_dash->elements[7] = -diagonal/2.;
+//    pc_dash->elements[11] = -diagonal/2.;
+
+//    pc->elements[3] = image3D->nx/2.;
+//    pc->elements[7] = image3D->ny/2.;
+//    pc->elements[11] = image3D->nz/2.;
+
+//    iftMatrix<float> *aux = matrixMultiplicationF(Ry,pc_dash);
+//    iftMatrix<float> *aux2 = matrixMultiplicationF(Rx,aux);
+//    iftMatrix<float> *T_inv = matrixMultiplicationF(pc,aux2);
+
+//    int xLoad = h/nThreads;
+//    int yLoad = h/nThreads;
+//    int lastWorkLoadX = h-xLoad;
+//    int lastWorkLoadY = h-yLoad;
+//    std::vector<ParallelMIP> thread;
+//    for(int i=0; i<nThreads-1; i++){
+//        thread.push_back(ParallelMIP(image3D, grayImage, T_inv, diagonal, i*xLoad,(i+1)*xLoad, i*yLoad,(i+1)*yLoad));
+//        thread[i].start();
+//    }
+//    thread.push_back(ParallelMIP(image3D, grayImage, T_inv, diagonal, (nThreads-1)*xLoad,(nThreads)*xLoad, (nThreads-1)*yLoad,(nThreads)*yLoad));
+//    thread[nThreads-1].start();
+//    for(int i=0; i<nThreads-1; i++){
+//        thread[i].wait();
+//    }
+//    thread[nThreads-1].wait();
+
+
+}
 
 #endif // MATRIXFEIA_H

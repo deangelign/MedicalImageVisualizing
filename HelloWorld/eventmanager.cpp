@@ -249,4 +249,39 @@ int createContextMenuForLabelImage(MedicalImage *image3D,MedicalImage *labelImag
     return selectedOption;
 }
 
+int createContextMenuForRedering(MedicalImage *image3D,MedicalImage *labelImage,const QPoint &pos, QObject *obj){
+    QString stringOption1 = "PlanarView";
+    QString stringOption2 = "Maximum Intensity Projetction";
+    QString stringOption3 = "Volume Rendering";
+    int selectedOption = -1;
+    QMenu *menu = new QMenu();
+    QAction *PlanarView = new QAction(stringOption1, obj);
+    QAction *MIP = new QAction(stringOption2, obj);
+    QAction *VR = new QAction(stringOption3, obj);
+    menu->addAction(PlanarView);
+    menu->addAction(MIP);
+    menu->addAction(VR);
+    if(image3D == NULL){
+        PlanarView->setEnabled(false);
+        MIP->setEnabled(false);
+        VR->setEnabled(false);
+    }else if(labelImage == NULL){
+        PlanarView->setEnabled(true);
+        MIP->setEnabled(true);
+        VR->setEnabled(false);
+    }
+    QAction* selectedItem = menu->exec(pos);
+    if(selectedItem != NULL){
+        if(selectedItem->text() == stringOption1){
+            selectedOption =  0;
+        }
+        else if(selectedItem->text() == stringOption2){
+            selectedOption = 1;
+        }else if(selectedItem->text() == stringOption3){
+            selectedOption = 2;
+        }
+    }
+    return selectedOption;
+}
+
 

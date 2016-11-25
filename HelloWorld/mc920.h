@@ -11,8 +11,6 @@
 #include "gqueue.h"
 #include "displaymanager.h"
 #include "eventmanager.h"
-
-#include "matrixfeia.h"
-
+#include "iftMatrix.h"
 
 #endif

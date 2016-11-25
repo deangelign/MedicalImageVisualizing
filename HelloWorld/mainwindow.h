@@ -5,6 +5,7 @@
 #include "brightcontrastdialog.h"
 #include "refactformdialog.h"
 
+
 namespace Ui {
 class MainWindow;
 }
@@ -65,6 +66,10 @@ private slots:
     void on_SpinBoxVectorZ_valueChanged(double arg1);
 
     void on_actionGenerate_New_Volume_triggered();
+
+    void on_labelFigureXYZ_customContextMenuRequested(const QPoint &pos);
+
+    void on_doubleSpinBoxThetaX_valueChanged(double arg1);
 
 private:
     Ui::MainWindow *ui;
