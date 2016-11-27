@@ -206,18 +206,6 @@ ColorImage *generateColorImageFromLabelImage(GrayImage *grayImage, GrayImage *la
            colorImage->cor[y][x].val[1] = round((newY +yCgCoColorTable->table[colorTableRow][1])*scalingFactor);
            colorImage->cor[y][x].val[2] = round((newY -yCgCoColorTable->table[colorTableRow][1] - yCgCoColorTable->table[colorTableRow][2] )*scalingFactor);
 
-
-
-//          if(colorImage->cor[y][x].val[0] > 3000){
-//              colorImage->cor[y][x].val[0] -= (500);
-//          }
-//          if(colorImage->cor[y][x].val[1] > 3000){
-//              colorImage->cor[y][x].val[1] -= (500);
-//          }
-//          if(colorImage->cor[y][x].val[2] > 3000){
-//              colorImage->cor[y][x].val[2] -= (500);
-//          }
-
           colorImage->cor[y][x].val[0] = colorTableRow==0?0:log(colorImage->cor[y][x].val[0]+1)*beta;
           colorImage->cor[y][x].val[1] = colorTableRow==0?0:log(colorImage->cor[y][x].val[1]+1)*beta;
           colorImage->cor[y][x].val[2] = colorTableRow==0?0:log(colorImage->cor[y][x].val[2]+1)*beta;
@@ -225,6 +213,8 @@ ColorImage *generateColorImageFromLabelImage(GrayImage *grayImage, GrayImage *la
     }
     return colorImage;
 }
+
+
 
 void normalizeGrayImage(GrayImage *img, float minimumValue, float maximumValueSlice,float maximumValueAllowed){
     float I1, I2, K1, K2;

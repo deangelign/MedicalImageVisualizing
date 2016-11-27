@@ -23,13 +23,17 @@ QImage *imageXYZ;
 ViewDisplay *viewZ;
 ViewDisplay *viewY;
 ViewDisplay *viewX;
+ViewDisplay *viewXYZ;
+
 int defaultMaxValue = 4095;
 int NegativeType = 4;
 bool negativeActive = false;
 int NormalizationType = 5;
 bool NormalizationActive = false;
 bool startDrawXYZImage = false;
-int renderingOption;
+int renderingOption=0;
+
+float alphas[4] = {0.0, 0.4, 0.08, 0.08};
 
 
 
@@ -82,7 +86,8 @@ void init(){
     viewX->type = 1;
     updateContrastBrightParameters(viewX,0,defaultMaxValue,0,defaultMaxValue);
 
-    renderingOption=0;
+    viewXYZ = (ViewDisplay *)calloc(1,sizeof(ViewDisplay));
+    viewXYZ->rgbColorTable = NULL;
 }
 
 MainWindow::MainWindow(QWidget *parent) :
@@ -135,6 +140,10 @@ void MainWindow::on_action3D_Image_triggered()
         viewX->k2 = image3D->maxValue;
         updateContrastBrightParameters(viewX,image3D->maxValue/2.0,image3D->maxValue);
 
+        viewXYZ->k2 = image3D->maxValue;
+        viewXYZ->k1 = 0;
+        updateContrastBrightParameters(viewXYZ,image3D->maxValue/2.0,image3D->maxValue);
+
 
         ui->spinBoxImageZ->setMaximum(image3D->nz-1);
         ui->spinBoxImageZ->setValue(viewZ->slice);
@@ -145,23 +154,16 @@ void MainWindow::on_action3D_Image_triggered()
         ui->spinBoxImageX->setMaximum(image3D->nx-1);
         ui->spinBoxImageX->setValue(viewX->slice);
 
+        getQImageFromView(viewZ,image3D,labelImage,&imageZ);
+        getQImageFromView(viewY,image3D,labelImage,&imageY);
+        getQImageFromView(viewX,image3D,labelImage,&imageX);
 
-        //solution1: comprimi 12 bits em 8 bits (desolcamento de 4 bits para a direita)
-        //solution2: salva uma imagem png como 16 bits e depois le ela
-        int solution = 1;
-        if(solution == 1){
+        displayImageOnLabel(imageZ,ui->labelFigureZ);
+        displayImageOnLabel(imageY,ui->labelFigureY);
+        displayImageOnLabel(imageX,ui->labelFigureX);
 
-            getQImageFromView(viewZ,image3D,labelImage,&imageZ);
-            getQImageFromView(viewY,image3D,labelImage,&imageY);
-            getQImageFromView(viewX,image3D,labelImage,&imageX);
-
-            displayImageOnLabel(imageZ,ui->labelFigureZ);
-            displayImageOnLabel(imageY,ui->labelFigureY);
-            displayImageOnLabel(imageX,ui->labelFigureX);
-        }
         ui->SpinBoxPointX->setValue(image3D->nx/2);
         ui->SpinBoxPointY->setValue(image3D->ny/2);
-        startDrawXYZImage = true;
         ui->SpinBoxPointZ->setValue(image3D->nz/2);
 
     }
@@ -267,9 +269,11 @@ void MainWindow::on_actionLabel_map_triggered()
                 destroyRGBColorMap(&viewZ->rgbColorTable);
                 destroyRGBColorMap(&viewY->rgbColorTable);
                 destroyRGBColorMap(&viewX->rgbColorTable);
+                destroyRGBColorMap(&viewXYZ->rgbColorTable);
                 destroyYCgCoColorMap(&viewZ->yCgCoColorTable);
                 destroyYCgCoColorMap(&viewY->yCgCoColorTable);
                 destroyYCgCoColorMap(&viewX->yCgCoColorTable);
+                destroyYCgCoColorMap(&viewXYZ->yCgCoColorTable);
             }
             labelImage = ReadMedicalImage(fileName.toLatin1().data());
 
@@ -277,6 +281,8 @@ void MainWindow::on_actionLabel_map_triggered()
             viewZ->rgbColorTable = generateRGBColorMap(labelImage,4095);
             copyColorMap(viewZ->rgbColorTable,&viewY->rgbColorTable);
             copyColorMap(viewZ->rgbColorTable,&viewX->rgbColorTable);
+            copyColorMap(viewZ->rgbColorTable,&viewXYZ->rgbColorTable);
+
 
             //            for(int i=0; i<viewZ->rgbColorTable->numberRows; i++){
             //                for(int j=0; j<viewZ->rgbColorTable->numberColumns; j++){
@@ -291,7 +297,7 @@ void MainWindow::on_actionLabel_map_triggered()
             convertRGBColorMap2YCgCoColorMap(viewZ->rgbColorTable,&viewZ->yCgCoColorTable, 4095);
             convertRGBColorMap2YCgCoColorMap(viewY->rgbColorTable,&viewY->yCgCoColorTable, 4095);
             convertRGBColorMap2YCgCoColorMap(viewX->rgbColorTable,&viewX->yCgCoColorTable, 4095);
-
+            convertRGBColorMap2YCgCoColorMap(viewXYZ->rgbColorTable,&viewXYZ->yCgCoColorTable, 4095);
             //            for(int i=0; i<viewZ->rgbColorTable->numberRows; i++){
             //                for(int j=0; j<viewZ->rgbColorTable->numberColumns; j++){
             //                    fprintf(stderr,"%f ",viewZ->yCgCoColorTable->table[i][j]);
@@ -514,7 +520,7 @@ void MainWindow::on_pushButton_2_clicked()
     //    WriteMedicalImage(out,"teste.scn");
 
     //    //teste3
-    maximumIntensityProjection(image3D_aux,0,45);
+    maximumIntensityProjection(image3D_aux,0,45,false);
 }
 
 void MainWindow::on_actionRefactor_triggered()
@@ -598,13 +604,10 @@ void MainWindow::on_SpinBoxPointX_valueChanged(double p_x)
             vec->elements[2] = ui->SpinBoxVectorZ->value();
             vec->elements[3] = 0;
 
-            GrayImage *sliceXYZ = getPlanarSlice(p,vec,image3D,true);
-            ViewDisplay *viewXYZ = (ViewDisplay *)calloc(1,sizeof(ViewDisplay));
-            viewXYZ->k1 = 0;
-            viewXYZ->k2 = image3D->maxValue;
+            GrayImage *sliceXYZ = getPlanarSlice(p,vec,image3D,ui->checkBox->isChecked());
             //WidthLevelGrayImage(slice, view->bright, view->contrast,image3D->maxValue);
-            //updateContrastBrightParameters(viewXYZ,image3D->maxValue/2.0,image3D->maxValue);
-            //WidthLevelGrayImage(slice, viewXYZ->bright, viewXYZ->contrast,image3D->maxValue);
+            updateContrastBrightParameters(viewXYZ,image3D->maxValue/2.0,image3D->maxValue);
+            WidthLevelGrayImage(sliceXYZ, viewXYZ->bright, viewXYZ->contrast,image3D->maxValue);
 
             if(image3D->nbits > 8){
                 imageXYZ = createGrayImage2LabelArea(sliceXYZ,image3D->maxValue);
@@ -635,10 +638,7 @@ void MainWindow::on_SpinBoxPointY_valueChanged(double p_y)
             vec->elements[2] = ui->SpinBoxVectorZ->value();
             vec->elements[3] = 0;
 
-            GrayImage *slice = getPlanarSlice(p,vec,image3D,true);
-            ViewDisplay *viewXYZ = (ViewDisplay *)calloc(1,sizeof(ViewDisplay));
-            viewXYZ->k1 = 0;
-            viewXYZ->k2 = image3D->maxValue;
+            GrayImage *slice = getPlanarSlice(p,vec,image3D,ui->checkBox->isChecked());
             //WidthLevelGrayImage(slice, view->bright, view->contrast,image3D->maxValue);
             updateContrastBrightParameters(viewXYZ,image3D->maxValue/2.0,image3D->maxValue);
             WidthLevelGrayImage(slice, viewXYZ->bright, viewXYZ->contrast,image3D->maxValue);
@@ -672,10 +672,7 @@ void MainWindow::on_SpinBoxPointZ_valueChanged(double p_z)
             vec->elements[2] = ui->SpinBoxVectorZ->value();
             vec->elements[3] = 0;
 
-            GrayImage *slice = getPlanarSlice(p,vec,image3D,true);
-            ViewDisplay *viewXYZ = (ViewDisplay *)calloc(1,sizeof(ViewDisplay));
-            viewXYZ->k1 = 0;
-            viewXYZ->k2 = image3D->maxValue;
+            GrayImage *slice = getPlanarSlice(p,vec,image3D,ui->checkBox->isChecked());
             //WidthLevelGrayImage(slice, view->bright, view->contrast,image3D->maxValue);
             updateContrastBrightParameters(viewXYZ,image3D->maxValue/2.0,image3D->maxValue);
             WidthLevelGrayImage(slice, viewXYZ->bright, viewXYZ->contrast,image3D->maxValue);
@@ -709,10 +706,7 @@ void MainWindow::on_SpinBoxVectorX_valueChanged(double v_x)
             vec->elements[2] = ui->SpinBoxVectorZ->value();
             vec->elements[3] = 0;
 
-            GrayImage *sliceXYZ = getPlanarSlice(p,vec,image3D,true);
-            ViewDisplay *viewXYZ = (ViewDisplay *)calloc(1,sizeof(ViewDisplay));
-            viewXYZ->k1 = 0;
-            viewXYZ->k2 = image3D->maxValue;
+            GrayImage *sliceXYZ = getPlanarSlice(p,vec,image3D,ui->checkBox->isChecked());
             //WidthLevelGrayImage(slice, view->bright, view->contrast,image3D->maxValue);
             updateContrastBrightParameters(viewXYZ,image3D->maxValue/2.0,image3D->maxValue);
             WidthLevelGrayImage(sliceXYZ, viewXYZ->bright, viewXYZ->contrast,image3D->maxValue);
@@ -746,10 +740,7 @@ void MainWindow::on_SpinBoxVectorY_valueChanged(double v_y)
             vec->elements[2] = ui->SpinBoxVectorZ->value();
             vec->elements[3] = 0;
 
-            GrayImage *sliceXYZ = getPlanarSlice(p,vec,image3D,true);
-            ViewDisplay *viewXYZ = (ViewDisplay *)calloc(1,sizeof(ViewDisplay));
-            viewXYZ->k1 = 0;
-            viewXYZ->k2 = image3D->maxValue;
+            GrayImage *sliceXYZ = getPlanarSlice(p,vec,image3D,ui->checkBox->isChecked());
             //WidthLevelGrayImage(slice, view->bright, view->contrast,image3D->maxValue);
             updateContrastBrightParameters(viewXYZ,image3D->maxValue/2.0,image3D->maxValue);
             WidthLevelGrayImage(sliceXYZ, viewXYZ->bright, viewXYZ->contrast,image3D->maxValue);
@@ -784,10 +775,7 @@ void MainWindow::on_SpinBoxVectorZ_valueChanged(double v_z)
             vec->elements[2] = ui->SpinBoxVectorZ->value();
             vec->elements[3] = 0;
 
-            GrayImage *sliceXYZ = getPlanarSlice(p,vec,image3D,true);
-            ViewDisplay *viewXYZ = (ViewDisplay *)calloc(1,sizeof(ViewDisplay));
-            viewXYZ->k1 = 0;
-            viewXYZ->k2 = image3D->maxValue;
+            GrayImage *sliceXYZ = getPlanarSlice(p,vec,image3D,ui->checkBox->isChecked());
             //WidthLevelGrayImage(slice, view->bright, view->contrast,image3D->maxValue);
             updateContrastBrightParameters(viewXYZ,image3D->maxValue/2.0,image3D->maxValue);
             WidthLevelGrayImage(sliceXYZ, viewXYZ->bright, viewXYZ->contrast,image3D->maxValue);
@@ -820,6 +808,12 @@ void MainWindow::on_labelFigureXYZ_customContextMenuRequested(const QPoint &pos)
         on_SpinBoxVectorZ_valueChanged(ui->SpinBoxVectorZ->value());
     }else if(renderingOption == 1){
         on_doubleSpinBoxThetaX_valueChanged(ui->doubleSpinBoxThetaX->value());
+    }else if(renderingOption == 2){
+        on_doubleSpinBoxThetaX_valueChanged(ui->doubleSpinBoxThetaX->value());
+    }else if(renderingOption == 3){
+        on_doubleSpinBoxThetaX_valueChanged(ui->doubleSpinBoxThetaX->value());
+    }else if(renderingOption == 4){
+        on_doubleSpinBoxThetaX_valueChanged(ui->doubleSpinBoxThetaX->value());
     }
 }
 
@@ -827,16 +821,8 @@ void MainWindow::on_doubleSpinBoxThetaX_valueChanged(double thetaX_degree)
 {
     ui->doubleSpinBoxThetaX->setValue(thetaX_degree);
     if(renderingOption == 1){
-        QTime myTimer;
-        int nMilliseconds;
-        myTimer.start();
-        GrayImage *sliceXYZ = maximumIntensityProjection(image3D,ui->doubleSpinBoxThetaX->value(),ui->doubleSpinBoxThetaY->value());
-        nMilliseconds = myTimer.elapsed();
-        fprintf(stderr,"MIP: %d\n",nMilliseconds);
-
-        ViewDisplay *viewXYZ = (ViewDisplay *)calloc(1,sizeof(ViewDisplay));
-        viewXYZ->k1 = 0;
-        viewXYZ->k2 = image3D->maxValue;
+        GrayImage *sliceXYZ = maximumIntensityProjection(image3D,ui->doubleSpinBoxThetaX->value(),ui->doubleSpinBoxThetaY->value(),
+                                                         ui->checkBox->isChecked());
         updateContrastBrightParameters(viewXYZ,image3D->maxValue/2.0,image3D->maxValue);
         WidthLevelGrayImage(sliceXYZ, viewXYZ->bright, viewXYZ->contrast,image3D->maxValue);
         if(image3D->nbits > 8){
@@ -846,5 +832,159 @@ void MainWindow::on_doubleSpinBoxThetaX_valueChanged(double thetaX_degree)
         }
         displayImageOnLabel(imageXYZ,ui->labelFigureXYZ);
         DestroyGrayImage(&sliceXYZ);
+    }else if(renderingOption == 2){
+        GrayImage *sliceXYZ = firstHit(image3D,labelImage,ui->doubleSpinBoxThetaX->value(),ui->doubleSpinBoxThetaY->value(),
+                                       ui->checkBox->isChecked());
+
+        updateContrastBrightParameters(viewXYZ,image3D->maxValue/2.0,image3D->maxValue);
+        WidthLevelGrayImage(sliceXYZ, viewXYZ->bright, viewXYZ->contrast,image3D->maxValue);
+        if(image3D->nbits > 8){
+            imageXYZ = createGrayImage2LabelArea(sliceXYZ,image3D->maxValue);
+        }else{
+            imageXYZ = create8bitsGrayImage2LabelArea(sliceXYZ);
+        }
+        displayImageOnLabel(imageXYZ,ui->labelFigureXYZ);
+        DestroyGrayImage(&sliceXYZ);
+    }else if(renderingOption == 3){
+        ColorImage* colorImage = firstHitColor(image3D,labelImage,ui->doubleSpinBoxThetaX->value(),
+                                               ui->doubleSpinBoxThetaY->value(),
+                                               ui->checkBox->isChecked(),viewXYZ);
+
+        imageXYZ = createColorImage2LabelArea(colorImage);
+        displayImageOnLabel(imageXYZ,ui->labelFigureXYZ);
+        DestroyColorImage(&colorImage);
+    }else if(renderingOption == 4){
+        ColorImage* colorImage = renderingColourAlpha(image3D,labelImage,ui->doubleSpinBoxThetaX->value(),
+                                               ui->doubleSpinBoxThetaY->value(),
+                                               ui->checkBox->isChecked(),viewXYZ,alphas);
+
+        imageXYZ = createColorImage2LabelArea(colorImage);
+        displayImageOnLabel(imageXYZ,ui->labelFigureXYZ);
+        DestroyColorImage(&colorImage);
+    }
+
+}
+
+void MainWindow::on_doubleSpinBoxThetaY_valueChanged(double thetaY_degree)
+{
+    ui->doubleSpinBoxThetaY->setValue(thetaY_degree);
+    if(renderingOption == 1){
+        GrayImage *sliceXYZ = maximumIntensityProjection(image3D,ui->doubleSpinBoxThetaX->value(),ui->doubleSpinBoxThetaY->value(),
+                                                         ui->checkBox->isChecked());
+        updateContrastBrightParameters(viewXYZ,image3D->maxValue/2.0,image3D->maxValue);
+        WidthLevelGrayImage(sliceXYZ, viewXYZ->bright, viewXYZ->contrast,image3D->maxValue);
+        if(image3D->nbits > 8){
+            imageXYZ = createGrayImage2LabelArea(sliceXYZ,image3D->maxValue);
+        }else{
+            imageXYZ = create8bitsGrayImage2LabelArea(sliceXYZ);
+        }
+        displayImageOnLabel(imageXYZ,ui->labelFigureXYZ);
+        DestroyGrayImage(&sliceXYZ);
+    }else if(renderingOption == 2){
+        GrayImage *sliceXYZ = firstHit(image3D,labelImage,ui->doubleSpinBoxThetaX->value(),ui->doubleSpinBoxThetaY->value(),
+                                       ui->checkBox->isChecked());
+        updateContrastBrightParameters(viewXYZ,image3D->maxValue/2.0,image3D->maxValue);
+        WidthLevelGrayImage(sliceXYZ, viewXYZ->bright, viewXYZ->contrast,image3D->maxValue);
+        if(image3D->nbits > 8){
+            imageXYZ = createGrayImage2LabelArea(sliceXYZ,image3D->maxValue);
+        }else{
+            imageXYZ = create8bitsGrayImage2LabelArea(sliceXYZ);
+        }
+        displayImageOnLabel(imageXYZ,ui->labelFigureXYZ);
+        DestroyGrayImage(&sliceXYZ);
+    }else if(renderingOption == 3){
+        ColorImage* colorImage = firstHitColor(image3D,labelImage,ui->doubleSpinBoxThetaX->value(),
+                                               ui->doubleSpinBoxThetaY->value(),
+                                               ui->checkBox->isChecked(),viewXYZ);
+
+        imageXYZ = createColorImage2LabelArea(colorImage);
+        displayImageOnLabel(imageXYZ,ui->labelFigureXYZ);
+        DestroyColorImage(&colorImage);
+    }else if(renderingOption == 4){
+        ColorImage* colorImage = renderingColourAlpha(image3D,labelImage,ui->doubleSpinBoxThetaX->value(),
+                                               ui->doubleSpinBoxThetaY->value(),
+                                               ui->checkBox->isChecked(),viewXYZ,alphas);
+
+        imageXYZ = createColorImage2LabelArea(colorImage);
+        displayImageOnLabel(imageXYZ,ui->labelFigureXYZ);
+        DestroyColorImage(&colorImage);
+    }
+}
+
+
+
+void MainWindow::on_checkBox_toggled(bool checked)
+{
+
+    if(renderingOption == 0){
+
+        iftMatrix<float> *vec = createMatrix(1,4,(float)0);
+        iftMatrix<float> *p = createMatrix(1,4,(float)0);
+        p->elements[0] = ui->SpinBoxPointX->value();
+        p->elements[1] = ui->SpinBoxPointY->value();
+        p->elements[2] = ui->SpinBoxPointZ->value();
+        p->elements[3] = 1;
+
+        vec->elements[0] = ui->SpinBoxVectorX->value();
+        vec->elements[1] = ui->SpinBoxVectorY->value();
+        vec->elements[2] = ui->SpinBoxVectorZ->value();
+        vec->elements[3] = 0;
+
+        GrayImage *sliceXYZ = getPlanarSlice(p,vec,image3D,ui->checkBox->isChecked());
+        //WidthLevelGrayImage(slice, view->bright, view->contrast,image3D->maxValue);
+        updateContrastBrightParameters(viewXYZ,image3D->maxValue/2.0,image3D->maxValue);
+        WidthLevelGrayImage(sliceXYZ, viewXYZ->bright, viewXYZ->contrast,image3D->maxValue);
+
+        if(image3D->nbits > 8){
+            imageXYZ = createGrayImage2LabelArea(sliceXYZ,image3D->maxValue);
+        }else{
+            imageXYZ = create8bitsGrayImage2LabelArea(sliceXYZ);
+        }
+
+        displayImageOnLabel(imageXYZ,ui->labelFigureXYZ);
+        DestroyGrayImage(&sliceXYZ);
+
+    }
+    else if(renderingOption == 1){
+        GrayImage *sliceXYZ = maximumIntensityProjection(image3D,ui->doubleSpinBoxThetaX->value(),ui->doubleSpinBoxThetaY->value(),
+                                                         ui->checkBox->isChecked());
+        updateContrastBrightParameters(viewXYZ,image3D->maxValue/2.0,image3D->maxValue);
+        WidthLevelGrayImage(sliceXYZ, viewXYZ->bright, viewXYZ->contrast,image3D->maxValue);
+        if(image3D->nbits > 8){
+            imageXYZ = createGrayImage2LabelArea(sliceXYZ,image3D->maxValue);
+        }else{
+            imageXYZ = create8bitsGrayImage2LabelArea(sliceXYZ);
+        }
+        displayImageOnLabel(imageXYZ,ui->labelFigureXYZ);
+        DestroyGrayImage(&sliceXYZ);
+    }else if(renderingOption == 2){
+        GrayImage *sliceXYZ = firstHit(image3D,labelImage,ui->doubleSpinBoxThetaX->value(),ui->doubleSpinBoxThetaY->value(),
+                                       ui->checkBox->isChecked());
+
+        updateContrastBrightParameters(viewXYZ,image3D->maxValue/2.0,image3D->maxValue);
+        WidthLevelGrayImage(sliceXYZ, viewXYZ->bright, viewXYZ->contrast,image3D->maxValue);
+        if(image3D->nbits > 8){
+            imageXYZ = createGrayImage2LabelArea(sliceXYZ,image3D->maxValue);
+        }else{
+            imageXYZ = create8bitsGrayImage2LabelArea(sliceXYZ);
+        }
+        displayImageOnLabel(imageXYZ,ui->labelFigureXYZ);
+        DestroyGrayImage(&sliceXYZ);
+    }else if(renderingOption == 3){
+        ColorImage* colorImage = firstHitColor(image3D,labelImage,ui->doubleSpinBoxThetaX->value(),
+                                               ui->doubleSpinBoxThetaY->value(),
+                                               ui->checkBox->isChecked(),viewXYZ);
+
+        imageXYZ = createColorImage2LabelArea(colorImage);
+        displayImageOnLabel(imageXYZ,ui->labelFigureXYZ);
+        DestroyColorImage(&colorImage);
+    }else if(renderingOption == 4){
+        ColorImage* colorImage = renderingColourAlpha(image3D,labelImage,ui->doubleSpinBoxThetaX->value(),
+                                               ui->doubleSpinBoxThetaY->value(),
+                                               ui->checkBox->isChecked(),viewXYZ,alphas);
+
+        imageXYZ = createColorImage2LabelArea(colorImage);
+        displayImageOnLabel(imageXYZ,ui->labelFigureXYZ);
+        DestroyColorImage(&colorImage);
     }
 }

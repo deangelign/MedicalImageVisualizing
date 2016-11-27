@@ -12,6 +12,7 @@
 #include <QTime>
 #include <QThread>
 #include <vector>
+#include <displaymanager.h>
 
 enum ConverstionTypes { INT2FLOAT=0, FLOAT2INT=1 };
 enum primitiveDataTypesId { INT=0, LONG=1, FLOAT=2, DOUBLE=3, LONG_DOUBLE=4  };
@@ -753,6 +754,66 @@ void myDDAVersion(float x1, float y1, float x2, float y2, GrayImage* grayImage,
     }
 }
 
+void myDDAVersion(float x1, float y1, float x2, float y2, ColorImage* colorImage,
+                  int value){
+    float eplison = 0.0001;
+    if(fabs(x2-x1) < eplison){
+        x1 += eplison;
+    }
+    if(fabs(y2-y1) < eplison){
+        y1 += eplison;
+    }
+    float slope = (y2-y1)/(x2-x1);
+    float b = y1 - (slope*x1);
+    if(fabs(x2-x1) > fabs(y2-y1)){
+        //eq y = ax + b
+        int x_int;
+        int xFinal_int;
+        if(x1<x2){
+            x_int = (int)x1;
+            xFinal_int = (int)x2;
+        }else{
+            x_int = (int)x2;
+            xFinal_int = (int)x1;
+        }
+
+        int y_int;
+        for (; x_int < xFinal_int; x_int++) {
+            y_int = (slope*x_int)+b;
+            if(y_int < colorImage->ny && x_int < colorImage->nx){
+                if(y_int >= 0 && x_int > 0){
+                    colorImage->cor[y_int][x_int].val[0] = value;
+                    colorImage->cor[y_int][x_int].val[1] = value;
+                    colorImage->cor[y_int][x_int].val[2] = value;
+                }
+            }
+        }
+    }else{
+        //eq (y-b)/a = x
+        int y_int;
+        int yFinal_int;
+        if(y1 < y2){
+            y_int = (int)y1;
+            yFinal_int = (int)y2;
+        }else{
+            y_int = (int)y2;
+            yFinal_int = (int)y1;
+        }
+
+        int x_int;
+        for (; y_int < yFinal_int; y_int++) {
+            x_int = (y_int-b)/slope;
+            if(y_int < colorImage->ny && x_int < colorImage->nx){
+                if(y_int >= 0 && x_int > 0){
+                    colorImage->cor[y_int][x_int].val[0] = value;
+                    colorImage->cor[y_int][x_int].val[1] = value;
+                    colorImage->cor[y_int][x_int].val[2] = value;
+                }
+            }
+        }
+    }
+}
+
 
 void drawInterWireFrame(iftMatrix<float> *transformationMatrix, GrayImage* grayImage, MedicalImage* image3D,
                         float zFront,float zBack,float yFront,float yBack,float xFront,float xBack, int value){
@@ -1409,6 +1470,333 @@ void drawWireFrame(iftMatrix<float> *transformationMatrix, GrayImage* grayImage,
     destroyMatrix(&innerProductsMatrix);
 }
 
+void drawWireFrame(iftMatrix<float> *transformationMatrix, ColorImage* colorImage, MedicalImage* image3D,
+                   int value){
+    iftMatrix<float>*viewVectors = createMatrix(6,4,(float)0);
+    iftMatrix<float>*normalViewPlaneVector = createMatrix(4,1,(float)0);
+    //x view
+    viewVectors->elements[0] = 1;
+    viewVectors->elements[4] = -1;
+    //y view
+    viewVectors->elements[9] = 1;
+    viewVectors->elements[13] = -1;
+    //z view
+    viewVectors->elements[18] = 1;
+    viewVectors->elements[22] = -1;
+
+    //view plane
+    normalViewPlaneVector->elements[2] = -1;
+
+    iftMatrix<float>* rotateViews = matrixMultiplicationF(viewVectors,transformationMatrix, 1.0, 0.0, CblasNoTrans, CblasTrans);
+    iftMatrix<float>* innerProductsMatrix = matrixMultiplicationF(rotateViews,normalViewPlaneVector);
+    //-z is visible
+    if(innerProductsMatrix->elements[5] > 0){
+        iftMatrix<float>* facesPoints = createMatrix(4,4,(float)0);
+        //(0,0,0,1)
+        facesPoints->elements[0] = 0;
+        facesPoints->elements[1] = 0;
+        facesPoints->elements[2] = 0;
+        facesPoints->elements[3] = 1;
+        //(nx,0,0,1)
+        facesPoints->elements[4] = image3D->nx;
+        facesPoints->elements[5] = 0;
+        facesPoints->elements[6] = 0;
+        facesPoints->elements[7] = 1;
+        //(0,ny,0,1)
+        facesPoints->elements[8] = 0;
+        facesPoints->elements[9] = image3D->ny;
+        facesPoints->elements[10] = 0;
+        facesPoints->elements[11] = 1;
+
+        //(nx,ny,0,1)
+        facesPoints->elements[12] = image3D->nx;
+        facesPoints->elements[13] = image3D->ny;
+        facesPoints->elements[14] = 0;
+        facesPoints->elements[15] = 1;
+
+        iftMatrix<float>*facesPointsMZOnViewPlane = matrixMultiplicationF(facesPoints,transformationMatrix, 1.0, 0.0, CblasNoTrans, CblasTrans);
+        myDDAVersion(facesPointsMZOnViewPlane->elements[0],
+                facesPointsMZOnViewPlane->elements[1],
+                facesPointsMZOnViewPlane->elements[4],
+                facesPointsMZOnViewPlane->elements[5], colorImage,value);
+
+        myDDAVersion(facesPointsMZOnViewPlane->elements[0],
+                facesPointsMZOnViewPlane->elements[1],
+                facesPointsMZOnViewPlane->elements[8],
+                facesPointsMZOnViewPlane->elements[9], colorImage,value);
+
+        myDDAVersion(facesPointsMZOnViewPlane->elements[4],
+                facesPointsMZOnViewPlane->elements[5],
+                facesPointsMZOnViewPlane->elements[12],
+                facesPointsMZOnViewPlane->elements[13], colorImage,value);
+
+        myDDAVersion(facesPointsMZOnViewPlane->elements[8],
+                facesPointsMZOnViewPlane->elements[9],
+                facesPointsMZOnViewPlane->elements[12],
+                facesPointsMZOnViewPlane->elements[13], colorImage,value);
+
+        destroyMatrix(&facesPointsMZOnViewPlane);
+        destroyMatrix(&facesPoints);
+
+    }
+
+    //z is visible
+    if(innerProductsMatrix->elements[4] > 0){
+        iftMatrix<float>* facesPoints = createMatrix(4,4,(float)0);
+        //(0,0,nz,1)
+        facesPoints->elements[0] = 0;
+        facesPoints->elements[1] = 0;
+        facesPoints->elements[2] = image3D->nz;
+        facesPoints->elements[3] = 1;
+        //(nx,0,nz,1)
+        facesPoints->elements[4] = image3D->nx;
+        facesPoints->elements[5] = 0;
+        facesPoints->elements[6] = image3D->nz;
+        facesPoints->elements[7] = 1;
+        //(0,ny,nz,1)
+        facesPoints->elements[8] = 0;
+        facesPoints->elements[9] = image3D->ny;
+        facesPoints->elements[10] = image3D->nz;
+        facesPoints->elements[11] = 1;
+        //(nx,ny,nz,1)
+        facesPoints->elements[12] = image3D->nx;
+        facesPoints->elements[13] = image3D->ny;
+        facesPoints->elements[14] = image3D->nz;
+        facesPoints->elements[15] = 1;
+
+        iftMatrix<float>*facesPointsMZOnViewPlane = matrixMultiplicationF(facesPoints,transformationMatrix, 1.0, 0.0, CblasNoTrans, CblasTrans);
+        myDDAVersion(facesPointsMZOnViewPlane->elements[0],
+                facesPointsMZOnViewPlane->elements[1],
+                facesPointsMZOnViewPlane->elements[4],
+                facesPointsMZOnViewPlane->elements[5], colorImage,value);
+
+        myDDAVersion(facesPointsMZOnViewPlane->elements[0],
+                facesPointsMZOnViewPlane->elements[1],
+                facesPointsMZOnViewPlane->elements[8],
+                facesPointsMZOnViewPlane->elements[9], colorImage,value);
+
+        myDDAVersion(facesPointsMZOnViewPlane->elements[4],
+                facesPointsMZOnViewPlane->elements[5],
+                facesPointsMZOnViewPlane->elements[12],
+                facesPointsMZOnViewPlane->elements[13], colorImage,value);
+
+        myDDAVersion(facesPointsMZOnViewPlane->elements[8],
+                facesPointsMZOnViewPlane->elements[9],
+                facesPointsMZOnViewPlane->elements[12],
+                facesPointsMZOnViewPlane->elements[13], colorImage,value);
+
+        destroyMatrix(&facesPointsMZOnViewPlane);
+        destroyMatrix(&facesPoints);
+    }
+
+    //-y is visible
+    if(innerProductsMatrix->elements[3]>0){
+        iftMatrix<float>* facesPoints = createMatrix(4,4,(float)0);
+        //(0,0,0,1)
+        facesPoints->elements[0] = 0;
+        facesPoints->elements[1] = 0;
+        facesPoints->elements[2] = 0;
+        facesPoints->elements[3] = 1;
+        //(nx,0,0,1)
+        facesPoints->elements[4] = image3D->nx;
+        facesPoints->elements[5] = 0;
+        facesPoints->elements[6] = 0;
+        facesPoints->elements[7] = 1;
+        //(0,0,nz,1)
+        facesPoints->elements[8] = 0;
+        facesPoints->elements[9] = 0;
+        facesPoints->elements[10] = image3D->nz;
+        facesPoints->elements[11] = 1;
+
+        //(nx,0,nz,1)
+        facesPoints->elements[12] = image3D->nx;
+        facesPoints->elements[13] = 0;
+        facesPoints->elements[14] = image3D->nz;
+        facesPoints->elements[15] = 1;
+
+        iftMatrix<float>*facesPointsMZOnViewPlane = matrixMultiplicationF(facesPoints,transformationMatrix, 1.0, 0.0, CblasNoTrans, CblasTrans);
+        myDDAVersion(facesPointsMZOnViewPlane->elements[0],
+                facesPointsMZOnViewPlane->elements[1],
+                facesPointsMZOnViewPlane->elements[4],
+                facesPointsMZOnViewPlane->elements[5], colorImage,value);
+
+        myDDAVersion(facesPointsMZOnViewPlane->elements[0],
+                facesPointsMZOnViewPlane->elements[1],
+                facesPointsMZOnViewPlane->elements[8],
+                facesPointsMZOnViewPlane->elements[9], colorImage,value);
+
+        myDDAVersion(facesPointsMZOnViewPlane->elements[4],
+                facesPointsMZOnViewPlane->elements[5],
+                facesPointsMZOnViewPlane->elements[12],
+                facesPointsMZOnViewPlane->elements[13], colorImage,value);
+
+        myDDAVersion(facesPointsMZOnViewPlane->elements[8],
+                facesPointsMZOnViewPlane->elements[9],
+                facesPointsMZOnViewPlane->elements[12],
+                facesPointsMZOnViewPlane->elements[13], colorImage,value);
+
+        destroyMatrix(&facesPointsMZOnViewPlane);
+        destroyMatrix(&facesPoints);
+    }
+
+    //y is visible
+    if(innerProductsMatrix->elements[2]>0){
+        iftMatrix<float>* facesPoints = createMatrix(4,4,(float)0);
+        //(0,ny,0,1)
+        facesPoints->elements[0] = 0;
+        facesPoints->elements[1] = image3D->ny;
+        facesPoints->elements[2] = 0;
+        facesPoints->elements[3] = 1;
+        //(nx,ny,0,1)
+        facesPoints->elements[4] = image3D->nx;
+        facesPoints->elements[5] = image3D->ny;
+        facesPoints->elements[6] = 0;
+        facesPoints->elements[7] = 1;
+        //(0,ny,nz,1)
+        facesPoints->elements[8] = 0;
+        facesPoints->elements[9] = image3D->ny;
+        facesPoints->elements[10] = image3D->nz;
+        facesPoints->elements[11] = 1;
+
+        //(nx,ny,nz,1)
+        facesPoints->elements[12] = image3D->nx;
+        facesPoints->elements[13] = image3D->ny;
+        facesPoints->elements[14] = image3D->nz;
+        facesPoints->elements[15] = 1;
+
+        iftMatrix<float>*facesPointsMZOnViewPlane = matrixMultiplicationF(facesPoints,transformationMatrix, 1.0, 0.0, CblasNoTrans, CblasTrans);
+        myDDAVersion(facesPointsMZOnViewPlane->elements[0],
+                facesPointsMZOnViewPlane->elements[1],
+                facesPointsMZOnViewPlane->elements[4],
+                facesPointsMZOnViewPlane->elements[5], colorImage,value);
+
+        myDDAVersion(facesPointsMZOnViewPlane->elements[0],
+                facesPointsMZOnViewPlane->elements[1],
+                facesPointsMZOnViewPlane->elements[8],
+                facesPointsMZOnViewPlane->elements[9], colorImage,value);
+
+        myDDAVersion(facesPointsMZOnViewPlane->elements[4],
+                facesPointsMZOnViewPlane->elements[5],
+                facesPointsMZOnViewPlane->elements[12],
+                facesPointsMZOnViewPlane->elements[13], colorImage,value);
+
+        myDDAVersion(facesPointsMZOnViewPlane->elements[8],
+                facesPointsMZOnViewPlane->elements[9],
+                facesPointsMZOnViewPlane->elements[12],
+                facesPointsMZOnViewPlane->elements[13], colorImage,value);
+
+        destroyMatrix(&facesPointsMZOnViewPlane);
+        destroyMatrix(&facesPoints);
+    }
+
+    //-x is visible
+    if(innerProductsMatrix->elements[1]>0){
+        iftMatrix<float>* facesPoints = createMatrix(4,4,(float)0);
+        //(0,0,0,1)
+        facesPoints->elements[0] = 0;
+        facesPoints->elements[1] = 0;
+        facesPoints->elements[2] = 0;
+        facesPoints->elements[3] = 1;
+        //(0,ny,0,1)
+        facesPoints->elements[4] = 0;
+        facesPoints->elements[5] = image3D->ny;
+        facesPoints->elements[6] = 0;
+        facesPoints->elements[7] = 1;
+        //(0,0,nz,1)
+        facesPoints->elements[8] = 0;
+        facesPoints->elements[9] = 0;
+        facesPoints->elements[10] = image3D->nz;
+        facesPoints->elements[11] = 1;
+
+        //(0,ny,nz,1)
+        facesPoints->elements[12] = 0;
+        facesPoints->elements[13] = image3D->ny;
+        facesPoints->elements[14] = image3D->nz;
+        facesPoints->elements[15] = 1;
+
+        iftMatrix<float>*facesPointsMZOnViewPlane = matrixMultiplicationF(facesPoints,transformationMatrix, 1.0, 0.0, CblasNoTrans, CblasTrans);
+        myDDAVersion(facesPointsMZOnViewPlane->elements[0],
+                facesPointsMZOnViewPlane->elements[1],
+                facesPointsMZOnViewPlane->elements[4],
+                facesPointsMZOnViewPlane->elements[5], colorImage,value);
+
+        myDDAVersion(facesPointsMZOnViewPlane->elements[0],
+                facesPointsMZOnViewPlane->elements[1],
+                facesPointsMZOnViewPlane->elements[8],
+                facesPointsMZOnViewPlane->elements[9], colorImage,value);
+
+        myDDAVersion(facesPointsMZOnViewPlane->elements[4],
+                facesPointsMZOnViewPlane->elements[5],
+                facesPointsMZOnViewPlane->elements[12],
+                facesPointsMZOnViewPlane->elements[13], colorImage,value);
+
+        myDDAVersion(facesPointsMZOnViewPlane->elements[8],
+                facesPointsMZOnViewPlane->elements[9],
+                facesPointsMZOnViewPlane->elements[12],
+                facesPointsMZOnViewPlane->elements[13], colorImage,value);
+
+        destroyMatrix(&facesPointsMZOnViewPlane);
+        destroyMatrix(&facesPoints);
+    }
+
+    //x is visible
+    if(innerProductsMatrix->elements[0]>0){
+        iftMatrix<float>* facesPoints = createMatrix(4,4,(float)0);
+        //(nx,ny,0,1)
+        facesPoints->elements[0] = image3D->nx;
+        facesPoints->elements[1] = 0;
+        facesPoints->elements[2] = 0;
+        facesPoints->elements[3] = 1;
+        //(nx,ny,0,1)
+        facesPoints->elements[4] = image3D->nx;
+        facesPoints->elements[5] = image3D->ny;
+        facesPoints->elements[6] = 0;
+        facesPoints->elements[7] = 1;
+        //(nx,0,nz,1)
+        facesPoints->elements[8] = image3D->nx;
+        facesPoints->elements[9] = 0;
+        facesPoints->elements[10] = image3D->nz;
+        facesPoints->elements[11] = 1;
+
+        //(nx,ny,nz,1)
+        facesPoints->elements[12] = image3D->nx;
+        facesPoints->elements[13] = image3D->ny;
+        facesPoints->elements[14] = image3D->nz;
+        facesPoints->elements[15] = 1;
+
+        iftMatrix<float>*facesPointsMZOnViewPlane = matrixMultiplicationF(facesPoints,transformationMatrix, 1.0, 0.0, CblasNoTrans, CblasTrans);
+        myDDAVersion(facesPointsMZOnViewPlane->elements[0],
+                facesPointsMZOnViewPlane->elements[1],
+                facesPointsMZOnViewPlane->elements[4],
+                facesPointsMZOnViewPlane->elements[5], colorImage,value);
+
+        myDDAVersion(facesPointsMZOnViewPlane->elements[0],
+                facesPointsMZOnViewPlane->elements[1],
+                facesPointsMZOnViewPlane->elements[8],
+                facesPointsMZOnViewPlane->elements[9], colorImage,value);
+
+        myDDAVersion(facesPointsMZOnViewPlane->elements[4],
+                facesPointsMZOnViewPlane->elements[5],
+                facesPointsMZOnViewPlane->elements[12],
+                facesPointsMZOnViewPlane->elements[13], colorImage,value);
+
+        myDDAVersion(facesPointsMZOnViewPlane->elements[8],
+                facesPointsMZOnViewPlane->elements[9],
+                facesPointsMZOnViewPlane->elements[12],
+                facesPointsMZOnViewPlane->elements[13], colorImage,value);
+
+        destroyMatrix(&facesPointsMZOnViewPlane);
+        destroyMatrix(&facesPoints);
+    }
+
+
+
+    destroyMatrix(&viewVectors);
+    destroyMatrix(&normalViewPlaneVector);
+    destroyMatrix(&rotateViews);
+    destroyMatrix(&innerProductsMatrix);
+}
+
 template <typename Type>
 GrayImage* getPlanarSlice(iftMatrix<Type> *point, iftMatrix<Type> *vector,
                           MedicalImage *image3D, bool drawFrame){
@@ -1751,49 +2139,107 @@ void computeInnerProductsGivenVector(iftMatrix<type1> *A, iftMatrix<type1> *vec,
 
 
 float getMaximumIntensityOnLine(iftMatrix<float> *p0,iftMatrix<float>*pn,MedicalImage *image3D){
-    float x,y,z;
-    p0->elements[0] = (p0->elements[0] >= image3D->nx-1) ? p0->elements[0]-1 :  p0->elements[0];
-    p0->elements[1] = (p0->elements[1] >= image3D->ny-1) ? p0->elements[1]-1 :  p0->elements[1];
-    p0->elements[2] = (p0->elements[2] >= image3D->nz-1) ? p0->elements[2]-1 :  p0->elements[2];
 
-    pn->elements[0] = (pn->elements[0] >= image3D->nx-1) ? pn->elements[0]-1 :  pn->elements[0];
-    pn->elements[1] = (pn->elements[1] >= image3D->ny-1) ? pn->elements[1]-1 :  pn->elements[1];
-    pn->elements[2] = (pn->elements[2] >= image3D->nx-1) ? pn->elements[2]-1 :  pn->elements[2];
-
-    x = p0->elements[0];
-    y = p0->elements[1];
-    z = p0->elements[2];
     iftMatrix<float>* delta = matrixSubtraction(pn,p0);
-    float diagonal = computeDiogonal(delta->elements[0],delta->elements[1],delta->elements[2]);
-    int n = diagonal;
-    divideMatrixByScalar(delta,diagonal);
+    float deltaZ = fabs(delta->elements[2]);
+    float deltaY = fabs(delta->elements[1]);
+    float deltaX = fabs(delta->elements[0]);
+    float a1,a2,b1,b2;
+    int x,y,z;
     float maximumValue = 0;
-    float value;
-    for (int i = 0; i < n; ++i) {
-        //if(x < image3D->nx-1){
-            //if(y < image3D->ny-1){
-                //if(z < image3D->nz-1){
 
-                    value = TrilinearInterpolation(x,y,z,image3D);
-                    if(value > maximumValue){
-                        maximumValue = value;
-                    }
+    p0->elements[0] = (p0->elements[0] >= image3D->nx) ? image3D->nx-1 : p0->elements[0];
+    p0->elements[1] = (p0->elements[1] >= image3D->ny) ? image3D->ny-1 : p0->elements[1];
+    p0->elements[2] = (p0->elements[2] >= image3D->nz) ? image3D->nz-1 : p0->elements[2];
+    pn->elements[0] = (pn->elements[0] >= image3D->nx) ? image3D->nx-1 : pn->elements[0];
+    pn->elements[1] = (pn->elements[1] >= image3D->ny) ? image3D->ny-1 : pn->elements[1];
+    pn->elements[2] = (pn->elements[2] >= image3D->nz) ? image3D->nz-1 : pn->elements[2];
 
-                //}
-            //}
-        //}
+    if(deltaZ >= deltaY && deltaZ >= deltaX){
 
-        x += delta->elements[0];
-        y += delta->elements[1];
-        z += delta->elements[2];
+        a1 = (pn->elements[0]-p0->elements[0])/(pn->elements[2]-p0->elements[2] + 0.00001);
+        b1 = p0->elements[0] - a1*p0->elements[2];
 
-        //fprintf(stderr,"x: %f, y: %f, z: %f\n",x,y,z);
+        a2 = (pn->elements[1]-p0->elements[1])/(pn->elements[2]-p0->elements[2] + 0.00001);
+        b2 = p0->elements[1] - a2*p0->elements[2];
+
+        if(delta->elements[2] >= 0){
+            for(int z=p0->elements[2]; z<pn->elements[2]; z++){
+                x = a1*z + b1;
+                y = a2*z + b2;
+                if (image3D->val[z][y][x] > maximumValue){
+                    maximumValue = image3D->val[z][y][x];
+                }
+            }
+        }else{
+            for(int z=p0->elements[2]; z>pn->elements[2]; z--){
+                x = a1*z + b1;
+                y = a2*z + b2;
+                if (image3D->val[z][y][x] > maximumValue){
+                    maximumValue = image3D->val[z][y][x];
+                }
+            }
+        }
+
+    }else if(deltaY > deltaZ && deltaY >= deltaX){
+        a1 = (pn->elements[0]-p0->elements[0])/(pn->elements[1]-p0->elements[1] + 0.00001);
+        b1 = p0->elements[0] - a1*p0->elements[1];
+
+        a2 = (pn->elements[2]-p0->elements[2])/(pn->elements[1]-p0->elements[1] + 0.00001);
+        b2 = p0->elements[2] - a2*p0->elements[1];
+
+        if(delta->elements[1] > 0){
+            for(int y=p0->elements[1]; y<pn->elements[1]; y++){
+                x = a1*y + b1;
+                z = a2*y + b2;
+                if(image3D->val[z][y][x] > maximumValue){
+                    maximumValue = image3D->val[z][y][x];
+                }
+            }
+        }else{
+            for(int y=p0->elements[1]; y>pn->elements[1]; y--){
+                x = a1*y + b1;
+                z = a2*y + b2;
+                if(image3D->val[z][y][x] > maximumValue){
+                    maximumValue = image3D->val[z][y][x];
+                }
+            }
+        }
+    }else if(deltaX > deltaZ && deltaX>deltaY){
+        a1 = (pn->elements[1]-p0->elements[1])/(pn->elements[0]-p0->elements[0] + 0.00001);
+        b1 = p0->elements[1] - a1*p0->elements[0];
+
+        a2 = (pn->elements[2]-p0->elements[2])/(pn->elements[0]-p0->elements[0] + 0.00001);
+        b2 = p0->elements[2] - a2*p0->elements[0];
+
+        if(delta->elements[0] > 0){
+            for(int x=p0->elements[0]; x<pn->elements[0]; x++){
+                y = a1*x + b1;
+                z = a2*x + b2;
+                if(image3D->val[z][y][x] > maximumValue){
+                    maximumValue = image3D->val[z][y][x];
+                }
+            }
+        }else{
+            for(int x=p0->elements[0]; x>pn->elements[0]; x--){
+                y = a1*x + b1;
+                z = a2*x + b2;
+                if(image3D->val[z][y][x] > maximumValue){
+                    maximumValue = image3D->val[z][y][x];
+                }
+            }
+        }
+    }else{
+        fprintf(stderr,"entrei\n");
     }
+
+
+
+    destroyMatrix(&delta);
     return maximumValue;
 }
 
-
-GrayImage* maximumIntensityProjection(MedicalImage *image3D, float thetax_degree, float thetay_degree){
+GrayImage* maximumIntensityProjection(MedicalImage *image3D, float thetax_degree, float thetay_degree, bool drawFrame){
     //convert degree to rads
     float thetay_rad = thetay_degree*(M_PI)/180.;
     float thetax_rad = thetax_degree*(M_PI)/180.;
@@ -1815,6 +2261,8 @@ GrayImage* maximumIntensityProjection(MedicalImage *image3D, float thetax_degree
     iftMatrix<float> *aux = matrixMultiplicationF(Ry,pc_dash);
     iftMatrix<float> *aux2 = matrixMultiplicationF(Rx,aux);
     iftMatrix<float> *T_inv = matrixMultiplicationF(pc,aux2);
+    iftMatrix<float> *T = copyMatrix(T_inv);
+    invertMatrix(T);
     int h = (int)diagonal;
     GrayImage *image = CreateGrayImage(h,h);
 
@@ -1945,7 +2393,7 @@ GrayImage* maximumIntensityProjection(MedicalImage *image3D, float thetax_degree
                 pointAux->elements[2] = (int)(p0_t->elements[2] + n_t->elements[2]*lambda);
                 pointAux->elements[3] = 1;
 
-                if(pointAux->elements[0] < image3D->nx && pointAux->elements[1] < image3D->ny && pointAux->elements[2] < image3D->nz){
+                if(pointAux->elements[0] <= image3D->nx && pointAux->elements[1] <= image3D->ny && pointAux->elements[2] <= image3D->nz){
                     if(pointAux->elements[0] >= 0 && pointAux->elements[1] >= 0 && pointAux->elements[2] >= 0){
                         if(lambda>lambdaMax){
                             lambdaMax = lambda;
@@ -1970,8 +2418,15 @@ GrayImage* maximumIntensityProjection(MedicalImage *image3D, float thetax_degree
                 pn->elements[3] = 1;
 
                 image->val[v][u] = getMaximumIntensityOnLine(p1,pn,image3D);
+                //fprintf(stderr,"%d %d: %d\n",v,u,image->val[v][u]);
             }
+
         }
+    }
+
+    if(drawFrame){
+        //drawInterWireFrame(T,outputImage, image3D,point->elements[2],image3D->nz,point->elements[1],image3D->ny, point->elements[0],image3D->nx, 2048);
+        drawWireFrame(T,image, image3D,4095);
     }
     destroyMatrix(&T_inv);
     destroyMatrix(&cj);
@@ -1989,261 +2444,1480 @@ GrayImage* maximumIntensityProjection(MedicalImage *image3D, float thetax_degree
     destroyMatrix(&vec_aux);
     destroyMatrix(&n);
     destroyMatrix(&n_t);
+    destroyMatrix(&p1);
+    destroyMatrix(&pn);
+    destroyMatrix(&p0);
+    destroyMatrix(&p0_t);
     return image;
 }
 
-class ParallelMIP : public QThread
-{
+GrayImage* maximumIntensityProjection2(MedicalImage *image3D, float thetax_degree, float thetay_degree, bool drawFrame){
+    //convert degree to rads
+    float thetay_rad = thetay_degree*(M_PI)/180.;
+    float thetax_rad = thetax_degree*(M_PI)/180.;
+    iftMatrix<float> *Ry = createRotationMatrix(-thetay_rad,'y');
+    iftMatrix<float> *Rx = createRotationMatrix(-thetax_rad,'x');
+    float diagonal = computeDiogonal(image3D->nx,image3D->ny,image3D->nz);
 
-public:
-    MedicalImage* image3D;
-    GrayImage* grayImage;
-    iftMatrix<float> *T_inv;
-    float diagonal;
-    int start_u;
-    int end_u;
-    int start_v;
-    int end_v;
+    iftMatrix<float>* pc_dash = createIdentityMatrix(4,4,FLOAT);
+    iftMatrix<float>* pc = createIdentityMatrix(4,4,FLOAT);
 
-    ParallelMIP(void){
-        this->image3D = NULL;
-        this->grayImage = NULL;
-        this->T_inv = NULL;
-        this->diagonal = 0;
-        this->start_u = -1;
-        this->end_u = -1;
-        this->start_v = -1;
-        this->end_v = -1;
+    pc_dash->elements[3] = -diagonal/2.;
+    pc_dash->elements[7] = -diagonal/2.;
+    pc_dash->elements[11] = -diagonal/2.;
+
+    pc->elements[3] = image3D->nx/2.;
+    pc->elements[7] = image3D->ny/2.;
+    pc->elements[11] = image3D->nz/2.;
+
+    iftMatrix<float> *aux = matrixMultiplicationF(Ry,pc_dash);
+    iftMatrix<float> *aux2 = matrixMultiplicationF(Rx,aux);
+    iftMatrix<float> *T_inv = matrixMultiplicationF(pc,aux2);
+    iftMatrix<float> *T = copyMatrix(T_inv);
+    invertMatrix(T);
+    int h = (int)diagonal;
+    GrayImage *image = CreateGrayImage(h,h);
+
+
+    iftMatrix<float> *nj = createMatrix(6,4,(float)0);
+    iftMatrix<float> *cj = createMatrix(6,4,(float)0);
+    iftMatrix<float> *n = createMatrix(1,4,(float)0);
+
+
+    //-z normal
+    nj->elements[0] = 0;
+    nj->elements[1] = 0;
+    nj->elements[2] = -1;
+    nj->elements[3] = 0;
+    //z normal
+    nj->elements[4] = 0;
+    nj->elements[5] = 0;
+    nj->elements[6] = 1;
+    nj->elements[7] = 0;
+    //-y normal
+    nj->elements[8] = 0;
+    nj->elements[9] = -1;
+    nj->elements[10] = 0;
+    nj->elements[11] = 0;
+    //y normal
+    nj->elements[12] = 0;
+    nj->elements[13] = 1;
+    nj->elements[14] = 0;
+    nj->elements[15] = 0;
+    //-x normal
+    nj->elements[16] = -1;
+    nj->elements[17] = 0;
+    nj->elements[18] = 0;
+    nj->elements[19] = 0;
+    //x normal
+    nj->elements[20] = -1;
+    nj->elements[21] = 0;
+    nj->elements[22] = 0;
+    nj->elements[23] = 0;
+    //-z normal
+    cj->elements[0] = image3D->nx/2.;
+    cj->elements[1] = image3D->ny/2.;
+    cj->elements[2] = 0;
+    cj->elements[3] = 1;
+    //z normal
+    cj->elements[4] = image3D->nx/2.;
+    cj->elements[5] = image3D->ny/2.;
+    cj->elements[6] = image3D->nz;
+    cj->elements[7] = 1;
+    //-y normal
+    cj->elements[8] = image3D->nx/2.;
+    cj->elements[9] = 0;
+    cj->elements[10] = image3D->nz/2.;
+    cj->elements[11] = 1;
+    //y normal
+    cj->elements[12] = image3D->nx/2.;
+    cj->elements[13] = image3D->ny;
+    cj->elements[14] = image3D->nz/2.;
+    cj->elements[15] = 1;
+    //-x normal
+    cj->elements[16] = 0;
+    cj->elements[17] = image3D->ny/2.;
+    cj->elements[18] = image3D->nz/2.;
+    cj->elements[19] = 1;
+    //x normal
+    cj->elements[20] = image3D->nx;
+    cj->elements[21] = image3D->ny/2.;
+    cj->elements[22] = image3D->nz/2.;
+    cj->elements[23] = 1;
+
+    n->elements[0] = 0;
+    n->elements[1] = 0;
+    n->elements[2] = 1;
+    n->elements[3] = 0;
+    iftMatrix<float>* inners1 = createMatrix(6,1,(float)0);
+    iftMatrix<float>* inners2 = createMatrix(6,1,(float)0);
+    iftMatrix<float>* lambdas = createMatrix(6,1,(float)0);
+    iftMatrix<float>* p1 = createMatrix(1,4,(float)0);
+    iftMatrix<float>* pn = createMatrix(1,4,(float)0);
+    iftMatrix<float>* n_t = createMatrix(1,4,(float)0);
+    iftMatrix<float> *vec_aux = createMatrix(1,4,(float)0);
+    iftMatrix<float>* pointAux = createMatrix(1,4,(float)0);
+
+    float lambdaMax;
+    float lambdaMin;
+    float inn;
+    float inn2;
+    float lambda;
+    float MinFloat = std::numeric_limits<float>::min();
+    float MaxFloat = std::numeric_limits<float>::max();
+
+    matrixMultiplicationF_inPlace(n,T_inv,n_t,1.0, 0.0, CblasNoTrans, CblasTrans);
+
+    iftMatrix<float> *planCoord = createMatrix(h*h,4,(float)0);
+
+    int k=0;
+    for (int v = 0; v < h; ++v) {
+        for (int u = 0; u < h; ++u) {
+            planCoord->elements[k] = u;
+            ++k;
+            planCoord->elements[k] = v;
+            ++k;
+            planCoord->elements[k] = -diagonal/2;
+            ++k;
+            planCoord->elements[k]= 1;
+            ++k;
+        }
     }
 
-    ParallelMIP(MedicalImage* image3D, GrayImage* grayImage, iftMatrix<float> *T_inv,
-    float diagonal, int start_u, int end_u, int start_v, int end_v){
-        this->image3D = image3D;
-        this->grayImage = grayImage;
-        this->T_inv = T_inv;
-        this->diagonal = diagonal;
-        this->start_u = start_u;
-        this->end_u = end_u;
-        this->start_v = start_v;
-        this->end_v = end_v;
-    }
-    ~ParallelMIP(void){
-        DestroyMedicalImage(&this->image3D);
-        DestroyGrayImage(&this->grayImage);
-        destroyMatrix(&this->T_inv);
-    }
+    iftMatrix<float> *voxelsCoord = matrixMultiplicationF(planCoord,T_inv, 1.0, 0.0, CblasNoTrans, CblasTrans);
+
+    int m=0;
+    for (int v = 0; v < h; ++v) {
+        for (int u = 0; u < h; ++u) {
 
 
-private:
-        void run(){
+            lambdaMax = MinFloat;
+            lambdaMin = MaxFloat;
+            k = 0;
+            for (int i=0; i<6; i++){
 
-            iftMatrix<float> *nj = createMatrix(6,4,(float)0);
-            iftMatrix<float> *cj = createMatrix(6,4,(float)0);
-            iftMatrix<float> *n = createMatrix(1,4,(float)0);
-
-            //-z normal
-            nj->elements[0] = 0;
-            nj->elements[1] = 0;
-            nj->elements[2] = -1;
-            nj->elements[3] = 0;
-            //z normal
-            nj->elements[4] = 0;
-            nj->elements[5] = 0;
-            nj->elements[6] = 1;
-            nj->elements[7] = 0;
-            //-y normal
-            nj->elements[8] = 0;
-            nj->elements[9] = -1;
-            nj->elements[10] = 0;
-            nj->elements[11] = 0;
-            //y normal
-            nj->elements[12] = 0;
-            nj->elements[13] = 1;
-            nj->elements[14] = 0;
-            nj->elements[15] = 0;
-            //-x normal
-            nj->elements[16] = -1;
-            nj->elements[17] = 0;
-            nj->elements[18] = 0;
-            nj->elements[19] = 0;
-            //x normal
-            nj->elements[20] = -1;
-            nj->elements[21] = 0;
-            nj->elements[22] = 0;
-            nj->elements[23] = 0;
-            //-z normal
-            cj->elements[0] = image3D->nx/2.;
-            cj->elements[1] = image3D->ny/2.;
-            cj->elements[2] = 0;
-            cj->elements[3] = 1;
-            //z normal
-            cj->elements[4] = image3D->nx/2.;
-            cj->elements[5] = image3D->ny/2.;
-            cj->elements[6] = image3D->nz;
-            cj->elements[7] = 1;
-            //-y normal
-            cj->elements[8] = image3D->nx/2.;
-            cj->elements[9] = 0;
-            cj->elements[10] = image3D->nz/2.;
-            cj->elements[11] = 1;
-            //y normal
-            cj->elements[12] = image3D->nx/2.;
-            cj->elements[13] = image3D->ny;
-            cj->elements[14] = image3D->nz/2.;
-            cj->elements[15] = 1;
-            //-x normal
-            cj->elements[16] = 0;
-            cj->elements[17] = image3D->ny/2.;
-            cj->elements[18] = image3D->nz/2.;
-            cj->elements[19] = 1;
-            //x normal
-            cj->elements[20] = image3D->nx;
-            cj->elements[21] = image3D->ny/2.;
-            cj->elements[22] = image3D->nz/2.;
-            cj->elements[23] = 1;
-
-            n->elements[0] = 0;
-            n->elements[1] = 0;
-            n->elements[2] = 1;
-            n->elements[3] = 0;
-            iftMatrix<float>* inners1 = createMatrix(6,1,(float)0);
-            iftMatrix<float>* inners2 = createMatrix(6,1,(float)0);
-            iftMatrix<float>* lambdas = createMatrix(6,1,(float)0);
-            iftMatrix<float>* p0 = createMatrix(1,4,(float)0);
-            iftMatrix<float>* p0_t = createMatrix(1,4,(float)0);
-            iftMatrix<float>* p1 = createMatrix(1,4,(float)0);
-            iftMatrix<float>* pn = createMatrix(1,4,(float)0);
-            iftMatrix<float>* n_t = createMatrix(1,4,(float)0);
-            iftMatrix<float> *vec_aux = createMatrix(1,4,(float)0);
-            iftMatrix<float>* pointAux = createMatrix(1,4,(float)0);
-
-            float lambdaMax;
-            float lambdaMin;
-            int index;
-            int k;
-            float inn;
-            float inn2;
-            float lambda;
+                k = i*4;
+                vec_aux->elements[0] = cj->elements[k+0] - voxelsCoord->elements[m+0];
+                vec_aux->elements[1] = cj->elements[k+1] - voxelsCoord->elements[m+1];
+                vec_aux->elements[2] = cj->elements[k+2] - voxelsCoord->elements[m+2];
 
 
+                inn = nj->elements[k+0]*vec_aux->elements[0];
+                inn += nj->elements[k+1]*vec_aux->elements[1];
+                inn += nj->elements[k+2]*vec_aux->elements[2];
 
-            for (int v = start_v; v < end_v; ++v) {
-                for (int u = start_u; u < end_u; ++u) {
+                inn2 = nj->elements[k+0]*n_t->elements[0];
+                inn2 += nj->elements[k+1]*n_t->elements[1];
+                inn2 += nj->elements[k+2]*n_t->elements[2];
+                inn2 = inn2 + 0.0000001;
+                lambda = inn/inn2;
 
-                    p0->elements[0] = u;
-                    p0->elements[1] = v;
-                    p0->elements[2] = -diagonal/2.;
-                    p0->elements[3] = 1;
+                pointAux->elements[0] = (int)(voxelsCoord->elements[m+0] + n_t->elements[0]*lambda);
+                pointAux->elements[1] = (int)(voxelsCoord->elements[m+1] + n_t->elements[1]*lambda);
+                pointAux->elements[2] = (int)(voxelsCoord->elements[m+2] + n_t->elements[2]*lambda);
+                pointAux->elements[3] = 1;
 
-                    lambdaMax = std::numeric_limits<float>::min();
-                    lambdaMin = std::numeric_limits<float>::max();
-                    index = 0;
-                    matrixMultiplicationF_inPlace(p0,T_inv,p0_t,1.0,0.0,CblasNoTrans, CblasTrans);
-                    matrixMultiplicationF_inPlace(n,T_inv,n_t,1.0, 0.0, CblasNoTrans, CblasTrans);
-                    k = 0;
-                    for (int i=0; i<6; i++){
-
-                        k = i*4;
-                        vec_aux->elements[0] = cj->elements[k+0] - p0_t->elements[0];
-                        vec_aux->elements[1] = cj->elements[k+1] - p0_t->elements[1];
-                        vec_aux->elements[2] = cj->elements[k+2] - p0_t->elements[2];
-
-                        inn = nj->elements[k+0]*vec_aux->elements[0];
-                        inn += nj->elements[k+1]*vec_aux->elements[1];
-                        inn += nj->elements[k+2]*vec_aux->elements[2];
-
-                        inn2 = nj->elements[k+0]*n_t->elements[0];
-                        inn2 += nj->elements[k+1]*n_t->elements[1];
-                        inn2 += nj->elements[k+2]*n_t->elements[2];
-                        inn2 = inn2 + 0.0000001;
-                        lambda = inn/inn2;
-
-                        pointAux->elements[0] = (int)(p0_t->elements[0] + n_t->elements[0]*lambda);
-                        pointAux->elements[1] = (int)(p0_t->elements[1] + n_t->elements[1]*lambda);
-                        pointAux->elements[2] = (int)(p0_t->elements[2] + n_t->elements[2]*lambda);
-                        pointAux->elements[3] = 1;
-
-                        if(pointAux->elements[0] < image3D->nx && pointAux->elements[1] < image3D->ny && pointAux->elements[2] < image3D->nz){
-                            if(pointAux->elements[0] >= 0 && pointAux->elements[1] >= 0 && pointAux->elements[2] >= 0){
-                                if(lambda>lambdaMax){
-                                    lambdaMax = lambda;
-                                }
-                                if(lambda < lambdaMin){
-                                    lambdaMin = lambda;
-                                }
-
-                            }
+                if(pointAux->elements[0] <= image3D->nx && pointAux->elements[1] <= image3D->ny && pointAux->elements[2] <= image3D->nz){
+                    if(pointAux->elements[0] >= 0 && pointAux->elements[1] >= 0 && pointAux->elements[2] >= 0){
+                        if(lambda>lambdaMax){
+                            lambdaMax = lambda;
+                        }
+                        if(lambda < lambdaMin){
+                            lambdaMin = lambda;
                         }
 
                     }
-                    if(lambdaMax - lambdaMin > 0.01){
-                        p1->elements[0] = (int)(p0_t->elements[0] + n_t->elements[0]*lambdaMin);
-                        p1->elements[1] = (int)(p0_t->elements[1] + n_t->elements[1]*lambdaMin);
-                        p1->elements[2] = (int)(p0_t->elements[2] + n_t->elements[2]*lambdaMin);
-                        p1->elements[3] = 1;
+                }
 
-                        pn->elements[0] = (int)(p0_t->elements[0] + n_t->elements[0]*lambdaMax);
-                        pn->elements[1] = (int)(p0_t->elements[1] + n_t->elements[1]*lambdaMax);
-                        pn->elements[2] = (int)(p0_t->elements[2] + n_t->elements[2]*lambdaMax);
-                        pn->elements[3] = 1;
+            }
+            if(lambdaMax - lambdaMin > 0.01){
+                p1->elements[0] = (int)(voxelsCoord->elements[m+0] + n_t->elements[0]*lambdaMin);
+                p1->elements[1] = (int)(voxelsCoord->elements[m+1] + n_t->elements[1]*lambdaMin);
+                p1->elements[2] = (int)(voxelsCoord->elements[m+2] + n_t->elements[2]*lambdaMin);
+                p1->elements[3] = 1;
 
-                        grayImage->val[v][u] = getMaximumIntensityOnLine(p1,pn,image3D);
+                pn->elements[0] = (int)(voxelsCoord->elements[m+0] + n_t->elements[0]*lambdaMax);
+                pn->elements[1] = (int)(voxelsCoord->elements[m+1] + n_t->elements[1]*lambdaMax);
+                pn->elements[2] = (int)(voxelsCoord->elements[m+2] + n_t->elements[2]*lambdaMax);
+                pn->elements[3] = 1;
+
+                image->val[v][u] = getMaximumIntensityOnLine(p1,pn,image3D);
+                //fprintf(stderr,"%d %d: %d\n",v,u,image->val[v][u]);
+            }
+            m+=4;
+
+        }
+    }
+
+    if(drawFrame){
+        //drawInterWireFrame(T,outputImage, image3D,point->elements[2],image3D->nz,point->elements[1],image3D->ny, point->elements[0],image3D->nx, 2048);
+        drawWireFrame(T,image, image3D,4095);
+    }
+    destroyMatrix(&T_inv);
+    destroyMatrix(&cj);
+    destroyMatrix(&nj);
+    destroyMatrix(&inners1);
+    destroyMatrix(&inners2);
+    destroyMatrix(&lambdas);
+    destroyMatrix(&aux);
+    destroyMatrix(&aux2);
+    destroyMatrix(&Rx);
+    destroyMatrix(&Ry);
+    destroyMatrix(&pc_dash);
+    destroyMatrix(&pc);
+    destroyMatrix(&pointAux);
+    destroyMatrix(&vec_aux);
+    destroyMatrix(&n);
+    destroyMatrix(&n_t);
+    destroyMatrix(&p1);
+    destroyMatrix(&pn);
+    return image;
+}
+
+float getFirstObjectValue(iftMatrix<float> *p0,iftMatrix<float>*pn,MedicalImage *image3D,MedicalImage* labelImage){
+
+    iftMatrix<float>* delta = matrixSubtraction(pn,p0);
+    float deltaZ = fabs(delta->elements[2]);
+    float deltaY = fabs(delta->elements[1]);
+    float deltaX = fabs(delta->elements[0]);
+    float a1,a2,b1,b2;
+    int x,y,z;
+    float firstValue = 0;
+
+    p0->elements[0] = (p0->elements[0] >= image3D->nx) ? image3D->nx-1 : p0->elements[0];
+    p0->elements[1] = (p0->elements[1] >= image3D->ny) ? image3D->ny-1 : p0->elements[1];
+    p0->elements[2] = (p0->elements[2] >= image3D->nz) ? image3D->nz-1 : p0->elements[2];
+    pn->elements[0] = (pn->elements[0] >= image3D->nx) ? image3D->nx-1 : pn->elements[0];
+    pn->elements[1] = (pn->elements[1] >= image3D->ny) ? image3D->ny-1 : pn->elements[1];
+    pn->elements[2] = (pn->elements[2] >= image3D->nz) ? image3D->nz-1 : pn->elements[2];
+
+    if(deltaZ >= deltaY && deltaZ >= deltaX){
+
+        a1 = (pn->elements[0]-p0->elements[0])/(pn->elements[2]-p0->elements[2] + 0.00001);
+        b1 = p0->elements[0] - a1*p0->elements[2];
+
+        a2 = (pn->elements[1]-p0->elements[1])/(pn->elements[2]-p0->elements[2] + 0.00001);
+        b2 = p0->elements[1] - a2*p0->elements[2];
+
+        if(delta->elements[2] >= 0){
+            for(int z=p0->elements[2]; z<pn->elements[2]; z++){
+                x = a1*z + b1;
+                y = a2*z + b2;
+                if (labelImage->val[z][y][x] != 0){
+                    firstValue = image3D->val[z][y][x];
+                    break;
+                }
+            }
+        }else{
+            for(int z=p0->elements[2]; z>pn->elements[2]; z--){
+                x = a1*z + b1;
+                y = a2*z + b2;
+                if (labelImage->val[z][y][x] != 0){
+                    firstValue = image3D->val[z][y][x];
+                    break;
+                }
+            }
+        }
+
+    }else if(deltaY > deltaZ && deltaY >= deltaX){
+        a1 = (pn->elements[0]-p0->elements[0])/(pn->elements[1]-p0->elements[1] + 0.00001);
+        b1 = p0->elements[0] - a1*p0->elements[1];
+
+        a2 = (pn->elements[2]-p0->elements[2])/(pn->elements[1]-p0->elements[1] + 0.00001);
+        b2 = p0->elements[2] - a2*p0->elements[1];
+
+        if(delta->elements[1] > 0){
+            for(int y=p0->elements[1]; y<pn->elements[1]; y++){
+                x = a1*y + b1;
+                z = a2*y + b2;
+                if (labelImage->val[z][y][x] != 0){
+                    firstValue = image3D->val[z][y][x];
+                    break;
+                }
+            }
+        }else{
+            for(int y=p0->elements[1]; y>pn->elements[1]; y--){
+                x = a1*y + b1;
+                z = a2*y + b2;
+                if (labelImage->val[z][y][x] != 0){
+                    firstValue = image3D->val[z][y][x];
+                    break;
+                }
+            }
+        }
+    }else if(deltaX > deltaZ && deltaX>deltaY){
+        a1 = (pn->elements[1]-p0->elements[1])/(pn->elements[0]-p0->elements[0] + 0.00001);
+        b1 = p0->elements[1] - a1*p0->elements[0];
+
+        a2 = (pn->elements[2]-p0->elements[2])/(pn->elements[0]-p0->elements[0] + 0.00001);
+        b2 = p0->elements[2] - a2*p0->elements[0];
+
+        if(delta->elements[0] > 0){
+            for(int x=p0->elements[0]; x<pn->elements[0]; x++){
+                y = a1*x + b1;
+                z = a2*x + b2;
+                if (labelImage->val[z][y][x] != 0){
+                    firstValue = image3D->val[z][y][x];
+                    break;
+                }
+            }
+        }else{
+            for(int x=p0->elements[0]; x>pn->elements[0]; x--){
+                y = a1*x + b1;
+                z = a2*x + b2;
+                if (labelImage->val[z][y][x] != 0){
+                    firstValue = image3D->val[z][y][x];
+                    break;
+                }
+            }
+        }
+
+    }else{
+        fprintf(stderr,"entrei\n");
+    }
+
+    destroyMatrix(&delta);
+    return firstValue;
+
+}
+
+
+
+GrayImage* firstHit(MedicalImage* image3D, MedicalImage *labelImage, float thetax_degree,
+                    float thetay_degree, bool drawFrame){
+    //convert degree to rads
+    float thetay_rad = thetay_degree*(M_PI)/180.;
+    float thetax_rad = thetax_degree*(M_PI)/180.;
+    iftMatrix<float> *Ry = createRotationMatrix(-thetay_rad,'y');
+    iftMatrix<float> *Rx = createRotationMatrix(-thetax_rad,'x');
+    float diagonal = computeDiogonal(image3D->nx,image3D->ny,image3D->nz);
+
+    iftMatrix<float>* pc_dash = createIdentityMatrix(4,4,FLOAT);
+    iftMatrix<float>* pc = createIdentityMatrix(4,4,FLOAT);
+
+    pc_dash->elements[3] = -diagonal/2.;
+    pc_dash->elements[7] = -diagonal/2.;
+    pc_dash->elements[11] = -diagonal/2.;
+
+    pc->elements[3] = image3D->nx/2.;
+    pc->elements[7] = image3D->ny/2.;
+    pc->elements[11] = image3D->nz/2.;
+
+    iftMatrix<float> *aux = matrixMultiplicationF(Ry,pc_dash);
+    iftMatrix<float> *aux2 = matrixMultiplicationF(Rx,aux);
+    iftMatrix<float> *T_inv = matrixMultiplicationF(pc,aux2);
+    iftMatrix<float> *T = copyMatrix(T_inv);
+    invertMatrix(T);
+    int h = (int)diagonal;
+    GrayImage *image = CreateGrayImage(h,h);
+
+
+    iftMatrix<float> *nj = createMatrix(6,4,(float)0);
+    iftMatrix<float> *cj = createMatrix(6,4,(float)0);
+    iftMatrix<float> *n = createMatrix(1,4,(float)0);
+
+
+    //-z normal
+    nj->elements[0] = 0;
+    nj->elements[1] = 0;
+    nj->elements[2] = -1;
+    nj->elements[3] = 0;
+    //z normal
+    nj->elements[4] = 0;
+    nj->elements[5] = 0;
+    nj->elements[6] = 1;
+    nj->elements[7] = 0;
+    //-y normal
+    nj->elements[8] = 0;
+    nj->elements[9] = -1;
+    nj->elements[10] = 0;
+    nj->elements[11] = 0;
+    //y normal
+    nj->elements[12] = 0;
+    nj->elements[13] = 1;
+    nj->elements[14] = 0;
+    nj->elements[15] = 0;
+    //-x normal
+    nj->elements[16] = -1;
+    nj->elements[17] = 0;
+    nj->elements[18] = 0;
+    nj->elements[19] = 0;
+    //x normal
+    nj->elements[20] = -1;
+    nj->elements[21] = 0;
+    nj->elements[22] = 0;
+    nj->elements[23] = 0;
+    //-z normal
+    cj->elements[0] = image3D->nx/2.;
+    cj->elements[1] = image3D->ny/2.;
+    cj->elements[2] = 0;
+    cj->elements[3] = 1;
+    //z normal
+    cj->elements[4] = image3D->nx/2.;
+    cj->elements[5] = image3D->ny/2.;
+    cj->elements[6] = image3D->nz;
+    cj->elements[7] = 1;
+    //-y normal
+    cj->elements[8] = image3D->nx/2.;
+    cj->elements[9] = 0;
+    cj->elements[10] = image3D->nz/2.;
+    cj->elements[11] = 1;
+    //y normal
+    cj->elements[12] = image3D->nx/2.;
+    cj->elements[13] = image3D->ny;
+    cj->elements[14] = image3D->nz/2.;
+    cj->elements[15] = 1;
+    //-x normal
+    cj->elements[16] = 0;
+    cj->elements[17] = image3D->ny/2.;
+    cj->elements[18] = image3D->nz/2.;
+    cj->elements[19] = 1;
+    //x normal
+    cj->elements[20] = image3D->nx;
+    cj->elements[21] = image3D->ny/2.;
+    cj->elements[22] = image3D->nz/2.;
+    cj->elements[23] = 1;
+
+    n->elements[0] = 0;
+    n->elements[1] = 0;
+    n->elements[2] = 1;
+    n->elements[3] = 0;
+    iftMatrix<float>* inners1 = createMatrix(6,1,(float)0);
+    iftMatrix<float>* inners2 = createMatrix(6,1,(float)0);
+    iftMatrix<float>* lambdas = createMatrix(6,1,(float)0);
+    iftMatrix<float>* p0 = createMatrix(1,4,(float)0);
+    iftMatrix<float>* p0_t = createMatrix(1,4,(float)0);
+    iftMatrix<float>* p1 = createMatrix(1,4,(float)0);
+    iftMatrix<float>* pn = createMatrix(1,4,(float)0);
+    iftMatrix<float>* n_t = createMatrix(1,4,(float)0);
+    iftMatrix<float> *vec_aux = createMatrix(1,4,(float)0);
+    iftMatrix<float>* pointAux = createMatrix(1,4,(float)0);
+
+    float lambdaMax;
+    float lambdaMin;
+    int k;
+    float inn;
+    float inn2;
+    float lambda;
+    float MinFloat = std::numeric_limits<float>::min();
+    float MaxFloat = std::numeric_limits<float>::max();
+
+    matrixMultiplicationF_inPlace(n,T_inv,n_t,1.0, 0.0, CblasNoTrans, CblasTrans);
+
+    for (int v = 0; v < h; ++v) {
+        for (int u = 0; u < h; ++u) {
+
+            p0->elements[0] = u;
+            p0->elements[1] = v;
+            p0->elements[2] = -diagonal/2.;
+            p0->elements[3] = 1;
+
+            lambdaMax = MinFloat;
+            lambdaMin = MaxFloat;
+            matrixMultiplicationF_inPlace(p0,T_inv,p0_t,1.0,0.0,CblasNoTrans, CblasTrans);
+            k = 0;
+            for (int i=0; i<6; i++){
+
+                k = i*4;
+                vec_aux->elements[0] = cj->elements[k+0] - p0_t->elements[0];
+                vec_aux->elements[1] = cj->elements[k+1] - p0_t->elements[1];
+                vec_aux->elements[2] = cj->elements[k+2] - p0_t->elements[2];
+
+                inn = nj->elements[k+0]*vec_aux->elements[0];
+                inn += nj->elements[k+1]*vec_aux->elements[1];
+                inn += nj->elements[k+2]*vec_aux->elements[2];
+
+                inn2 = nj->elements[k+0]*n_t->elements[0];
+                inn2 += nj->elements[k+1]*n_t->elements[1];
+                inn2 += nj->elements[k+2]*n_t->elements[2];
+                inn2 = inn2 + 0.0000001;
+                lambda = inn/inn2;
+
+                pointAux->elements[0] = (int)(p0_t->elements[0] + n_t->elements[0]*lambda);
+                pointAux->elements[1] = (int)(p0_t->elements[1] + n_t->elements[1]*lambda);
+                pointAux->elements[2] = (int)(p0_t->elements[2] + n_t->elements[2]*lambda);
+                pointAux->elements[3] = 1;
+
+                if(pointAux->elements[0] <= image3D->nx && pointAux->elements[1] <= image3D->ny && pointAux->elements[2] <= image3D->nz){
+                    if(pointAux->elements[0] >= 0 && pointAux->elements[1] >= 0 && pointAux->elements[2] >= 0){
+                        if(lambda>lambdaMax){
+                            lambdaMax = lambda;
+                        }
+                        if(lambda < lambdaMin){
+                            lambdaMin = lambda;
+                        }
+
+                    }
+                }
+
+            }
+            if(lambdaMax - lambdaMin > 0.01){
+                p1->elements[0] = (int)(p0_t->elements[0] + n_t->elements[0]*lambdaMin);
+                p1->elements[1] = (int)(p0_t->elements[1] + n_t->elements[1]*lambdaMin);
+                p1->elements[2] = (int)(p0_t->elements[2] + n_t->elements[2]*lambdaMin);
+                p1->elements[3] = 1;
+
+                pn->elements[0] = (int)(p0_t->elements[0] + n_t->elements[0]*lambdaMax);
+                pn->elements[1] = (int)(p0_t->elements[1] + n_t->elements[1]*lambdaMax);
+                pn->elements[2] = (int)(p0_t->elements[2] + n_t->elements[2]*lambdaMax);
+                pn->elements[3] = 1;
+
+                image->val[v][u] = getFirstObjectValue(p1,pn,image3D,labelImage);
+                //fprintf(stderr,"%d %d: %d\n",v,u,image->val[v][u]);
+            }
+
+        }
+    }
+
+    //if(drawFrame){
+        //drawWireFrame(T,image, image3D,4095);
+    //}
+    destroyMatrix(&T_inv);
+    destroyMatrix(&cj);
+    destroyMatrix(&nj);
+    destroyMatrix(&inners1);
+    destroyMatrix(&inners2);
+    destroyMatrix(&lambdas);
+    destroyMatrix(&aux);
+    destroyMatrix(&aux2);
+    destroyMatrix(&Rx);
+    destroyMatrix(&Ry);
+    destroyMatrix(&pc_dash);
+    destroyMatrix(&pc);
+    destroyMatrix(&pointAux);
+    destroyMatrix(&vec_aux);
+    destroyMatrix(&n);
+    destroyMatrix(&n_t);
+    destroyMatrix(&p1);
+    destroyMatrix(&pn);
+    destroyMatrix(&p0);
+    destroyMatrix(&p0_t);
+    return image;
+}
+
+void getFirstObjectValueColor(iftMatrix<float> *p0,iftMatrix<float>*pn,
+                          MedicalImage *image3D,MedicalImage* labelImage,
+                          ColorImage* colorImage,
+                          ColorMapFloat *yCgCoColorTable,int v,int u){
+
+    iftMatrix<float>* delta = matrixSubtraction(pn,p0);
+    float deltaZ = fabs(delta->elements[2]);
+    float deltaY = fabs(delta->elements[1]);
+    float deltaX = fabs(delta->elements[0]);
+    float a1,a2,b1,b2;
+    int x,y,z;
+    int colorTableRow;
+    float newY;
+    float scalingFactor = 255;
+    float maximumValue = 4095;
+    float R,G,B;
+    float beta = 30.65;
+    float magicNumber = 2;
+
+    p0->elements[0] = (p0->elements[0] >= image3D->nx) ? image3D->nx-1 : p0->elements[0];
+    p0->elements[1] = (p0->elements[1] >= image3D->ny) ? image3D->ny-1 : p0->elements[1];
+    p0->elements[2] = (p0->elements[2] >= image3D->nz) ? image3D->nz-1 : p0->elements[2];
+    pn->elements[0] = (pn->elements[0] >= image3D->nx) ? image3D->nx-1 : pn->elements[0];
+    pn->elements[1] = (pn->elements[1] >= image3D->ny) ? image3D->ny-1 : pn->elements[1];
+    pn->elements[2] = (pn->elements[2] >= image3D->nz) ? image3D->nz-1 : pn->elements[2];
+
+    if(deltaZ >= deltaY && deltaZ >= deltaX){
+
+
+        a1 = (pn->elements[0]-p0->elements[0])/(pn->elements[2]-p0->elements[2] + 0.00001);
+        b1 = p0->elements[0] - a1*p0->elements[2];
+
+        a2 = (pn->elements[1]-p0->elements[1])/(pn->elements[2]-p0->elements[2] + 0.00001);
+        b2 = p0->elements[1] - a2*p0->elements[2];
+
+        if(delta->elements[2] >= 0){
+            for(int z=p0->elements[2]; z<pn->elements[2]; z++){
+                x = a1*z + b1;
+                y = a2*z + b2;
+                if (labelImage->val[z][y][x] != 0){
+
+                    colorTableRow =labelImage->val[z][y][x];
+                    newY = ((image3D->val[z][y][x])/maximumValue)*magicNumber;
+                    //fprintf(stderr,"%f %f %f\n",yCgCoColorTable->table[colorTableRow][0],yCgCoColorTable->table[colorTableRow][1],yCgCoColorTable->table[colorTableRow][2]);
+                    R = newY -yCgCoColorTable->table[colorTableRow][1] + yCgCoColorTable->table[colorTableRow][2];
+                    R = (R < 0) ? 0: round(R*scalingFactor);
+                    G = newY +yCgCoColorTable->table[colorTableRow][1];
+                    G = (G < 0) ?  0: round(G*scalingFactor);
+                    B = newY -yCgCoColorTable->table[colorTableRow][1] - yCgCoColorTable->table[colorTableRow][2];
+                    B = (B < 0) ?  0: round(B*scalingFactor);
+                    R = log(R+1)*beta;
+                    G = log(G+1)*beta;
+                    B = log(B+1)*beta;
+                    colorImage->cor[v][u].val[0] = R;
+                    colorImage->cor[v][u].val[1] = G;
+                    colorImage->cor[v][u].val[2] = B;
+                    break;
+                }
+            }
+
+        }else{
+
+            for(int z=p0->elements[2]; z>pn->elements[2]; z--){
+                x = a1*z + b1;
+                y = a2*z + b2;
+                if (labelImage->val[z][y][x] != 0){
+
+                    colorTableRow =labelImage->val[z][y][x];
+                    newY = ((image3D->val[z][y][x])/maximumValue)*magicNumber;
+                    //fprintf(stderr,"%f %f %f\n",yCgCoColorTable->table[colorTableRow][0],yCgCoColorTable->table[colorTableRow][1],yCgCoColorTable->table[colorTableRow][2]);
+                    R = newY -yCgCoColorTable->table[colorTableRow][1] + yCgCoColorTable->table[colorTableRow][2];
+                    R = (R < 0) ? 0: round(R*scalingFactor);
+                    G = newY +yCgCoColorTable->table[colorTableRow][1];
+                    G = (G < 0) ?  0: round(G*scalingFactor);
+                    B = newY -yCgCoColorTable->table[colorTableRow][1] - yCgCoColorTable->table[colorTableRow][2];
+                    B = (B < 0) ?  0: round(B*scalingFactor);
+                    R = log(R+1)*beta;
+                    G = log(G+1)*beta;
+                    B = log(B+1)*beta;
+                    colorImage->cor[v][u].val[0] = R;
+                    colorImage->cor[v][u].val[1] = G;
+                    colorImage->cor[v][u].val[2] = B;
+                    break;
+                }
+            }
+
+        }
+
+
+
+    }else if(deltaY >= deltaZ && deltaY >= deltaX){
+        a1 = (pn->elements[0]-p0->elements[0])/(pn->elements[1]-p0->elements[1] + 0.00001);
+        b1 = p0->elements[0] - a1*p0->elements[1];
+
+        a2 = (pn->elements[2]-p0->elements[2])/(pn->elements[1]-p0->elements[1] + 0.00001);
+        b2 = p0->elements[2] - a2*p0->elements[1];
+
+        if(delta->elements[1] >= 0){
+            for(int y=p0->elements[1]; y<pn->elements[1]; y++){
+                x = a1*y + b1;
+                z = a2*y + b2;
+                if (labelImage->val[z][y][x] != 0){
+
+                    colorTableRow =labelImage->val[z][y][x];
+                    newY = ((image3D->val[z][y][x])/maximumValue)*magicNumber;
+                    R = newY -yCgCoColorTable->table[colorTableRow][1] + yCgCoColorTable->table[colorTableRow][2];
+                    R = (R < 0) ? 0: round(R*scalingFactor);
+                    G = newY +yCgCoColorTable->table[colorTableRow][1];
+                    G = (G < 0) ?  0: round(G*scalingFactor);
+                    B = newY -yCgCoColorTable->table[colorTableRow][1] - yCgCoColorTable->table[colorTableRow][2];
+                    B = (B < 0) ?  0: round(B*scalingFactor);
+                    R = log(R+1)*beta;
+                    G = log(G+1)*beta;
+                    B = log(B+1)*beta;
+                    colorImage->cor[v][u].val[0] = R;
+                    colorImage->cor[v][u].val[1] = G;
+                    colorImage->cor[v][u].val[2] = B;
+                    break;
+                }
+            }
+
+        }else{
+            for(int y=p0->elements[1]; y>pn->elements[1]; y--){
+                x = a1*y + b1;
+                z = a2*y + b2;
+                if (labelImage->val[z][y][x] != 0){
+                    colorTableRow =labelImage->val[z][y][x];
+                    newY = ((image3D->val[z][y][x])/maximumValue)*magicNumber;
+                    R = newY -yCgCoColorTable->table[colorTableRow][1] + yCgCoColorTable->table[colorTableRow][2];
+                    R = (R < 0) ? 0: round(R*scalingFactor);
+                    G = newY +yCgCoColorTable->table[colorTableRow][1];
+                    G = (G < 0) ?  0: round(G*scalingFactor);
+                    B = newY -yCgCoColorTable->table[colorTableRow][1] - yCgCoColorTable->table[colorTableRow][2];
+                    B = (B < 0) ?  0: round(B*scalingFactor);
+                    R = log(R+1)*beta;
+                    G = log(G+1)*beta;
+                    B = log(B+1)*beta;
+                    colorImage->cor[v][u].val[0] = R;
+                    colorImage->cor[v][u].val[1] = G;
+                    colorImage->cor[v][u].val[2] = B;
+                    break;
+                }
+            }
+        }
+
+    }else if(deltaX >= deltaZ && deltaX>=deltaY){
+        a1 = (pn->elements[1]-p0->elements[1])/(pn->elements[0]-p0->elements[0] + 0.00001);
+        b1 = p0->elements[1] - a1*p0->elements[0];
+
+        a2 = (pn->elements[2]-p0->elements[2])/(pn->elements[0]-p0->elements[0] + 0.00001);
+        b2 = p0->elements[2] - a2*p0->elements[0];
+
+        if(delta->elements[0] >= 0){
+            for(int x=p0->elements[0]; x<pn->elements[0]; x++){
+                y = a1*x + b1;
+                z = a2*x + b2;
+                if (labelImage->val[z][y][x] != 0){
+
+                    colorTableRow =labelImage->val[z][y][x];
+                    newY = ((image3D->val[z][y][x])/maximumValue)*magicNumber;
+                    R = newY -yCgCoColorTable->table[colorTableRow][1] + yCgCoColorTable->table[colorTableRow][2];
+                    R = (R < 0) ? 0: round(R*scalingFactor);
+                    G = newY +yCgCoColorTable->table[colorTableRow][1];
+                    G = (G < 0) ?  0: round(G*scalingFactor);
+                    B = newY -yCgCoColorTable->table[colorTableRow][1] - yCgCoColorTable->table[colorTableRow][2];
+                    B = (B < 0) ?  0: round(B*scalingFactor);
+                    R = log(R+1)*beta;
+                    G = log(G+1)*beta;
+                    B = log(B+1)*beta;
+                    colorImage->cor[v][u].val[0] = R;
+                    colorImage->cor[v][u].val[1] = G;
+                    colorImage->cor[v][u].val[2] = B;
+                    break;
+                }
+            }
+        }else{
+            for(int x=p0->elements[0]; x>pn->elements[0]; x--){
+                y = a1*x + b1;
+                z = a2*x + b2;
+                if (labelImage->val[z][y][x] != 0){
+
+                    colorTableRow =labelImage->val[z][y][x];
+                    newY = ((image3D->val[z][y][x])/maximumValue)*magicNumber;
+                    R = newY -yCgCoColorTable->table[colorTableRow][1] + yCgCoColorTable->table[colorTableRow][2];
+                    R = (R < 0) ? 0: round(R*scalingFactor);
+                    G = newY +yCgCoColorTable->table[colorTableRow][1];
+                    G = (G < 0) ?  0: round(G*scalingFactor);
+                    B = newY -yCgCoColorTable->table[colorTableRow][1] - yCgCoColorTable->table[colorTableRow][2];
+                    B = (B < 0) ?  0: round(B*scalingFactor);
+                    R = log(R+1)*beta;
+                    G = log(G+1)*beta;
+                    B = log(B+1)*beta;
+                    colorImage->cor[v][u].val[0] = R;
+                    colorImage->cor[v][u].val[1] = G;
+                    colorImage->cor[v][u].val[2] = B;
+                    break;
+                }
+            }
+        }
+
+
+    }else{
+        fprintf(stderr,"entrei\n");
+    }
+
+    destroyMatrix(&delta);
+}
+
+
+
+
+ColorImage* firstHitColor(MedicalImage* image3D, MedicalImage *labelImage,
+              float thetax_degree, float thetay_degree,
+              bool drawFrame, ViewDisplay* view){
+
+    //convert degree to rads
+    float thetay_rad = thetay_degree*(M_PI)/180.;
+    float thetax_rad = thetax_degree*(M_PI)/180.;
+    iftMatrix<float> *Ry = createRotationMatrix(-thetay_rad,'y');
+    iftMatrix<float> *Rx = createRotationMatrix(-thetax_rad,'x');
+    float diagonal = computeDiogonal(image3D->nx,image3D->ny,image3D->nz);
+
+    iftMatrix<float>* pc_dash = createIdentityMatrix(4,4,FLOAT);
+    iftMatrix<float>* pc = createIdentityMatrix(4,4,FLOAT);
+
+    pc_dash->elements[3] = -diagonal/2.;
+    pc_dash->elements[7] = -diagonal/2.;
+    pc_dash->elements[11] = -diagonal/2.;
+
+    pc->elements[3] = image3D->nx/2.;
+    pc->elements[7] = image3D->ny/2.;
+    pc->elements[11] = image3D->nz/2.;
+
+    iftMatrix<float> *aux = matrixMultiplicationF(Ry,pc_dash);
+    iftMatrix<float> *aux2 = matrixMultiplicationF(Rx,aux);
+    iftMatrix<float> *T_inv = matrixMultiplicationF(pc,aux2);
+    iftMatrix<float> *T = copyMatrix(T_inv);
+    invertMatrix(T);
+    int h = (int)diagonal;
+    ColorImage* colorImage = CreateColorImage(h,h);
+
+
+
+    iftMatrix<float> *nj = createMatrix(6,4,(float)0);
+    iftMatrix<float> *cj = createMatrix(6,4,(float)0);
+    iftMatrix<float> *n = createMatrix(1,4,(float)0);
+
+
+    //-z normal
+    nj->elements[0] = 0;
+    nj->elements[1] = 0;
+    nj->elements[2] = -1;
+    nj->elements[3] = 0;
+    //z normal
+    nj->elements[4] = 0;
+    nj->elements[5] = 0;
+    nj->elements[6] = 1;
+    nj->elements[7] = 0;
+    //-y normal
+    nj->elements[8] = 0;
+    nj->elements[9] = -1;
+    nj->elements[10] = 0;
+    nj->elements[11] = 0;
+    //y normal
+    nj->elements[12] = 0;
+    nj->elements[13] = 1;
+    nj->elements[14] = 0;
+    nj->elements[15] = 0;
+    //-x normal
+    nj->elements[16] = -1;
+    nj->elements[17] = 0;
+    nj->elements[18] = 0;
+    nj->elements[19] = 0;
+    //x normal
+    nj->elements[20] = -1;
+    nj->elements[21] = 0;
+    nj->elements[22] = 0;
+    nj->elements[23] = 0;
+    //-z normal
+    cj->elements[0] = image3D->nx/2.;
+    cj->elements[1] = image3D->ny/2.;
+    cj->elements[2] = 0;
+    cj->elements[3] = 1;
+    //z normal
+    cj->elements[4] = image3D->nx/2.;
+    cj->elements[5] = image3D->ny/2.;
+    cj->elements[6] = image3D->nz;
+    cj->elements[7] = 1;
+    //-y normal
+    cj->elements[8] = image3D->nx/2.;
+    cj->elements[9] = 0;
+    cj->elements[10] = image3D->nz/2.;
+    cj->elements[11] = 1;
+    //y normal
+    cj->elements[12] = image3D->nx/2.;
+    cj->elements[13] = image3D->ny;
+    cj->elements[14] = image3D->nz/2.;
+    cj->elements[15] = 1;
+    //-x normal
+    cj->elements[16] = 0;
+    cj->elements[17] = image3D->ny/2.;
+    cj->elements[18] = image3D->nz/2.;
+    cj->elements[19] = 1;
+    //x normal
+    cj->elements[20] = image3D->nx;
+    cj->elements[21] = image3D->ny/2.;
+    cj->elements[22] = image3D->nz/2.;
+    cj->elements[23] = 1;
+
+    n->elements[0] = 0;
+    n->elements[1] = 0;
+    n->elements[2] = 1;
+    n->elements[3] = 0;
+    iftMatrix<float>* inners1 = createMatrix(6,1,(float)0);
+    iftMatrix<float>* inners2 = createMatrix(6,1,(float)0);
+    iftMatrix<float>* lambdas = createMatrix(6,1,(float)0);
+    iftMatrix<float>* p0 = createMatrix(1,4,(float)0);
+    iftMatrix<float>* p0_t = createMatrix(1,4,(float)0);
+    iftMatrix<float>* p1 = createMatrix(1,4,(float)0);
+    iftMatrix<float>* pn = createMatrix(1,4,(float)0);
+    iftMatrix<float>* n_t = createMatrix(1,4,(float)0);
+    iftMatrix<float> *vec_aux = createMatrix(1,4,(float)0);
+    iftMatrix<float>* pointAux = createMatrix(1,4,(float)0);
+
+    float lambdaMax;
+    float lambdaMin;
+    int k;
+    float inn;
+    float inn2;
+    float lambda;
+    float MinFloat = std::numeric_limits<float>::min();
+    float MaxFloat = std::numeric_limits<float>::max();
+
+    matrixMultiplicationF_inPlace(n,T_inv,n_t,1.0, 0.0, CblasNoTrans, CblasTrans);
+
+    for (int v = 0; v < h; ++v) {
+        for (int u = 0; u < h; ++u) {
+
+            p0->elements[0] = u;
+            p0->elements[1] = v;
+            p0->elements[2] = -diagonal/2.;
+            p0->elements[3] = 1;
+
+            lambdaMax = MinFloat;
+            lambdaMin = MaxFloat;
+            matrixMultiplicationF_inPlace(p0,T_inv,p0_t,1.0,0.0,CblasNoTrans, CblasTrans);
+            k = 0;
+            for (int i=0; i<6; i++){
+
+                k = i*4;
+                vec_aux->elements[0] = cj->elements[k+0] - p0_t->elements[0];
+                vec_aux->elements[1] = cj->elements[k+1] - p0_t->elements[1];
+                vec_aux->elements[2] = cj->elements[k+2] - p0_t->elements[2];
+
+                inn = nj->elements[k+0]*vec_aux->elements[0];
+                inn += nj->elements[k+1]*vec_aux->elements[1];
+                inn += nj->elements[k+2]*vec_aux->elements[2];
+
+                inn2 = nj->elements[k+0]*n_t->elements[0];
+                inn2 += nj->elements[k+1]*n_t->elements[1];
+                inn2 += nj->elements[k+2]*n_t->elements[2];
+                inn2 = inn2 + 0.0000001;
+                lambda = inn/inn2;
+
+                pointAux->elements[0] = (int)(p0_t->elements[0] + n_t->elements[0]*lambda);
+                pointAux->elements[1] = (int)(p0_t->elements[1] + n_t->elements[1]*lambda);
+                pointAux->elements[2] = (int)(p0_t->elements[2] + n_t->elements[2]*lambda);
+                pointAux->elements[3] = 1;
+
+                if(pointAux->elements[0] <= image3D->nx && pointAux->elements[1] <= image3D->ny && pointAux->elements[2] <= image3D->nz){
+                    if(pointAux->elements[0] >= 0 && pointAux->elements[1] >= 0 && pointAux->elements[2] >= 0){
+                        if(lambda>lambdaMax){
+                            lambdaMax = lambda;
+                        }
+                        if(lambda < lambdaMin){
+                            lambdaMin = lambda;
+                        }
+
+                    }
+                }
+
+            }
+            if(lambdaMax - lambdaMin > 0.01){
+                p1->elements[0] = (int)(p0_t->elements[0] + n_t->elements[0]*lambdaMin);
+                p1->elements[1] = (int)(p0_t->elements[1] + n_t->elements[1]*lambdaMin);
+                p1->elements[2] = (int)(p0_t->elements[2] + n_t->elements[2]*lambdaMin);
+                p1->elements[3] = 1;
+
+                pn->elements[0] = (int)(p0_t->elements[0] + n_t->elements[0]*lambdaMax);
+                pn->elements[1] = (int)(p0_t->elements[1] + n_t->elements[1]*lambdaMax);
+                pn->elements[2] = (int)(p0_t->elements[2] + n_t->elements[2]*lambdaMax);
+                pn->elements[3] = 1;
+
+
+
+                getFirstObjectValueColor(p1,pn,image3D,labelImage,colorImage,
+                                         view->yCgCoColorTable,v,u);
+            }
+
+        }
+    }
+
+    if(drawFrame){
+        drawWireFrame(T,colorImage, image3D,4095);
+    }
+    destroyMatrix(&T_inv);
+    destroyMatrix(&cj);
+    destroyMatrix(&nj);
+    destroyMatrix(&inners1);
+    destroyMatrix(&inners2);
+    destroyMatrix(&lambdas);
+    destroyMatrix(&aux);
+    destroyMatrix(&aux2);
+    destroyMatrix(&Rx);
+    destroyMatrix(&Ry);
+    destroyMatrix(&pc_dash);
+    destroyMatrix(&pc);
+    destroyMatrix(&pointAux);
+    destroyMatrix(&vec_aux);
+    destroyMatrix(&n);
+    destroyMatrix(&n_t);
+    destroyMatrix(&p1);
+    destroyMatrix(&pn);
+    destroyMatrix(&p0);
+    destroyMatrix(&p0_t);
+
+    return colorImage;
+}
+
+void getValueColorAlpha(iftMatrix<float> *p0,iftMatrix<float>*pn,
+                          MedicalImage *image3D,MedicalImage* labelImage,
+                          ColorImage* colorImage,
+                          ColorMapFloat *yCgCoColorTable,int v,int u,
+                          float *alpha){
+
+    iftMatrix<float>* delta = matrixSubtraction(pn,p0);
+    float deltaZ = fabs(delta->elements[2]);
+    float deltaY = fabs(delta->elements[1]);
+    float deltaX = fabs(delta->elements[0]);
+    float a1,a2,b1,b2;
+    int x,y,z;
+    int colorTableRow;
+    float newY;
+    float scalingFactor = 255;
+    float maximumValue = 4095;
+    float R,G,B;
+    float beta = 30.65;
+    float magicNumber = 2;
+    float alphaBufer = 1;
+    bool firstTime = true;
+    float epsilon = 0.001;
+
+    p0->elements[0] = (p0->elements[0] >= image3D->nx) ? image3D->nx-1 : p0->elements[0];
+    p0->elements[1] = (p0->elements[1] >= image3D->ny) ? image3D->ny-1 : p0->elements[1];
+    p0->elements[2] = (p0->elements[2] >= image3D->nz) ? image3D->nz-1 : p0->elements[2];
+    pn->elements[0] = (pn->elements[0] >= image3D->nx) ? image3D->nx-1 : pn->elements[0];
+    pn->elements[1] = (pn->elements[1] >= image3D->ny) ? image3D->ny-1 : pn->elements[1];
+    pn->elements[2] = (pn->elements[2] >= image3D->nz) ? image3D->nz-1 : pn->elements[2];
+
+    if(deltaZ >= deltaY && deltaZ >= deltaX){
+
+
+        a1 = (pn->elements[0]-p0->elements[0])/(pn->elements[2]-p0->elements[2] + 0.00001);
+        b1 = p0->elements[0] - a1*p0->elements[2];
+
+        a2 = (pn->elements[1]-p0->elements[1])/(pn->elements[2]-p0->elements[2] + 0.00001);
+        b2 = p0->elements[1] - a2*p0->elements[2];
+
+        if(delta->elements[2] >= 0){
+            for(int z=p0->elements[2]; z<pn->elements[2]; z++){
+                x = a1*z + b1;
+                y = a2*z + b2;
+                if (labelImage->val[z][y][x] != 0){
+
+                    colorTableRow =labelImage->val[z][y][x];
+                    newY = ((image3D->val[z][y][x])/maximumValue)*magicNumber;
+                    //fprintf(stderr,"%f %f %f\n",yCgCoColorTable->table[colorTableRow][0],yCgCoColorTable->table[colorTableRow][1],yCgCoColorTable->table[colorTableRow][2]);
+                    R = newY -yCgCoColorTable->table[colorTableRow][1] + yCgCoColorTable->table[colorTableRow][2];
+                    R = (R < 0) ? 0: round(R*scalingFactor);
+                    G = newY +yCgCoColorTable->table[colorTableRow][1];
+                    G = (G < 0) ?  0: round(G*scalingFactor);
+                    B = newY -yCgCoColorTable->table[colorTableRow][1] - yCgCoColorTable->table[colorTableRow][2];
+                    B = (B < 0) ?  0: round(B*scalingFactor);
+                    R = log(R+1)*beta;
+                    G = log(G+1)*beta;
+                    B = log(B+1)*beta;
+                    if(firstTime){
+                        colorImage->cor[v][u].val[0] = R*alpha[colorTableRow];
+                        colorImage->cor[v][u].val[1] = G*alpha[colorTableRow];
+                        colorImage->cor[v][u].val[2] = B*alpha[colorTableRow];
+                        alphaBufer = 1-alpha[colorTableRow];
+                        firstTime = false;
+                    }else{
+                        colorImage->cor[v][u].val[0] += R*alpha[colorTableRow]*alphaBufer;
+                        colorImage->cor[v][u].val[1] += G*alpha[colorTableRow]*alphaBufer;
+                        colorImage->cor[v][u].val[2] += B*alpha[colorTableRow]*alphaBufer;
+                        alphaBufer *= 1-alpha[colorTableRow];
+                        if(alphaBufer < epsilon){
+                            break;
+                        }
                     }
                 }
             }
-            destroyMatrix(&T_inv);
-            destroyMatrix(&cj);
-            destroyMatrix(&nj);
-            destroyMatrix(&inners1);
-            destroyMatrix(&inners2);
-            destroyMatrix(&lambdas);
-            destroyMatrix(&pointAux);
-            destroyMatrix(&vec_aux);
+
+        }else{
+
+            for(int z=p0->elements[2]; z>pn->elements[2]; z--){
+                x = a1*z + b1;
+                y = a2*z + b2;
+                if (labelImage->val[z][y][x] != 0){
+
+                    colorTableRow =labelImage->val[z][y][x];
+                    newY = ((image3D->val[z][y][x])/maximumValue)*magicNumber;
+                    //fprintf(stderr,"%f %f %f\n",yCgCoColorTable->table[colorTableRow][0],yCgCoColorTable->table[colorTableRow][1],yCgCoColorTable->table[colorTableRow][2]);
+                    R = newY -yCgCoColorTable->table[colorTableRow][1] + yCgCoColorTable->table[colorTableRow][2];
+                    R = (R < 0) ? 0: round(R*scalingFactor);
+                    G = newY +yCgCoColorTable->table[colorTableRow][1];
+                    G = (G < 0) ?  0: round(G*scalingFactor);
+                    B = newY -yCgCoColorTable->table[colorTableRow][1] - yCgCoColorTable->table[colorTableRow][2];
+                    B = (B < 0) ?  0: round(B*scalingFactor);
+                    R = log(R+1)*beta;
+                    G = log(G+1)*beta;
+                    B = log(B+1)*beta;
+                    if(firstTime){
+                        colorImage->cor[v][u].val[0] = R*alpha[colorTableRow];
+                        colorImage->cor[v][u].val[1] = G*alpha[colorTableRow];
+                        colorImage->cor[v][u].val[2] = B*alpha[colorTableRow];
+                        alphaBufer *= 1-alpha[colorTableRow];
+                        firstTime = false;
+                    }else{
+                        colorImage->cor[v][u].val[0] += R*alpha[colorTableRow]*alphaBufer;
+                        colorImage->cor[v][u].val[1] += G*alpha[colorTableRow]*alphaBufer;
+                        colorImage->cor[v][u].val[2] += B*alpha[colorTableRow]*alphaBufer;
+                        alphaBufer *= 1-alpha[colorTableRow];
+                        if(alphaBufer < epsilon){
+                            break;
+                        }
+                    }
+                }
+            }
 
         }
-};
-
-void mipParallel(int nThreads,MedicalImage* image3D, float angleX_degree, float angleY_degree){
-//    float thetay_rad = angleY_degree*(M_PI)/180.;
-//    float thetax_rad = angleX_degree*(M_PI)/180.;
-//    iftMatrix<float> *Ry = createRotationMatrix(-thetay_rad,'y');
-//    iftMatrix<float> *Rx = createRotationMatrix(-thetax_rad,'x');
-//    float diagonal = computeDiogonal(image3D->nx,image3D->ny,image3D->nz);
-//    int h = (int)diagonal;
-//    GrayImage* grayImage = CreateGrayImage(h,h);
-
-//    iftMatrix<float>* pc_dash = createIdentityMatrix(4,4,FLOAT);
-//    iftMatrix<float>* pc = createIdentityMatrix(4,4,FLOAT);
-
-//    pc_dash->elements[3] = -diagonal/2.;
-//    pc_dash->elements[7] = -diagonal/2.;
-//    pc_dash->elements[11] = -diagonal/2.;
-
-//    pc->elements[3] = image3D->nx/2.;
-//    pc->elements[7] = image3D->ny/2.;
-//    pc->elements[11] = image3D->nz/2.;
-
-//    iftMatrix<float> *aux = matrixMultiplicationF(Ry,pc_dash);
-//    iftMatrix<float> *aux2 = matrixMultiplicationF(Rx,aux);
-//    iftMatrix<float> *T_inv = matrixMultiplicationF(pc,aux2);
-
-//    int xLoad = h/nThreads;
-//    int yLoad = h/nThreads;
-//    int lastWorkLoadX = h-xLoad;
-//    int lastWorkLoadY = h-yLoad;
-//    std::vector<ParallelMIP> thread;
-//    for(int i=0; i<nThreads-1; i++){
-//        thread.push_back(ParallelMIP(image3D, grayImage, T_inv, diagonal, i*xLoad,(i+1)*xLoad, i*yLoad,(i+1)*yLoad));
-//        thread[i].start();
-//    }
-//    thread.push_back(ParallelMIP(image3D, grayImage, T_inv, diagonal, (nThreads-1)*xLoad,(nThreads)*xLoad, (nThreads-1)*yLoad,(nThreads)*yLoad));
-//    thread[nThreads-1].start();
-//    for(int i=0; i<nThreads-1; i++){
-//        thread[i].wait();
-//    }
-//    thread[nThreads-1].wait();
 
 
+
+    }else if(deltaY >= deltaZ && deltaY >= deltaX){
+        a1 = (pn->elements[0]-p0->elements[0])/(pn->elements[1]-p0->elements[1] + 0.00001);
+        b1 = p0->elements[0] - a1*p0->elements[1];
+
+        a2 = (pn->elements[2]-p0->elements[2])/(pn->elements[1]-p0->elements[1] + 0.00001);
+        b2 = p0->elements[2] - a2*p0->elements[1];
+
+        if(delta->elements[1] >= 0){
+            for(int y=p0->elements[1]; y<pn->elements[1]; y++){
+                x = a1*y + b1;
+                z = a2*y + b2;
+                if (labelImage->val[z][y][x] != 0){
+
+                    colorTableRow =labelImage->val[z][y][x];
+                    newY = ((image3D->val[z][y][x])/maximumValue)*magicNumber;
+                    R = newY -yCgCoColorTable->table[colorTableRow][1] + yCgCoColorTable->table[colorTableRow][2];
+                    R = (R < 0) ? 0: round(R*scalingFactor);
+                    G = newY +yCgCoColorTable->table[colorTableRow][1];
+                    G = (G < 0) ?  0: round(G*scalingFactor);
+                    B = newY -yCgCoColorTable->table[colorTableRow][1] - yCgCoColorTable->table[colorTableRow][2];
+                    B = (B < 0) ?  0: round(B*scalingFactor);
+                    R = log(R+1)*beta;
+                    G = log(G+1)*beta;
+                    B = log(B+1)*beta;
+                    if(firstTime){
+                        colorImage->cor[v][u].val[0] = R*alpha[colorTableRow];
+                        colorImage->cor[v][u].val[1] = G*alpha[colorTableRow];
+                        colorImage->cor[v][u].val[2] = B*alpha[colorTableRow];
+                        alphaBufer *= 1-alpha[colorTableRow];
+                        firstTime = false;
+                    }else{
+                        colorImage->cor[v][u].val[0] += R*alpha[colorTableRow]*alphaBufer;
+                        colorImage->cor[v][u].val[1] += G*alpha[colorTableRow]*alphaBufer;
+                        colorImage->cor[v][u].val[2] += B*alpha[colorTableRow]*alphaBufer;
+                        alphaBufer *= 1-alpha[colorTableRow];
+                        if(alphaBufer < epsilon){
+                            break;
+                        }
+                    }
+                }
+            }
+
+        }else{
+            for(int y=p0->elements[1]; y>pn->elements[1]; y--){
+                x = a1*y + b1;
+                z = a2*y + b2;
+                if (labelImage->val[z][y][x] != 0){
+                    colorTableRow =labelImage->val[z][y][x];
+                    newY = ((image3D->val[z][y][x])/maximumValue)*magicNumber;
+                    R = newY -yCgCoColorTable->table[colorTableRow][1] + yCgCoColorTable->table[colorTableRow][2];
+                    R = (R < 0) ? 0: round(R*scalingFactor);
+                    G = newY +yCgCoColorTable->table[colorTableRow][1];
+                    G = (G < 0) ?  0: round(G*scalingFactor);
+                    B = newY -yCgCoColorTable->table[colorTableRow][1] - yCgCoColorTable->table[colorTableRow][2];
+                    B = (B < 0) ?  0: round(B*scalingFactor);
+                    R = log(R+1)*beta;
+                    G = log(G+1)*beta;
+                    B = log(B+1)*beta;
+                    if(firstTime){
+                        colorImage->cor[v][u].val[0] = R*alpha[colorTableRow];
+                        colorImage->cor[v][u].val[1] = G*alpha[colorTableRow];
+                        colorImage->cor[v][u].val[2] = B*alpha[colorTableRow];
+                        alphaBufer *= 1-alpha[colorTableRow];
+                        firstTime = false;
+                    }else{
+                        colorImage->cor[v][u].val[0] += R*alpha[colorTableRow]*alphaBufer;
+                        colorImage->cor[v][u].val[1] += G*alpha[colorTableRow]*alphaBufer;
+                        colorImage->cor[v][u].val[2] += B*alpha[colorTableRow]*alphaBufer;
+                        alphaBufer *= 1-alpha[colorTableRow];
+                        if(alphaBufer < epsilon){
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+    }else if(deltaX >= deltaZ && deltaX>=deltaY){
+        a1 = (pn->elements[1]-p0->elements[1])/(pn->elements[0]-p0->elements[0] + 0.00001);
+        b1 = p0->elements[1] - a1*p0->elements[0];
+
+        a2 = (pn->elements[2]-p0->elements[2])/(pn->elements[0]-p0->elements[0] + 0.00001);
+        b2 = p0->elements[2] - a2*p0->elements[0];
+
+        if(delta->elements[0] >= 0){
+            for(int x=p0->elements[0]; x<pn->elements[0]; x++){
+                y = a1*x + b1;
+                z = a2*x + b2;
+                if (labelImage->val[z][y][x] != 0){
+
+                    colorTableRow =labelImage->val[z][y][x];
+                    newY = ((image3D->val[z][y][x])/maximumValue)*magicNumber;
+                    R = newY -yCgCoColorTable->table[colorTableRow][1] + yCgCoColorTable->table[colorTableRow][2];
+                    R = (R < 0) ? 0: round(R*scalingFactor);
+                    G = newY +yCgCoColorTable->table[colorTableRow][1];
+                    G = (G < 0) ?  0: round(G*scalingFactor);
+                    B = newY -yCgCoColorTable->table[colorTableRow][1] - yCgCoColorTable->table[colorTableRow][2];
+                    B = (B < 0) ?  0: round(B*scalingFactor);
+                    R = log(R+1)*beta;
+                    G = log(G+1)*beta;
+                    B = log(B+1)*beta;
+                    if(firstTime){
+                        colorImage->cor[v][u].val[0] = R*alpha[colorTableRow];
+                        colorImage->cor[v][u].val[1] = G*alpha[colorTableRow];
+                        colorImage->cor[v][u].val[2] = B*alpha[colorTableRow];
+                        alphaBufer *= 1-alpha[colorTableRow];
+                        firstTime = false;
+                    }else{
+                        colorImage->cor[v][u].val[0] += R*alpha[colorTableRow]*alphaBufer;
+                        colorImage->cor[v][u].val[1] += G*alpha[colorTableRow]*alphaBufer;
+                        colorImage->cor[v][u].val[2] += B*alpha[colorTableRow]*alphaBufer;
+                        alphaBufer *= 1-alpha[colorTableRow];
+                        if(alphaBufer < epsilon){
+                            break;
+                        }
+                    }
+                }
+            }
+        }else{
+            for(int x=p0->elements[0]; x>pn->elements[0]; x--){
+                y = a1*x + b1;
+                z = a2*x + b2;
+                if (labelImage->val[z][y][x] != 0){
+
+                    colorTableRow =labelImage->val[z][y][x];
+                    newY = ((image3D->val[z][y][x])/maximumValue)*magicNumber;
+                    R = newY -yCgCoColorTable->table[colorTableRow][1] + yCgCoColorTable->table[colorTableRow][2];
+                    R = (R < 0) ? 0: round(R*scalingFactor);
+                    G = newY +yCgCoColorTable->table[colorTableRow][1];
+                    G = (G < 0) ?  0: round(G*scalingFactor);
+                    B = newY -yCgCoColorTable->table[colorTableRow][1] - yCgCoColorTable->table[colorTableRow][2];
+                    B = (B < 0) ?  0: round(B*scalingFactor);
+                    R = log(R+1)*beta;
+                    G = log(G+1)*beta;
+                    B = log(B+1)*beta;
+                    if(firstTime){
+                        colorImage->cor[v][u].val[0] = R*alpha[colorTableRow];
+                        colorImage->cor[v][u].val[1] = G*alpha[colorTableRow];
+                        colorImage->cor[v][u].val[2] = B*alpha[colorTableRow];
+                        alphaBufer *= 1-alpha[colorTableRow];
+                        firstTime = false;
+                    }else{
+                        colorImage->cor[v][u].val[0] += R*alpha[colorTableRow]*alphaBufer;
+                        colorImage->cor[v][u].val[1] += G*alpha[colorTableRow]*alphaBufer;
+                        colorImage->cor[v][u].val[2] += B*alpha[colorTableRow]*alphaBufer;
+                        alphaBufer *= 1-alpha[colorTableRow];
+                        if(alphaBufer < epsilon){
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+
+    }else{
+        fprintf(stderr,"entrei\n");
+    }
+
+    destroyMatrix(&delta);
 }
+
+ColorImage* renderingColourAlpha(MedicalImage* image3D, MedicalImage *labelImage,
+              float thetax_degree, float thetay_degree,
+              bool drawFrame, ViewDisplay* view, float *alphas){
+    //convert degree to rads
+    float thetay_rad = thetay_degree*(M_PI)/180.;
+    float thetax_rad = thetax_degree*(M_PI)/180.;
+    iftMatrix<float> *Ry = createRotationMatrix(-thetay_rad,'y');
+    iftMatrix<float> *Rx = createRotationMatrix(-thetax_rad,'x');
+    float diagonal = computeDiogonal(image3D->nx,image3D->ny,image3D->nz);
+
+    iftMatrix<float>* pc_dash = createIdentityMatrix(4,4,FLOAT);
+    iftMatrix<float>* pc = createIdentityMatrix(4,4,FLOAT);
+
+    pc_dash->elements[3] = -diagonal/2.;
+    pc_dash->elements[7] = -diagonal/2.;
+    pc_dash->elements[11] = -diagonal/2.;
+
+    pc->elements[3] = image3D->nx/2.;
+    pc->elements[7] = image3D->ny/2.;
+    pc->elements[11] = image3D->nz/2.;
+
+    iftMatrix<float> *aux = matrixMultiplicationF(Ry,pc_dash);
+    iftMatrix<float> *aux2 = matrixMultiplicationF(Rx,aux);
+    iftMatrix<float> *T_inv = matrixMultiplicationF(pc,aux2);
+    iftMatrix<float> *T = copyMatrix(T_inv);
+    invertMatrix(T);
+    int h = (int)diagonal;
+    ColorImage* colorImage = CreateColorImage(h,h);
+
+
+
+    iftMatrix<float> *nj = createMatrix(6,4,(float)0);
+    iftMatrix<float> *cj = createMatrix(6,4,(float)0);
+    iftMatrix<float> *n = createMatrix(1,4,(float)0);
+
+
+    //-z normal
+    nj->elements[0] = 0;
+    nj->elements[1] = 0;
+    nj->elements[2] = -1;
+    nj->elements[3] = 0;
+    //z normal
+    nj->elements[4] = 0;
+    nj->elements[5] = 0;
+    nj->elements[6] = 1;
+    nj->elements[7] = 0;
+    //-y normal
+    nj->elements[8] = 0;
+    nj->elements[9] = -1;
+    nj->elements[10] = 0;
+    nj->elements[11] = 0;
+    //y normal
+    nj->elements[12] = 0;
+    nj->elements[13] = 1;
+    nj->elements[14] = 0;
+    nj->elements[15] = 0;
+    //-x normal
+    nj->elements[16] = -1;
+    nj->elements[17] = 0;
+    nj->elements[18] = 0;
+    nj->elements[19] = 0;
+    //x normal
+    nj->elements[20] = -1;
+    nj->elements[21] = 0;
+    nj->elements[22] = 0;
+    nj->elements[23] = 0;
+    //-z normal
+    cj->elements[0] = image3D->nx/2.;
+    cj->elements[1] = image3D->ny/2.;
+    cj->elements[2] = 0;
+    cj->elements[3] = 1;
+    //z normal
+    cj->elements[4] = image3D->nx/2.;
+    cj->elements[5] = image3D->ny/2.;
+    cj->elements[6] = image3D->nz;
+    cj->elements[7] = 1;
+    //-y normal
+    cj->elements[8] = image3D->nx/2.;
+    cj->elements[9] = 0;
+    cj->elements[10] = image3D->nz/2.;
+    cj->elements[11] = 1;
+    //y normal
+    cj->elements[12] = image3D->nx/2.;
+    cj->elements[13] = image3D->ny;
+    cj->elements[14] = image3D->nz/2.;
+    cj->elements[15] = 1;
+    //-x normal
+    cj->elements[16] = 0;
+    cj->elements[17] = image3D->ny/2.;
+    cj->elements[18] = image3D->nz/2.;
+    cj->elements[19] = 1;
+    //x normal
+    cj->elements[20] = image3D->nx;
+    cj->elements[21] = image3D->ny/2.;
+    cj->elements[22] = image3D->nz/2.;
+    cj->elements[23] = 1;
+
+    n->elements[0] = 0;
+    n->elements[1] = 0;
+    n->elements[2] = 1;
+    n->elements[3] = 0;
+    iftMatrix<float>* inners1 = createMatrix(6,1,(float)0);
+    iftMatrix<float>* inners2 = createMatrix(6,1,(float)0);
+    iftMatrix<float>* lambdas = createMatrix(6,1,(float)0);
+    iftMatrix<float>* p0 = createMatrix(1,4,(float)0);
+    iftMatrix<float>* p0_t = createMatrix(1,4,(float)0);
+    iftMatrix<float>* p1 = createMatrix(1,4,(float)0);
+    iftMatrix<float>* pn = createMatrix(1,4,(float)0);
+    iftMatrix<float>* n_t = createMatrix(1,4,(float)0);
+    iftMatrix<float> *vec_aux = createMatrix(1,4,(float)0);
+    iftMatrix<float>* pointAux = createMatrix(1,4,(float)0);
+
+    float lambdaMax;
+    float lambdaMin;
+    int k;
+    float inn;
+    float inn2;
+    float lambda;
+    float MinFloat = std::numeric_limits<float>::min();
+    float MaxFloat = std::numeric_limits<float>::max();
+
+    matrixMultiplicationF_inPlace(n,T_inv,n_t,1.0, 0.0, CblasNoTrans, CblasTrans);
+
+    for (int v = 0; v < h; ++v) {
+        for (int u = 0; u < h; ++u) {
+
+            p0->elements[0] = u;
+            p0->elements[1] = v;
+            p0->elements[2] = -diagonal/2.;
+            p0->elements[3] = 1;
+
+            lambdaMax = MinFloat;
+            lambdaMin = MaxFloat;
+            matrixMultiplicationF_inPlace(p0,T_inv,p0_t,1.0,0.0,CblasNoTrans, CblasTrans);
+            k = 0;
+            for (int i=0; i<6; i++){
+
+                k = i*4;
+                vec_aux->elements[0] = cj->elements[k+0] - p0_t->elements[0];
+                vec_aux->elements[1] = cj->elements[k+1] - p0_t->elements[1];
+                vec_aux->elements[2] = cj->elements[k+2] - p0_t->elements[2];
+
+                inn = nj->elements[k+0]*vec_aux->elements[0];
+                inn += nj->elements[k+1]*vec_aux->elements[1];
+                inn += nj->elements[k+2]*vec_aux->elements[2];
+
+                inn2 = nj->elements[k+0]*n_t->elements[0];
+                inn2 += nj->elements[k+1]*n_t->elements[1];
+                inn2 += nj->elements[k+2]*n_t->elements[2];
+                inn2 = inn2 + 0.0000001;
+                lambda = inn/inn2;
+
+                pointAux->elements[0] = (int)(p0_t->elements[0] + n_t->elements[0]*lambda);
+                pointAux->elements[1] = (int)(p0_t->elements[1] + n_t->elements[1]*lambda);
+                pointAux->elements[2] = (int)(p0_t->elements[2] + n_t->elements[2]*lambda);
+                pointAux->elements[3] = 1;
+
+                if(pointAux->elements[0] <= image3D->nx && pointAux->elements[1] <= image3D->ny && pointAux->elements[2] <= image3D->nz){
+                    if(pointAux->elements[0] >= 0 && pointAux->elements[1] >= 0 && pointAux->elements[2] >= 0){
+                        if(lambda>lambdaMax){
+                            lambdaMax = lambda;
+                        }
+                        if(lambda < lambdaMin){
+                            lambdaMin = lambda;
+                        }
+
+                    }
+                }
+
+            }
+            if(lambdaMax - lambdaMin > 0.01){
+                p1->elements[0] = (int)(p0_t->elements[0] + n_t->elements[0]*lambdaMin);
+                p1->elements[1] = (int)(p0_t->elements[1] + n_t->elements[1]*lambdaMin);
+                p1->elements[2] = (int)(p0_t->elements[2] + n_t->elements[2]*lambdaMin);
+                p1->elements[3] = 1;
+
+                pn->elements[0] = (int)(p0_t->elements[0] + n_t->elements[0]*lambdaMax);
+                pn->elements[1] = (int)(p0_t->elements[1] + n_t->elements[1]*lambdaMax);
+                pn->elements[2] = (int)(p0_t->elements[2] + n_t->elements[2]*lambdaMax);
+                pn->elements[3] = 1;
+
+                getValueColorAlpha(p1,pn,image3D,labelImage,colorImage,
+                                         view->yCgCoColorTable,v,u,alphas);
+            }
+
+        }
+    }
+
+    //if(drawFrame){
+    //    drawWireFrame(T,colorImage, image3D,4095);
+    //}
+    destroyMatrix(&T_inv);
+    destroyMatrix(&cj);
+    destroyMatrix(&nj);
+    destroyMatrix(&inners1);
+    destroyMatrix(&inners2);
+    destroyMatrix(&lambdas);
+    destroyMatrix(&aux);
+    destroyMatrix(&aux2);
+    destroyMatrix(&Rx);
+    destroyMatrix(&Ry);
+    destroyMatrix(&pc_dash);
+    destroyMatrix(&pc);
+    destroyMatrix(&pointAux);
+    destroyMatrix(&vec_aux);
+    destroyMatrix(&n);
+    destroyMatrix(&n_t);
+    destroyMatrix(&p1);
+    destroyMatrix(&pn);
+    destroyMatrix(&p0);
+    destroyMatrix(&p0_t);
+
+    return colorImage;
+}
+
+
+
 
 #endif // MATRIXFEIA_H

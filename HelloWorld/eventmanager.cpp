@@ -32,13 +32,8 @@ QImage *createColorImage2LabelAreaModified(ColorImage *colorImage, GrayImage *gr
 
     for(int y=0; y < colorImage->ny; y++){
         for(int x=0; x < colorImage->nx; x++){
-
-
-
             value = qRgb(colorImage->cor[y][x].val[0], colorImage->cor[y][x].val[1] , colorImage->cor[y][x].val[2]);
             image->setPixel(x,y,value);
-
-
         }
     }
     return image;
@@ -252,23 +247,33 @@ int createContextMenuForLabelImage(MedicalImage *image3D,MedicalImage *labelImag
 int createContextMenuForRedering(MedicalImage *image3D,MedicalImage *labelImage,const QPoint &pos, QObject *obj){
     QString stringOption1 = "PlanarView";
     QString stringOption2 = "Maximum Intensity Projetction";
-    QString stringOption3 = "Volume Rendering";
+    QString stringOption3 = "Surface Rendering (grey)";
+    QString stringOption4 = "Surface Rendering (color)";
+    QString stringOption5 = "Surface Rendering (alpha)";
     int selectedOption = -1;
     QMenu *menu = new QMenu();
     QAction *PlanarView = new QAction(stringOption1, obj);
     QAction *MIP = new QAction(stringOption2, obj);
     QAction *VR = new QAction(stringOption3, obj);
+    QAction *VR_color = new QAction(stringOption4, obj);
+    QAction *VR_alpha = new QAction(stringOption5, obj);
     menu->addAction(PlanarView);
     menu->addAction(MIP);
     menu->addAction(VR);
+    menu->addAction(VR_color);
+    menu->addAction(VR_alpha);
     if(image3D == NULL){
         PlanarView->setEnabled(false);
         MIP->setEnabled(false);
         VR->setEnabled(false);
+        VR_color->setEnabled(false);
+        VR_alpha->setEnabled(false);
     }else if(labelImage == NULL){
         PlanarView->setEnabled(true);
         MIP->setEnabled(true);
         VR->setEnabled(false);
+        VR_color->setEnabled(false);
+        VR_alpha->setEnabled(false);
     }
     QAction* selectedItem = menu->exec(pos);
     if(selectedItem != NULL){
@@ -279,6 +284,10 @@ int createContextMenuForRedering(MedicalImage *image3D,MedicalImage *labelImage,
             selectedOption = 1;
         }else if(selectedItem->text() == stringOption3){
             selectedOption = 2;
+        }else if(selectedItem->text() == stringOption4){
+            selectedOption = 3;
+        }else if(selectedItem->text() == stringOption5){
+            selectedOption = 4;
         }
     }
     return selectedOption;

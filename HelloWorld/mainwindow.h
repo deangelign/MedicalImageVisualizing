@@ -71,6 +71,10 @@ private slots:
 
     void on_doubleSpinBoxThetaX_valueChanged(double arg1);
 
+    void on_doubleSpinBoxThetaY_valueChanged(double arg1);
+
+    void on_checkBox_toggled(bool checked);
+
 private:
     Ui::MainWindow *ui;
     BrightContrastDialog *brightContrastDialogForm;

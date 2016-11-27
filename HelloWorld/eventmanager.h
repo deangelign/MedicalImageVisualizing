@@ -22,5 +22,6 @@ void getQImageFromView(ViewDisplay *view, MedicalImage *image3D, MedicalImage *l
 int createContextMenuForLabelImage(MedicalImage *image3D,MedicalImage *labelImage,const QPoint &pos, QObject *obj);
 int createContextMenuForRedering(MedicalImage *image3D,MedicalImage *labelImage,const QPoint &pos, QObject *obj);
 QImage *createColorImage2LabelAreaModified(ColorImage *colorImage, GrayImage *grayImage, int cont);
+QImage *createColorImage2LabelArea(ColorImage *colorImage);
 
 #endif // EVENTMANAGER_H
