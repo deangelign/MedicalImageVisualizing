@@ -250,6 +250,7 @@ int createContextMenuForRedering(MedicalImage *image3D,MedicalImage *labelImage,
     QString stringOption3 = "Surface Rendering (grey)";
     QString stringOption4 = "Surface Rendering (color)";
     QString stringOption5 = "Surface Rendering (alpha)";
+    QString stringOption6 = "Phong (grey)";
     int selectedOption = -1;
     QMenu *menu = new QMenu();
     QAction *PlanarView = new QAction(stringOption1, obj);
@@ -257,23 +258,27 @@ int createContextMenuForRedering(MedicalImage *image3D,MedicalImage *labelImage,
     QAction *VR = new QAction(stringOption3, obj);
     QAction *VR_color = new QAction(stringOption4, obj);
     QAction *VR_alpha = new QAction(stringOption5, obj);
+    QAction *phong_gray = new QAction(stringOption6, obj);
     menu->addAction(PlanarView);
     menu->addAction(MIP);
     menu->addAction(VR);
     menu->addAction(VR_color);
     menu->addAction(VR_alpha);
+    menu->addAction(phong_gray);
     if(image3D == NULL){
         PlanarView->setEnabled(false);
         MIP->setEnabled(false);
         VR->setEnabled(false);
         VR_color->setEnabled(false);
         VR_alpha->setEnabled(false);
+        phong_gray->setEnabled(false);
     }else if(labelImage == NULL){
         PlanarView->setEnabled(true);
         MIP->setEnabled(true);
         VR->setEnabled(false);
         VR_color->setEnabled(false);
         VR_alpha->setEnabled(false);
+        phong_gray->setEnabled(false);
     }
     QAction* selectedItem = menu->exec(pos);
     if(selectedItem != NULL){
@@ -288,6 +293,8 @@ int createContextMenuForRedering(MedicalImage *image3D,MedicalImage *labelImage,
             selectedOption = 3;
         }else if(selectedItem->text() == stringOption5){
             selectedOption = 4;
+        }else if(selectedItem->text() == stringOption6){
+            selectedOption = 5;
         }
     }
     return selectedOption;

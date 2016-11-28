@@ -34,10 +34,7 @@ bool startDrawXYZImage = false;
 int renderingOption=0;
 
 float alphas[4] = {0.0, 0.4, 0.08, 0.08};
-
-
-
-
+iftMatrix<float>*gradients = NULL;
 
 
 
@@ -464,6 +461,7 @@ void MainWindow::on_pushButton_2_clicked()
 {
 
     MedicalImage* image3D_aux = ReadMedicalImage("brain.scn");
+    MedicalImage* labels_aux = ReadMedicalImage("brain_label.scn");
     //test1
     //    iftMatrix<float> *vec = createMatrix(1,4,(float)0);
     //    vec->elements[0] = 1;
@@ -520,7 +518,26 @@ void MainWindow::on_pushButton_2_clicked()
     //    WriteMedicalImage(out,"teste.scn");
 
     //    //teste3
-    maximumIntensityProjection(image3D_aux,0,45,false);
+    //maximumIntensityProjection(image3D_aux,0,45,false);
+    QTime myTimer;
+    int nMilliseconds;
+    myTimer.start();
+    iftMatrix<float>*grad = computeGradient(image3D_aux,labels_aux);
+    nMilliseconds = myTimer.elapsed();
+    fprintf(stderr,"took %d mseconds to execute \n", nMilliseconds);
+    //fprintf(stderr,"%d %d",grad->numberRows,grad->numberCols);
+    int k =0;
+    for (int z=0; z<image3D_aux->nz;z++){
+        for (int y=0; y<image3D_aux->ny;y++){
+            for (int x=0; x<image3D_aux->nx;x++){
+                if(computeDiogonal(grad->elements[k],grad->elements[k+1],grad->elements[k+2]) > 0.00001){
+                    fprintf(stderr,"%d %d %d: %f %f %f\n",z,y,x,grad->elements[k],grad->elements[k+1],grad->elements[k+2]);
+                }
+                k+=3;
+            }
+        }
+    }
+    destroyMatrix(&grad);
 }
 
 void MainWindow::on_actionRefactor_triggered()
@@ -814,6 +831,8 @@ void MainWindow::on_labelFigureXYZ_customContextMenuRequested(const QPoint &pos)
         on_doubleSpinBoxThetaX_valueChanged(ui->doubleSpinBoxThetaX->value());
     }else if(renderingOption == 4){
         on_doubleSpinBoxThetaX_valueChanged(ui->doubleSpinBoxThetaX->value());
+    }else if(renderingOption == 5){
+        on_doubleSpinBoxThetaX_valueChanged(ui->doubleSpinBoxThetaX->value());
     }
 }
 
@@ -855,13 +874,24 @@ void MainWindow::on_doubleSpinBoxThetaX_valueChanged(double thetaX_degree)
         DestroyColorImage(&colorImage);
     }else if(renderingOption == 4){
         ColorImage* colorImage = renderingColourAlpha(image3D,labelImage,ui->doubleSpinBoxThetaX->value(),
-                                               ui->doubleSpinBoxThetaY->value(),
-                                               ui->checkBox->isChecked(),viewXYZ,alphas);
+                                                      ui->doubleSpinBoxThetaY->value(),
+                                                      ui->checkBox->isChecked(),viewXYZ,alphas);
 
         imageXYZ = createColorImage2LabelArea(colorImage);
         displayImageOnLabel(imageXYZ,ui->labelFigureXYZ);
         DestroyColorImage(&colorImage);
+    }else if(renderingOption == 5){
+        if(gradients == NULL){
+            gradients = computeGradient(image3D,labelImage);
+        }
+        ColorImage* colorImage = PhongRendering(image3D,labelImage,ui->doubleSpinBoxThetaX->value(),
+                                                      ui->doubleSpinBoxThetaY->value(),
+                                                      ui->checkBox->isChecked(),viewXYZ,alphas,gradients);
+        imageXYZ =  createColorImage2LabelArea(colorImage);
+        displayImageOnLabel(imageXYZ,ui->labelFigureXYZ);
+        DestroyColorImage(&colorImage);
     }
+
 
 }
 
@@ -902,10 +932,20 @@ void MainWindow::on_doubleSpinBoxThetaY_valueChanged(double thetaY_degree)
         DestroyColorImage(&colorImage);
     }else if(renderingOption == 4){
         ColorImage* colorImage = renderingColourAlpha(image3D,labelImage,ui->doubleSpinBoxThetaX->value(),
-                                               ui->doubleSpinBoxThetaY->value(),
-                                               ui->checkBox->isChecked(),viewXYZ,alphas);
+                                                      ui->doubleSpinBoxThetaY->value(),
+                                                      ui->checkBox->isChecked(),viewXYZ,alphas);
 
         imageXYZ = createColorImage2LabelArea(colorImage);
+        displayImageOnLabel(imageXYZ,ui->labelFigureXYZ);
+        DestroyColorImage(&colorImage);
+    }else if(renderingOption == 5){
+        if(gradients == NULL){
+            gradients = computeGradient(image3D,labelImage);
+        }
+        ColorImage* colorImage = PhongRendering(image3D,labelImage,ui->doubleSpinBoxThetaX->value(),
+                                                      ui->doubleSpinBoxThetaY->value(),
+                                                      ui->checkBox->isChecked(),viewXYZ,alphas,gradients);
+        imageXYZ =  createColorImage2LabelArea(colorImage);
         displayImageOnLabel(imageXYZ,ui->labelFigureXYZ);
         DestroyColorImage(&colorImage);
     }
@@ -980,10 +1020,20 @@ void MainWindow::on_checkBox_toggled(bool checked)
         DestroyColorImage(&colorImage);
     }else if(renderingOption == 4){
         ColorImage* colorImage = renderingColourAlpha(image3D,labelImage,ui->doubleSpinBoxThetaX->value(),
-                                               ui->doubleSpinBoxThetaY->value(),
-                                               ui->checkBox->isChecked(),viewXYZ,alphas);
+                                                      ui->doubleSpinBoxThetaY->value(),
+                                                      ui->checkBox->isChecked(),viewXYZ,alphas);
 
         imageXYZ = createColorImage2LabelArea(colorImage);
+        displayImageOnLabel(imageXYZ,ui->labelFigureXYZ);
+        DestroyColorImage(&colorImage);
+    }else if(renderingOption == 5){
+        if(gradients == NULL){
+            gradients = computeGradient(image3D,labelImage);
+        }
+        ColorImage* colorImage = PhongRendering(image3D,labelImage,ui->doubleSpinBoxThetaX->value(),
+                                                      ui->doubleSpinBoxThetaY->value(),
+                                                      ui->checkBox->isChecked(),viewXYZ,alphas,gradients);
+        imageXYZ =  createColorImage2LabelArea(colorImage);
         displayImageOnLabel(imageXYZ,ui->labelFigureXYZ);
         DestroyColorImage(&colorImage);
     }

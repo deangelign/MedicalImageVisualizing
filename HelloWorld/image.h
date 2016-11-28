@@ -17,6 +17,12 @@ typedef struct  {
     size_t height;
 } bitmap_t;
 
+typedef struct{
+    float x;
+    float y;
+    float z;
+} MyVector;
+
 
 
 typedef struct _image {
@@ -61,6 +67,8 @@ typedef struct _medicalimage {
     float  dx,dy,dz; /* tamanho do voxel em unidades de comprimento */
     char   unid[10]; /* unidade de comprimento */
 } MedicalImage;
+
+
 
 typedef struct _myPixel{
     int *val;
