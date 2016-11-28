@@ -75,6 +75,10 @@ private slots:
 
     void on_checkBox_toggled(bool checked);
 
+    void on_pushButtonConfirmAlphas_clicked(bool checked);
+
+    void on_pushButton_3_clicked(bool checked);
+
 private:
     Ui::MainWindow *ui;
     BrightContrastDialog *brightContrastDialogForm;
