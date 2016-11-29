@@ -34,8 +34,9 @@ bool startDrawXYZImage = false;
 int renderingOption=0;
 
 float *alphas = NULL;
+float *k_phong = NULL;
 iftMatrix<float>*gradients = NULL;
-
+bool save = false;
 
 
 void init(){
@@ -113,9 +114,15 @@ void MainWindow::on_action3D_Image_triggered()
             delete imageZ;
             delete imageY;
             delete imageX;
+            delete imageXYZ;
             imageZ = NULL;
             imageY = NULL;
             imageX = NULL;
+            imageXYZ = NULL;
+            if(gradients != NULL){
+                destroyMatrix(&gradients);
+                gradients = NULL;
+            }
         }
 
         image3D = ReadMedicalImage(fileName.toLatin1().data());//reading 3d image
@@ -324,6 +331,15 @@ void MainWindow::on_actionLabel_map_triggered()
             for(int i=0; i<viewZ->rgbColorTable->numberRows;i++){
                 alphas[i] = 1;
             }
+            if(k_phong != NULL){
+                free(k_phong);
+                k_phong = NULL;
+            }
+            k_phong = (float*)calloc(4,sizeof(float));
+            k_phong[0] = 0;
+            k_phong[1] = 0.782353;
+            k_phong[2] = 0.0225;
+            k_phong[3] = 12.8;
         }else{
             QMessageBox messageBox;
             messageBox.critical(0,"Error","File is empty");
@@ -468,7 +484,7 @@ void MainWindow::displayNormalizedImage(){
 void MainWindow::on_pushButton_2_clicked()
 {
 
-    MedicalImage* image3D_aux = ReadMedicalImage("brain.scn");
+    MedicalImage* image3D_aux = ReadMedicalImage("skull.scn");
     MedicalImage* labels_aux = ReadMedicalImage("brain_label.scn");
     //test1
     //    iftMatrix<float> *vec = createMatrix(1,4,(float)0);
@@ -527,25 +543,17 @@ void MainWindow::on_pushButton_2_clicked()
 
     //    //teste3
     //maximumIntensityProjection(image3D_aux,0,45,false);
-    QTime myTimer;
-    int nMilliseconds;
-    myTimer.start();
-    iftMatrix<float>*grad = computeGradient(image3D_aux,labels_aux);
-    nMilliseconds = myTimer.elapsed();
-    fprintf(stderr,"took %d mseconds to execute \n", nMilliseconds);
+//    QTime myTimer;
+//    int nMilliseconds;
+//    myTimer.start();
+//    iftMatrix<float>*grad = computeGradient(image3D_aux,labels_aux);
+//    nMilliseconds = myTimer.elapsed();
+//    fprintf(stderr,"took %d mseconds to execute \n", nMilliseconds);
     //fprintf(stderr,"%d %d",grad->numberRows,grad->numberCols);
-    int k =0;
-    for (int z=0; z<image3D_aux->nz;z++){
-        for (int y=0; y<image3D_aux->ny;y++){
-            for (int x=0; x<image3D_aux->nx;x++){
-                if(computeDiogonal(grad->elements[k],grad->elements[k+1],grad->elements[k+2]) > 0.00001){
-                    fprintf(stderr,"%d %d %d: %f %f %f\n",z,y,x,grad->elements[k],grad->elements[k+1],grad->elements[k+2]);
-                }
-                k+=3;
-            }
-        }
-    }
-    destroyMatrix(&grad);
+    //destroyMatrix(&grad);
+    WriteBinaryScene(image3D_aux,40);
+    DestroyMedicalImage(&image3D_aux);
+    DestroyMedicalImage(&labels_aux);
 }
 
 void MainWindow::on_actionRefactor_triggered()
@@ -828,7 +836,7 @@ void MainWindow::on_actionGenerate_New_Volume_triggered()
 void MainWindow::on_labelFigureXYZ_customContextMenuRequested(const QPoint &pos)
 {
     const QPoint globalMousePosition(pos.x() + ui->labelFigureXYZ->geometry().topLeft().x(), pos.y() + ui->labelFigureXYZ->geometry().topLeft().y());
-    renderingOption = createContextMenuForRedering(image3D,labelImage,globalMousePosition,this);
+    renderingOption = createContextMenuForRedering(image3D,labelImage,globalMousePosition,this,&save,&renderingOption);
     if(renderingOption == 0){
         on_SpinBoxVectorZ_valueChanged(ui->SpinBoxVectorZ->value());
     }else if(renderingOption == 1){
@@ -844,7 +852,7 @@ void MainWindow::on_labelFigureXYZ_customContextMenuRequested(const QPoint &pos)
     }else if(renderingOption == 6){
         on_doubleSpinBoxThetaX_valueChanged(ui->doubleSpinBoxThetaX->value());
     }else if(renderingOption == 7){
-        on_doubleSpinBoxThetaX_valueChanged(ui->doubleSpinBoxThetaX->value());
+
     }else if(renderingOption == 8){
         on_doubleSpinBoxThetaX_valueChanged(ui->doubleSpinBoxThetaX->value());
     }
@@ -864,6 +872,11 @@ void MainWindow::on_doubleSpinBoxThetaX_valueChanged(double thetaX_degree)
             imageXYZ = create8bitsGrayImage2LabelArea(sliceXYZ);
         }
         displayImageOnLabel(imageXYZ,ui->labelFigureXYZ);
+        if(save){
+            WriteGrayImage(sliceXYZ,"PlanarSlice.ppm");
+            save = false;
+        }
+
         DestroyGrayImage(&sliceXYZ);
     }else if(renderingOption == 2){
         GrayImage *sliceXYZ = firstHit(image3D,labelImage,ui->doubleSpinBoxThetaX->value(),ui->doubleSpinBoxThetaY->value(),
@@ -877,6 +890,10 @@ void MainWindow::on_doubleSpinBoxThetaX_valueChanged(double thetaX_degree)
             imageXYZ = create8bitsGrayImage2LabelArea(sliceXYZ);
         }
         displayImageOnLabel(imageXYZ,ui->labelFigureXYZ);
+        if(save){
+            WriteGrayImage(sliceXYZ,"depthRendering.ppm");
+            save = false;
+        }
         DestroyGrayImage(&sliceXYZ);
     }else if(renderingOption == 3){
         ColorImage* colorImage = firstHitColor(image3D,labelImage,ui->doubleSpinBoxThetaX->value(),
@@ -885,6 +902,10 @@ void MainWindow::on_doubleSpinBoxThetaX_valueChanged(double thetaX_degree)
 
         imageXYZ = createColorImage2LabelArea(colorImage);
         displayImageOnLabel(imageXYZ,ui->labelFigureXYZ);
+        if(save){
+            WriteColorImage(colorImage,"depthRenderingRGB.ppm");
+            save = false;
+        }
         DestroyColorImage(&colorImage);
     }else if(renderingOption == 4){
         ColorImage* colorImage = renderingColourAlpha(image3D,labelImage,ui->doubleSpinBoxThetaX->value(),
@@ -893,6 +914,10 @@ void MainWindow::on_doubleSpinBoxThetaX_valueChanged(double thetaX_degree)
 
         imageXYZ = createColorImage2LabelArea(colorImage);
         displayImageOnLabel(imageXYZ,ui->labelFigureXYZ);
+        if(save){
+            WriteColorImage(colorImage,"depthRenderingColorRGBA.ppm");
+            save = false;
+        }
         DestroyColorImage(&colorImage);
     }else if(renderingOption == 5){
         if(gradients == NULL){
@@ -900,9 +925,13 @@ void MainWindow::on_doubleSpinBoxThetaX_valueChanged(double thetaX_degree)
         }
         ColorImage* colorImage = PhongRendering(image3D,labelImage,ui->doubleSpinBoxThetaX->value(),
                                                       ui->doubleSpinBoxThetaY->value(),
-                                                      ui->checkBox->isChecked(),viewXYZ,alphas,gradients);
+                                                      ui->checkBox->isChecked(),viewXYZ,alphas,gradients,k_phong);
         imageXYZ =  createColorImage2LabelArea(colorImage);
         displayImageOnLabel(imageXYZ,ui->labelFigureXYZ);
+        if(save){
+            WriteColorImage(colorImage,"PhongGray.ppm");
+            save = false;
+        }
         DestroyColorImage(&colorImage);
     }else if(renderingOption == 6){
         if(gradients == NULL){
@@ -910,9 +939,13 @@ void MainWindow::on_doubleSpinBoxThetaX_valueChanged(double thetaX_degree)
         }
         ColorImage* colorImage = PhongRenderingColor(image3D,labelImage,ui->doubleSpinBoxThetaX->value(),
                                                       ui->doubleSpinBoxThetaY->value(),
-                                                      ui->checkBox->isChecked(),viewXYZ,alphas,gradients);
+                                                      ui->checkBox->isChecked(),viewXYZ,alphas,gradients,k_phong);
         imageXYZ =  createColorImage2LabelArea(colorImage);
         displayImageOnLabel(imageXYZ,ui->labelFigureXYZ);
+        if(save){
+            WriteColorImage(colorImage,"PhongRGB.ppm");
+            save = false;
+        }
         DestroyColorImage(&colorImage);
     }else if(renderingOption == 7){
         if(gradients == NULL){
@@ -920,9 +953,13 @@ void MainWindow::on_doubleSpinBoxThetaX_valueChanged(double thetaX_degree)
         }
         ColorImage* colorImage = PhongRenderingAlpha(image3D,labelImage,ui->doubleSpinBoxThetaX->value(),
                                                       ui->doubleSpinBoxThetaY->value(),
-                                                      ui->checkBox->isChecked(),viewXYZ,alphas,gradients);
+                                                      ui->checkBox->isChecked(),viewXYZ,alphas,gradients,k_phong);
         imageXYZ =  createColorImage2LabelArea(colorImage);
         displayImageOnLabel(imageXYZ,ui->labelFigureXYZ);
+        if(save){
+            WriteColorImage(colorImage,"PhongRGBA_test.ppm");
+            save = false;
+        }
         DestroyColorImage(&colorImage);
     }else if(renderingOption == 8){
         if(gradients == NULL){
@@ -930,9 +967,13 @@ void MainWindow::on_doubleSpinBoxThetaX_valueChanged(double thetaX_degree)
         }
         ColorImage* colorImage = PhongRenderingSeeThrough(image3D,labelImage,ui->doubleSpinBoxThetaX->value(),
                                                       ui->doubleSpinBoxThetaY->value(),
-                                                      ui->checkBox->isChecked(),viewXYZ,alphas,gradients);
+                                                      ui->checkBox->isChecked(),viewXYZ,alphas,gradients,k_phong);
         imageXYZ =  createColorImage2LabelArea(colorImage);
         displayImageOnLabel(imageXYZ,ui->labelFigureXYZ);
+        if(save){
+            WriteColorImage(colorImage,"PhongRGBA.ppm");
+            save = false;
+        }
         DestroyColorImage(&colorImage);
     }
 
@@ -988,7 +1029,7 @@ void MainWindow::on_doubleSpinBoxThetaY_valueChanged(double thetaY_degree)
         }
         ColorImage* colorImage = PhongRendering(image3D,labelImage,ui->doubleSpinBoxThetaX->value(),
                                                       ui->doubleSpinBoxThetaY->value(),
-                                                      ui->checkBox->isChecked(),viewXYZ,alphas,gradients);
+                                                      ui->checkBox->isChecked(),viewXYZ,alphas,gradients,k_phong);
         imageXYZ =  createColorImage2LabelArea(colorImage);
         displayImageOnLabel(imageXYZ,ui->labelFigureXYZ);
         DestroyColorImage(&colorImage);
@@ -998,7 +1039,7 @@ void MainWindow::on_doubleSpinBoxThetaY_valueChanged(double thetaY_degree)
         }
         ColorImage* colorImage = PhongRenderingColor(image3D,labelImage,ui->doubleSpinBoxThetaX->value(),
                                                       ui->doubleSpinBoxThetaY->value(),
-                                                      ui->checkBox->isChecked(),viewXYZ,alphas,gradients);
+                                                      ui->checkBox->isChecked(),viewXYZ,alphas,gradients,k_phong);
         imageXYZ =  createColorImage2LabelArea(colorImage);
         displayImageOnLabel(imageXYZ,ui->labelFigureXYZ);
         DestroyColorImage(&colorImage);
@@ -1008,7 +1049,7 @@ void MainWindow::on_doubleSpinBoxThetaY_valueChanged(double thetaY_degree)
         }
         ColorImage* colorImage = PhongRenderingAlpha(image3D,labelImage,ui->doubleSpinBoxThetaX->value(),
                                                       ui->doubleSpinBoxThetaY->value(),
-                                                      ui->checkBox->isChecked(),viewXYZ,alphas,gradients);
+                                                      ui->checkBox->isChecked(),viewXYZ,alphas,gradients,k_phong);
         imageXYZ =  createColorImage2LabelArea(colorImage);
         displayImageOnLabel(imageXYZ,ui->labelFigureXYZ);
         DestroyColorImage(&colorImage);
@@ -1018,7 +1059,7 @@ void MainWindow::on_doubleSpinBoxThetaY_valueChanged(double thetaY_degree)
         }
         ColorImage* colorImage = PhongRenderingSeeThrough(image3D,labelImage,ui->doubleSpinBoxThetaX->value(),
                                                       ui->doubleSpinBoxThetaY->value(),
-                                                      ui->checkBox->isChecked(),viewXYZ,alphas,gradients);
+                                                      ui->checkBox->isChecked(),viewXYZ,alphas,gradients,k_phong);
         imageXYZ =  createColorImage2LabelArea(colorImage);
         displayImageOnLabel(imageXYZ,ui->labelFigureXYZ);
         DestroyColorImage(&colorImage);
@@ -1106,7 +1147,7 @@ void MainWindow::on_checkBox_toggled(bool checked)
         }
         ColorImage* colorImage = PhongRendering(image3D,labelImage,ui->doubleSpinBoxThetaX->value(),
                                                       ui->doubleSpinBoxThetaY->value(),
-                                                      ui->checkBox->isChecked(),viewXYZ,alphas,gradients);
+                                                      ui->checkBox->isChecked(),viewXYZ,alphas,gradients,k_phong);
         imageXYZ =  createColorImage2LabelArea(colorImage);
         displayImageOnLabel(imageXYZ,ui->labelFigureXYZ);
         DestroyColorImage(&colorImage);
@@ -1116,7 +1157,7 @@ void MainWindow::on_checkBox_toggled(bool checked)
         }
         ColorImage* colorImage = PhongRenderingColor(image3D,labelImage,ui->doubleSpinBoxThetaX->value(),
                                                       ui->doubleSpinBoxThetaY->value(),
-                                                      ui->checkBox->isChecked(),viewXYZ,alphas,gradients);
+                                                      ui->checkBox->isChecked(),viewXYZ,alphas,gradients,k_phong);
         imageXYZ =  createColorImage2LabelArea(colorImage);
         displayImageOnLabel(imageXYZ,ui->labelFigureXYZ);
         DestroyColorImage(&colorImage);
@@ -1126,7 +1167,7 @@ void MainWindow::on_checkBox_toggled(bool checked)
         }
         ColorImage* colorImage = PhongRenderingAlpha(image3D,labelImage,ui->doubleSpinBoxThetaX->value(),
                                                       ui->doubleSpinBoxThetaY->value(),
-                                                      ui->checkBox->isChecked(),viewXYZ,alphas,gradients);
+                                                      ui->checkBox->isChecked(),viewXYZ,alphas,gradients,k_phong);
         imageXYZ =  createColorImage2LabelArea(colorImage);
         displayImageOnLabel(imageXYZ,ui->labelFigureXYZ);
         DestroyColorImage(&colorImage);
@@ -1136,7 +1177,7 @@ void MainWindow::on_checkBox_toggled(bool checked)
         }
         ColorImage* colorImage = PhongRenderingSeeThrough(image3D,labelImage,ui->doubleSpinBoxThetaX->value(),
                                                       ui->doubleSpinBoxThetaY->value(),
-                                                      ui->checkBox->isChecked(),viewXYZ,alphas,gradients);
+                                                      ui->checkBox->isChecked(),viewXYZ,alphas,gradients,k_phong);
         imageXYZ =  createColorImage2LabelArea(colorImage);
         displayImageOnLabel(imageXYZ,ui->labelFigureXYZ);
         DestroyColorImage(&colorImage);
@@ -1148,10 +1189,16 @@ void MainWindow::on_pushButtonConfirmAlphas_clicked(bool checked)
     QStringList alphasValuesStr = ui->lineEditAlphasValues->text().split(" ");
     if(alphasValuesStr.count() == viewZ->rgbColorTable->numberRows){
         int i=0;
+        QString NullComand("x");
         foreach(QString num, alphasValuesStr){
+            if(num == NullComand){
+                i++;
+                continue;
+            }
             alphas[i] = num.toFloat();
             i++;
         }
+        on_doubleSpinBoxThetaX_valueChanged(ui->doubleSpinBoxThetaX->value());
     }else{
         QMessageBox messageBox;
         messageBox.critical(0,"Error","mismatch between number of inputs and number of objects");
@@ -1168,5 +1215,27 @@ void MainWindow::on_pushButton_3_clicked(bool checked)
         refactFormDialog->setAttribute( Qt::WA_DeleteOnClose );
         refactFormDialog->show();
         connect(refactFormDialog,SIGNAL(okSignal(float,float,float)),this,SLOT(refactScene()));
+    }
+}
+
+void MainWindow::on_pushButtonConfirmPhong_clicked(bool checked)
+{
+    QStringList alphasValuesStr = ui->lineEditPhongValues->text().split(" ");
+    if(alphasValuesStr.count() == 4){
+        int i=0;
+        QString NullComand("x");
+        foreach(QString num, alphasValuesStr){
+            if(num == NullComand){
+                i++;
+                continue;
+            }
+            k_phong[i] = num.toFloat();
+            i++;
+        }
+        on_doubleSpinBoxThetaX_valueChanged(ui->doubleSpinBoxThetaX->value());
+    }else{
+        QMessageBox messageBox;
+        messageBox.critical(0,"Error","mismatch between number of inputs and number of objects");
+        messageBox.setFixedSize(500,200);
     }
 }

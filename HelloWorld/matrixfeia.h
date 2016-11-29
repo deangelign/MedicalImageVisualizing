@@ -1,4 +1,4 @@
-#ifndef MATRIXFEIA_H
+﻿#ifndef MATRIXFEIA_H
 #define MATRIXFEIA_H
 
 #include <cblas.h>
@@ -3483,12 +3483,12 @@ void getValueColorAlpha(iftMatrix<float> *p0,iftMatrix<float>*pn,
                     G = log(G+1)*beta;
                     B = log(B+1)*beta;
                     if(firstTime){
-//                        colorImage->cor[v][u].val[0] = R*alpha[colorTableRow];
-//                        colorImage->cor[v][u].val[1] = G*alpha[colorTableRow];
-//                        colorImage->cor[v][u].val[2] = B*alpha[colorTableRow];
-                                                colorImage->cor[v][u].val[0] = R*alpha[colorTableRow];
-                                                colorImage->cor[v][u].val[1] = G*alpha[colorTableRow];
-                                                colorImage->cor[v][u].val[2] = B*alpha[colorTableRow];
+                        //                        colorImage->cor[v][u].val[0] = R*alpha[colorTableRow];
+                        //                        colorImage->cor[v][u].val[1] = G*alpha[colorTableRow];
+                        //                        colorImage->cor[v][u].val[2] = B*alpha[colorTableRow];
+                        colorImage->cor[v][u].val[0] = R*alpha[colorTableRow];
+                        colorImage->cor[v][u].val[1] = G*alpha[colorTableRow];
+                        colorImage->cor[v][u].val[2] = B*alpha[colorTableRow];
                         alphaBufer = 1-alpha[colorTableRow];
                         firstTime = false;
                     }else{
@@ -3935,6 +3935,12 @@ iftMatrix<float>* computeGradient(MedicalImage* image3D,MedicalImage* labelImage
                     for(int innerZ=z-radius;innerZ<=z+radius;innerZ++){
                         for(int innerY=y-radius;innerY<=y+radius;innerY++){
                             for(int innerX=x-radius;innerX<=x+radius;innerX++){
+                                if(innerZ < 0 || innerY < 0 || innerX < 0){
+                                    continue;
+                                }
+                                if(innerZ >= image3D->nz || innerY >= image3D->ny || innerX >= image3D->nx){
+                                    continue;
+                                }
                                 if(labelImage->val[innerZ][innerY][innerX] == 0){
                                     delta->elements[0] = x - innerX;
                                     delta->elements[1] = y - innerY;
@@ -3949,9 +3955,9 @@ iftMatrix<float>* computeGradient(MedicalImage* image3D,MedicalImage* labelImage
                                     grad->elements[k+1] += diff*delta->elements[1];
                                     grad->elements[k+2] += diff*delta->elements[2];
 
-//                                    grad->elements[k] += diff*delta->elements[0]/fabs(x - innerX+0.00001);
-//                                    grad->elements[k+1] += diff*delta->elements[1]/fabs(y - innerY+0.00001);
-//                                    grad->elements[k+2] += diff*delta->elements[2]/fabs(z - innerZ +0.00001);
+                                    //                                    grad->elements[k] += diff*delta->elements[0]/fabs(x - innerX+0.00001);
+                                    //                                    grad->elements[k+1] += diff*delta->elements[1]/fabs(y - innerY+0.00001);
+                                    //                                    grad->elements[k+2] += diff*delta->elements[2]/fabs(z - innerZ +0.00001);
                                 }
                             }
                         }
@@ -3980,12 +3986,96 @@ iftMatrix<float>* computeGradient(MedicalImage* image3D,MedicalImage* labelImage
     return grad;
 }
 
+iftMatrix<float>* computeGradient2(MedicalImage* image3D,MedicalImage* labelImage){
+    iftMatrix<float>*grad = createMatrix(image3D->nx*image3D->ny*image3D->nz,3,(float)0);
+    int radius = 1;
+    iftMatrix<float>*delta = createMatrix(1,3,(float)0);
+    float norma;
+    int k=0;
+    float diff;
+    for(int z=0; z<labelImage->nz; z++){
+        for(int y=0; y<labelImage->ny; y++){
+            for(int x=0; x<labelImage->nx; x++){
+
+                if(labelImage->val[z][y][x] != 0){
+                    for(int innerZ=z-radius;innerZ<=z+radius;innerZ++){
+                        if(labelImage->val[innerZ][y][x] == 0){
+                            delta->elements[0] = 0;
+                            delta->elements[1] = 0;
+                            delta->elements[2] = z - innerZ;
+                            norma = computeDiogonal(delta->elements[0],
+                                    delta->elements[1],delta->elements[2]);
+                            norma += 0.00001;
+                            divideMatrixByScalar(delta,norma);
+                            diff = (image3D->val[z][y][x]-0);
+                            grad->elements[k] += diff*delta->elements[0];
+                            grad->elements[k+1] += diff*delta->elements[1];
+                            grad->elements[k+2] += diff*delta->elements[2];
+                        }
+                    }
+                    for(int innerY=y-radius;innerY<=y+radius;innerY++){
+                        delta->elements[0] = 0;
+                        delta->elements[1] = y-innerY;
+                        delta->elements[2] = 0;
+                        norma = computeDiogonal(delta->elements[0],
+                                delta->elements[1],delta->elements[2]);
+                        norma += 0.00001;
+                        divideMatrixByScalar(delta,norma);
+                        diff = (image3D->val[z][y][x]-0);
+                        grad->elements[k] += diff*delta->elements[0];
+                        grad->elements[k+1] += diff*delta->elements[1];
+                        grad->elements[k+2] += diff*delta->elements[2];
+                    }
+                    for(int innerX=x-radius;innerX<=x+radius;innerX++){
+
+                        delta->elements[0] = x - innerX;
+                        delta->elements[1] = 0;
+                        delta->elements[2] = 0;
+                        norma = computeDiogonal(delta->elements[0],
+                                delta->elements[1],delta->elements[2]);
+                        norma += 0.00001;
+                        divideMatrixByScalar(delta,norma);
+                        //diff = (image3D->val[z][y][x]-image3D->val[innerZ][innerY][innerX]);
+                        diff = (image3D->val[z][y][x]-0);
+                        grad->elements[k] += diff*delta->elements[0];
+                        grad->elements[k+1] += diff*delta->elements[1];
+                        grad->elements[k+2] += diff*delta->elements[2];
+
+                        //                                    grad->elements[k] += diff*delta->elements[0]/fabs(x - innerX+0.00001);
+                        //                                    grad->elements[k+1] += diff*delta->elements[1]/fabs(y - innerY+0.00001);
+                        //                                    grad->elements[k+2] += diff*delta->elements[2]/fabs(z - innerZ +0.00001);
+                    }
+                }
+                k+=3;
+            }
+        }
+
+    }
+    k=0;
+    for(int z=0; z<labelImage->nz; z++){
+        for(int y=0; y<labelImage->ny; y++){
+            for(int x=0; x<labelImage->nx; x++){
+                if(labelImage->val[z][y][x] > 0){
+                    norma = computeDiogonal(grad->elements[k],grad->elements[k+1],grad->elements[k+2]);
+                    norma += 0.00001;
+                    norma = 1./norma;
+                    grad->elements[k] *= norma;
+                    grad->elements[k+1] *= norma;
+                    grad->elements[k+2] *= norma;
+                }
+                k+=3;
+            }
+        }
+    }
+    return grad;
+}
+
 
 void getPhongValue(iftMatrix<float> *p0,iftMatrix<float>*pn,
                    MedicalImage *image3D,MedicalImage* labelImage,
                    ColorImage* colorImage,
                    ColorMapFloat *yCgCoColorTable,int v,int u,
-                   float *alpha, iftMatrix<float>*gradients,iftMatrix<float>*n_t){
+                   float *alpha, iftMatrix<float>*gradients,iftMatrix<float>*n_t,float*k_phong){
 
     iftMatrix<float>* delta = matrixSubtraction(pn,p0);
     float deltaZ = fabs(delta->elements[2]);
@@ -4044,22 +4134,22 @@ void getPhongValue(iftMatrix<float> *p0,iftMatrix<float>*pn,
                     cos_theta += gradients->elements[gradIndex]*n_t->elements[0];
                     cos_theta += gradients->elements[gradIndex+1]*n_t->elements[1];
                     cos_theta += gradients->elements[gradIndex+2]*n_t->elements[2];
-                    cos_2theta_pow_shininess = cos(2*theta);
                     theta = acos(cos_theta);
+                    cos_2theta_pow_shininess = cos(2*theta);
                     pixelValue = (image3D->val[z][y][x]/4095.)*255;
-                    colorImage->cor[v][u].val[0] = minimumValue*ka;
-                    colorImage->cor[v][u].val[1] = minimumValue*ka;
-                    colorImage->cor[v][u].val[2] = minimumValue*ka;
+                    colorImage->cor[v][u].val[0] = minimumValue*k_phong[0];
+                    colorImage->cor[v][u].val[1] = minimumValue*k_phong[0];
+                    colorImage->cor[v][u].val[2] = minimumValue*k_phong[0];
                     if(cos_theta >= 0){
-                        colorImage->cor[v][u].val[0] += pixelValue*kd*cos_theta;
-                        colorImage->cor[v][u].val[1] += pixelValue*kd*cos_theta;
-                        colorImage->cor[v][u].val[2] += pixelValue*kd*cos_theta;
+                        colorImage->cor[v][u].val[0] += pixelValue*k_phong[1]*cos_theta;
+                        colorImage->cor[v][u].val[1] += pixelValue*k_phong[1]*cos_theta;
+                        colorImage->cor[v][u].val[2] += pixelValue*k_phong[1]*cos_theta;
                     }
                     if(cos_2theta_pow_shininess>=0){
-                        cos_2theta_pow_shininess = (float)pow(cos_2theta_pow_shininess,shininess);
-                        colorImage->cor[v][u].val[0] += pixelValue*ks*cos_2theta_pow_shininess;
-                        colorImage->cor[v][u].val[1] += pixelValue*ks*cos_2theta_pow_shininess;
-                        colorImage->cor[v][u].val[2] += pixelValue*ks*cos_2theta_pow_shininess;
+                        cos_2theta_pow_shininess = (float)pow(cos_2theta_pow_shininess,k_phong[3]);
+                        colorImage->cor[v][u].val[0] += pixelValue*k_phong[2]*cos_2theta_pow_shininess;
+                        colorImage->cor[v][u].val[1] += pixelValue*k_phong[2]*cos_2theta_pow_shininess;
+                        colorImage->cor[v][u].val[2] += pixelValue*k_phong[2]*cos_2theta_pow_shininess;
                     }
                     break;
                 }
@@ -4077,22 +4167,22 @@ void getPhongValue(iftMatrix<float> *p0,iftMatrix<float>*pn,
                     cos_theta += gradients->elements[gradIndex]*n_t->elements[0];
                     cos_theta += gradients->elements[gradIndex+1]*n_t->elements[1];
                     cos_theta += gradients->elements[gradIndex+2]*n_t->elements[2];
-                    cos_2theta_pow_shininess = cos(2*theta);
                     theta = acos(cos_theta);
+                    cos_2theta_pow_shininess = cos(2*theta);
                     pixelValue = (image3D->val[z][y][x]/4095.)*255;
-                    colorImage->cor[v][u].val[0] = minimumValue*ka;
-                    colorImage->cor[v][u].val[1] = minimumValue*ka;
-                    colorImage->cor[v][u].val[2] = minimumValue*ka;
+                    colorImage->cor[v][u].val[0] = minimumValue*k_phong[0];
+                    colorImage->cor[v][u].val[1] = minimumValue*k_phong[0];
+                    colorImage->cor[v][u].val[2] = minimumValue*k_phong[0];
                     if(cos_theta >= 0){
-                        colorImage->cor[v][u].val[0] += pixelValue*kd*cos_theta;
-                        colorImage->cor[v][u].val[1] += pixelValue*kd*cos_theta;
-                        colorImage->cor[v][u].val[2] += pixelValue*kd*cos_theta;
+                        colorImage->cor[v][u].val[0] += pixelValue*k_phong[1]*cos_theta;
+                        colorImage->cor[v][u].val[1] += pixelValue*k_phong[1]*cos_theta;
+                        colorImage->cor[v][u].val[2] += pixelValue*k_phong[1]*cos_theta;
                     }
                     if(cos_2theta_pow_shininess>=0){
-                        cos_2theta_pow_shininess = (float)pow(cos_2theta_pow_shininess,shininess);
-                        colorImage->cor[v][u].val[0] += pixelValue*ks*cos_2theta_pow_shininess;
-                        colorImage->cor[v][u].val[1] += pixelValue*ks*cos_2theta_pow_shininess;
-                        colorImage->cor[v][u].val[2] += pixelValue*ks*cos_2theta_pow_shininess;
+                        cos_2theta_pow_shininess = (float)pow(cos_2theta_pow_shininess,k_phong[3]);
+                        colorImage->cor[v][u].val[0] += pixelValue*k_phong[2]*cos_2theta_pow_shininess;
+                        colorImage->cor[v][u].val[1] += pixelValue*k_phong[2]*cos_2theta_pow_shininess;
+                        colorImage->cor[v][u].val[2] += pixelValue*k_phong[2]*cos_2theta_pow_shininess;
                     }
                     break;
                 }
@@ -4120,22 +4210,22 @@ void getPhongValue(iftMatrix<float> *p0,iftMatrix<float>*pn,
                     cos_theta += gradients->elements[gradIndex]*n_t->elements[0];
                     cos_theta += gradients->elements[gradIndex+1]*n_t->elements[1];
                     cos_theta += gradients->elements[gradIndex+2]*n_t->elements[2];
-                    cos_2theta_pow_shininess = cos(2*theta);
                     theta = acos(cos_theta);
+                    cos_2theta_pow_shininess = cos(2*theta);
                     pixelValue = (image3D->val[z][y][x]/4095.)*255;
-                    colorImage->cor[v][u].val[0] = minimumValue*ka;
-                    colorImage->cor[v][u].val[1] = minimumValue*ka;
-                    colorImage->cor[v][u].val[2] = minimumValue*ka;
+                    colorImage->cor[v][u].val[0] = minimumValue*k_phong[0];
+                    colorImage->cor[v][u].val[1] = minimumValue*k_phong[0];
+                    colorImage->cor[v][u].val[2] = minimumValue*k_phong[0];
                     if(cos_theta >= 0){
-                        colorImage->cor[v][u].val[0] += pixelValue*kd*cos_theta;
-                        colorImage->cor[v][u].val[1] += pixelValue*kd*cos_theta;
-                        colorImage->cor[v][u].val[2] += pixelValue*kd*cos_theta;
+                        colorImage->cor[v][u].val[0] += pixelValue*k_phong[1]*cos_theta;
+                        colorImage->cor[v][u].val[1] += pixelValue*k_phong[1]*cos_theta;
+                        colorImage->cor[v][u].val[2] += pixelValue*k_phong[1]*cos_theta;
                     }
                     if(cos_2theta_pow_shininess>=0){
-                        cos_2theta_pow_shininess = (float)pow(cos_2theta_pow_shininess,shininess);
-                        colorImage->cor[v][u].val[0] += pixelValue*ks*cos_2theta_pow_shininess;
-                        colorImage->cor[v][u].val[1] += pixelValue*ks*cos_2theta_pow_shininess;
-                        colorImage->cor[v][u].val[2] += pixelValue*ks*cos_2theta_pow_shininess;
+                        cos_2theta_pow_shininess = (float)pow(cos_2theta_pow_shininess,k_phong[3]);
+                        colorImage->cor[v][u].val[0] += pixelValue*k_phong[2]*cos_2theta_pow_shininess;
+                        colorImage->cor[v][u].val[1] += pixelValue*k_phong[2]*cos_2theta_pow_shininess;
+                        colorImage->cor[v][u].val[2] += pixelValue*k_phong[2]*cos_2theta_pow_shininess;
                     }
                     break;
                 }
@@ -4152,22 +4242,22 @@ void getPhongValue(iftMatrix<float> *p0,iftMatrix<float>*pn,
                     cos_theta += gradients->elements[gradIndex]*n_t->elements[0];
                     cos_theta += gradients->elements[gradIndex+1]*n_t->elements[1];
                     cos_theta += gradients->elements[gradIndex+2]*n_t->elements[2];
-                    cos_2theta_pow_shininess = cos(2*theta);
                     theta = acos(cos_theta);
+                    cos_2theta_pow_shininess = cos(2*theta);
                     pixelValue = (image3D->val[z][y][x]/4095.)*255;
-                    colorImage->cor[v][u].val[0] = minimumValue*ka;
-                    colorImage->cor[v][u].val[1] = minimumValue*ka;
-                    colorImage->cor[v][u].val[2] = minimumValue*ka;
+                    colorImage->cor[v][u].val[0] = minimumValue*k_phong[0];
+                    colorImage->cor[v][u].val[1] = minimumValue*k_phong[0];
+                    colorImage->cor[v][u].val[2] = minimumValue*k_phong[0];
                     if(cos_theta >= 0){
-                        colorImage->cor[v][u].val[0] += pixelValue*kd*cos_theta;
-                        colorImage->cor[v][u].val[1] += pixelValue*kd*cos_theta;
-                        colorImage->cor[v][u].val[2] += pixelValue*kd*cos_theta;
+                        colorImage->cor[v][u].val[0] += pixelValue*k_phong[1]*cos_theta;
+                        colorImage->cor[v][u].val[1] += pixelValue*k_phong[1]*cos_theta;
+                        colorImage->cor[v][u].val[2] += pixelValue*k_phong[1]*cos_theta;
                     }
                     if(cos_2theta_pow_shininess>=0){
-                        cos_2theta_pow_shininess = (float)pow(cos_2theta_pow_shininess,shininess);
-                        colorImage->cor[v][u].val[0] += pixelValue*ks*cos_2theta_pow_shininess;
-                        colorImage->cor[v][u].val[1] += pixelValue*ks*cos_2theta_pow_shininess;
-                        colorImage->cor[v][u].val[2] += pixelValue*ks*cos_2theta_pow_shininess;
+                        cos_2theta_pow_shininess = (float)pow(cos_2theta_pow_shininess,k_phong[3]);
+                        colorImage->cor[v][u].val[0] += pixelValue*k_phong[2]*cos_2theta_pow_shininess;
+                        colorImage->cor[v][u].val[1] += pixelValue*k_phong[2]*cos_2theta_pow_shininess;
+                        colorImage->cor[v][u].val[2] += pixelValue*k_phong[2]*cos_2theta_pow_shininess;
                     }
                     break;
                 }
@@ -4192,22 +4282,22 @@ void getPhongValue(iftMatrix<float> *p0,iftMatrix<float>*pn,
                     cos_theta += gradients->elements[gradIndex]*n_t->elements[0];
                     cos_theta += gradients->elements[gradIndex+1]*n_t->elements[1];
                     cos_theta += gradients->elements[gradIndex+2]*n_t->elements[2];
-                    cos_2theta_pow_shininess = cos(2*theta);
                     theta = acos(cos_theta);
+                    cos_2theta_pow_shininess = cos(2*theta);
                     pixelValue = (image3D->val[z][y][x]/4095.)*255;
-                    colorImage->cor[v][u].val[0] = minimumValue*ka;
-                    colorImage->cor[v][u].val[1] = minimumValue*ka;
-                    colorImage->cor[v][u].val[2] = minimumValue*ka;
+                    colorImage->cor[v][u].val[0] = minimumValue*k_phong[0];
+                    colorImage->cor[v][u].val[1] = minimumValue*k_phong[0];
+                    colorImage->cor[v][u].val[2] = minimumValue*k_phong[0];
                     if(cos_theta >= 0){
-                        colorImage->cor[v][u].val[0] += pixelValue*kd*cos_theta;
-                        colorImage->cor[v][u].val[1] += pixelValue*kd*cos_theta;
-                        colorImage->cor[v][u].val[2] += pixelValue*kd*cos_theta;
+                        colorImage->cor[v][u].val[0] += pixelValue*k_phong[1]*cos_theta;
+                        colorImage->cor[v][u].val[1] += pixelValue*k_phong[1]*cos_theta;
+                        colorImage->cor[v][u].val[2] += pixelValue*k_phong[1]*cos_theta;
                     }
                     if(cos_2theta_pow_shininess>=0){
-                        cos_2theta_pow_shininess = (float)pow(cos_2theta_pow_shininess,shininess);
-                        colorImage->cor[v][u].val[0] += pixelValue*ks*cos_2theta_pow_shininess;
-                        colorImage->cor[v][u].val[1] += pixelValue*ks*cos_2theta_pow_shininess;
-                        colorImage->cor[v][u].val[2] += pixelValue*ks*cos_2theta_pow_shininess;
+                        cos_2theta_pow_shininess = (float)pow(cos_2theta_pow_shininess,k_phong[3]);
+                        colorImage->cor[v][u].val[0] += pixelValue*k_phong[2]*cos_2theta_pow_shininess;
+                        colorImage->cor[v][u].val[1] += pixelValue*k_phong[2]*cos_2theta_pow_shininess;
+                        colorImage->cor[v][u].val[2] += pixelValue*k_phong[2]*cos_2theta_pow_shininess;
                     }
                     break;
                 }
@@ -4223,22 +4313,22 @@ void getPhongValue(iftMatrix<float> *p0,iftMatrix<float>*pn,
                     cos_theta += gradients->elements[gradIndex]*n_t->elements[0];
                     cos_theta += gradients->elements[gradIndex+1]*n_t->elements[1];
                     cos_theta += gradients->elements[gradIndex+2]*n_t->elements[2];
-                    cos_2theta_pow_shininess = cos(2*theta);
                     theta = acos(cos_theta);
+                    cos_2theta_pow_shininess = cos(2*theta);
                     pixelValue = (image3D->val[z][y][x]/4095.)*255;
-                    colorImage->cor[v][u].val[0] = minimumValue*ka;
-                    colorImage->cor[v][u].val[1] = minimumValue*ka;
-                    colorImage->cor[v][u].val[2] = minimumValue*ka;
+                    colorImage->cor[v][u].val[0] = minimumValue*k_phong[0];
+                    colorImage->cor[v][u].val[1] = minimumValue*k_phong[0];
+                    colorImage->cor[v][u].val[2] = minimumValue*k_phong[0];
                     if(cos_theta >= 0){
-                        colorImage->cor[v][u].val[0] += pixelValue*kd*cos_theta;
-                        colorImage->cor[v][u].val[1] += pixelValue*kd*cos_theta;
-                        colorImage->cor[v][u].val[2] += pixelValue*kd*cos_theta;
+                        colorImage->cor[v][u].val[0] += pixelValue*k_phong[1]*cos_theta;
+                        colorImage->cor[v][u].val[1] += pixelValue*k_phong[1]*cos_theta;
+                        colorImage->cor[v][u].val[2] += pixelValue*k_phong[1]*cos_theta;
                     }
                     if(cos_2theta_pow_shininess>=0){
-                        cos_2theta_pow_shininess = (float)pow(cos_2theta_pow_shininess,shininess);
-                        colorImage->cor[v][u].val[0] += pixelValue*ks*cos_2theta_pow_shininess;
-                        colorImage->cor[v][u].val[1] += pixelValue*ks*cos_2theta_pow_shininess;
-                        colorImage->cor[v][u].val[2] += pixelValue*ks*cos_2theta_pow_shininess;
+                        cos_2theta_pow_shininess = (float)pow(cos_2theta_pow_shininess,k_phong[3]);
+                        colorImage->cor[v][u].val[0] += pixelValue*k_phong[2]*cos_2theta_pow_shininess;
+                        colorImage->cor[v][u].val[1] += pixelValue*k_phong[2]*cos_2theta_pow_shininess;
+                        colorImage->cor[v][u].val[2] += pixelValue*k_phong[2]*cos_2theta_pow_shininess;
                     }
                     break;
                 }
@@ -4257,7 +4347,7 @@ void getPhongValue(iftMatrix<float> *p0,iftMatrix<float>*pn,
 ColorImage* PhongRendering(MedicalImage* image3D, MedicalImage *labelImage,
                            float thetax_degree, float thetay_degree,
                            bool drawFrame, ViewDisplay* view, float *alphas,
-                           iftMatrix<float>*gradients){
+                           iftMatrix<float>*gradients,float*k_phong){
     //convert degree to rads
     float thetay_rad = thetay_degree*(M_PI)/180.;
     float thetax_rad = thetax_degree*(M_PI)/180.;
@@ -4437,7 +4527,7 @@ ColorImage* PhongRendering(MedicalImage* image3D, MedicalImage *labelImage,
                 pn->elements[3] = 1;
 
                 getPhongValue(p1,pn,image3D,labelImage,colorImage,
-                              view->yCgCoColorTable,v,u,alphas,gradients,n_t);
+                              view->yCgCoColorTable,v,u,alphas,gradients,n_t,k_phong);
             }
 
         }
@@ -4472,10 +4562,10 @@ ColorImage* PhongRendering(MedicalImage* image3D, MedicalImage *labelImage,
 
 
 void getPhongValueColor(iftMatrix<float> *p0,iftMatrix<float>*pn,
-                   MedicalImage *image3D,MedicalImage* labelImage,
-                   ColorImage* colorImage,
-                   ColorMapFloat *yCgCoColorTable,int v,int u,
-                   float *alpha, iftMatrix<float>*gradients,iftMatrix<float>*n_t){
+                        MedicalImage *image3D,MedicalImage* labelImage,
+                        ColorImage* colorImage,
+                        ColorMapFloat *yCgCoColorTable,int v,int u,
+                        float *alpha, iftMatrix<float>*gradients,iftMatrix<float>*n_t,float *k_phong){
 
     iftMatrix<float>* delta = matrixSubtraction(pn,p0);
     float deltaZ = fabs(delta->elements[2]);
@@ -4534,8 +4624,8 @@ void getPhongValueColor(iftMatrix<float> *p0,iftMatrix<float>*pn,
                     cos_theta += gradients->elements[gradIndex]*n_t->elements[0];
                     cos_theta += gradients->elements[gradIndex+1]*n_t->elements[1];
                     cos_theta += gradients->elements[gradIndex+2]*n_t->elements[2];
-                    cos_2theta_pow_shininess = cos(2*theta);
                     theta = acos(cos_theta);
+                    cos_2theta_pow_shininess = cos(2*theta);
                     colorTableRow =labelImage->val[z][y][x];
                     pixelValue = (image3D->val[z][y][x]/4095.);
                     newY = (pixelValue)*magicNumber;
@@ -4548,19 +4638,19 @@ void getPhongValueColor(iftMatrix<float> *p0,iftMatrix<float>*pn,
                     R = log(R+1)*beta;
                     G = log(G+1)*beta;
                     B = log(B+1)*beta;
-                    colorImage->cor[v][u].val[0] = minimumValue*ka;
-                    colorImage->cor[v][u].val[1] = minimumValue*ka;
-                    colorImage->cor[v][u].val[2] = minimumValue*ka;
+                    colorImage->cor[v][u].val[0] = minimumValue*k_phong[0];
+                    colorImage->cor[v][u].val[1] = minimumValue*k_phong[0];
+                    colorImage->cor[v][u].val[2] = minimumValue*k_phong[0];
                     if(cos_theta >= 0){
-                        colorImage->cor[v][u].val[0] += R*kd*cos_theta;
-                        colorImage->cor[v][u].val[1] += G*kd*cos_theta;
-                        colorImage->cor[v][u].val[2] += B*kd*cos_theta;
+                        colorImage->cor[v][u].val[0] += R*k_phong[1]*cos_theta;
+                        colorImage->cor[v][u].val[1] += G*k_phong[1]*cos_theta;
+                        colorImage->cor[v][u].val[2] += B*k_phong[1]*cos_theta;
                     }
                     if(cos_2theta_pow_shininess>=0){
-                        cos_2theta_pow_shininess = (float)pow(cos_2theta_pow_shininess,shininess);
-                        colorImage->cor[v][u].val[0] += R*ks*cos_2theta_pow_shininess;
-                        colorImage->cor[v][u].val[1] += G*ks*cos_2theta_pow_shininess;
-                        colorImage->cor[v][u].val[2] += B*ks*cos_2theta_pow_shininess;
+                        cos_2theta_pow_shininess = (float)pow(cos_2theta_pow_shininess,k_phong[3]);
+                        colorImage->cor[v][u].val[0] += R*k_phong[2]*cos_2theta_pow_shininess;
+                        colorImage->cor[v][u].val[1] += G*k_phong[2]*cos_2theta_pow_shininess;
+                        colorImage->cor[v][u].val[2] += B*k_phong[2]*cos_2theta_pow_shininess;
                     }
                     break;
                 }
@@ -4578,8 +4668,8 @@ void getPhongValueColor(iftMatrix<float> *p0,iftMatrix<float>*pn,
                     cos_theta += gradients->elements[gradIndex]*n_t->elements[0];
                     cos_theta += gradients->elements[gradIndex+1]*n_t->elements[1];
                     cos_theta += gradients->elements[gradIndex+2]*n_t->elements[2];
-                    cos_2theta_pow_shininess = cos(2*theta);
                     theta = acos(cos_theta);
+                    cos_2theta_pow_shininess = cos(2*theta);
                     colorTableRow =labelImage->val[z][y][x];
                     pixelValue = (image3D->val[z][y][x]/4095.);
                     newY = (pixelValue)*magicNumber;
@@ -4592,19 +4682,19 @@ void getPhongValueColor(iftMatrix<float> *p0,iftMatrix<float>*pn,
                     R = log(R+1)*beta;
                     G = log(G+1)*beta;
                     B = log(B+1)*beta;
-                    colorImage->cor[v][u].val[0] = minimumValue*ka;
-                    colorImage->cor[v][u].val[1] = minimumValue*ka;
-                    colorImage->cor[v][u].val[2] = minimumValue*ka;
+                    colorImage->cor[v][u].val[0] = minimumValue*k_phong[0];
+                    colorImage->cor[v][u].val[1] = minimumValue*k_phong[0];
+                    colorImage->cor[v][u].val[2] = minimumValue*k_phong[0];
                     if(cos_theta >= 0){
-                        colorImage->cor[v][u].val[0] += R*kd*cos_theta;
-                        colorImage->cor[v][u].val[1] += G*kd*cos_theta;
-                        colorImage->cor[v][u].val[2] += B*kd*cos_theta;
+                        colorImage->cor[v][u].val[0] += R*k_phong[1]*cos_theta;
+                        colorImage->cor[v][u].val[1] += G*k_phong[1]*cos_theta;
+                        colorImage->cor[v][u].val[2] += B*k_phong[1]*cos_theta;
                     }
                     if(cos_2theta_pow_shininess>=0){
-                        cos_2theta_pow_shininess = (float)pow(cos_2theta_pow_shininess,shininess);
-                        colorImage->cor[v][u].val[0] += R*ks*cos_2theta_pow_shininess;
-                        colorImage->cor[v][u].val[1] += G*ks*cos_2theta_pow_shininess;
-                        colorImage->cor[v][u].val[2] += B*ks*cos_2theta_pow_shininess;
+                        cos_2theta_pow_shininess = (float)pow(cos_2theta_pow_shininess,k_phong[3]);
+                        colorImage->cor[v][u].val[0] += R*k_phong[2]*cos_2theta_pow_shininess;
+                        colorImage->cor[v][u].val[1] += G*k_phong[2]*cos_2theta_pow_shininess;
+                        colorImage->cor[v][u].val[2] += B*k_phong[2]*cos_2theta_pow_shininess;
                     }
                     break;
                 }
@@ -4632,8 +4722,8 @@ void getPhongValueColor(iftMatrix<float> *p0,iftMatrix<float>*pn,
                     cos_theta += gradients->elements[gradIndex]*n_t->elements[0];
                     cos_theta += gradients->elements[gradIndex+1]*n_t->elements[1];
                     cos_theta += gradients->elements[gradIndex+2]*n_t->elements[2];
-                    cos_2theta_pow_shininess = cos(2*theta);
                     theta = acos(cos_theta);
+                    cos_2theta_pow_shininess = cos(2*theta);
                     colorTableRow =labelImage->val[z][y][x];
                     pixelValue = (image3D->val[z][y][x]/4095.);
                     newY = (pixelValue)*magicNumber;
@@ -4646,19 +4736,19 @@ void getPhongValueColor(iftMatrix<float> *p0,iftMatrix<float>*pn,
                     R = log(R+1)*beta;
                     G = log(G+1)*beta;
                     B = log(B+1)*beta;
-                    colorImage->cor[v][u].val[0] = minimumValue*ka;
-                    colorImage->cor[v][u].val[1] = minimumValue*ka;
-                    colorImage->cor[v][u].val[2] = minimumValue*ka;
+                    colorImage->cor[v][u].val[0] = minimumValue*k_phong[0];
+                    colorImage->cor[v][u].val[1] = minimumValue*k_phong[0];
+                    colorImage->cor[v][u].val[2] = minimumValue*k_phong[0];
                     if(cos_theta >= 0){
-                        colorImage->cor[v][u].val[0] += R*kd*cos_theta;
-                        colorImage->cor[v][u].val[1] += G*kd*cos_theta;
-                        colorImage->cor[v][u].val[2] += B*kd*cos_theta;
+                        colorImage->cor[v][u].val[0] += R*k_phong[1]*cos_theta;
+                        colorImage->cor[v][u].val[1] += G*k_phong[1]*cos_theta;
+                        colorImage->cor[v][u].val[2] += B*k_phong[1]*cos_theta;
                     }
                     if(cos_2theta_pow_shininess>=0){
-                        cos_2theta_pow_shininess = (float)pow(cos_2theta_pow_shininess,shininess);
-                        colorImage->cor[v][u].val[0] += R*ks*cos_2theta_pow_shininess;
-                        colorImage->cor[v][u].val[1] += G*ks*cos_2theta_pow_shininess;
-                        colorImage->cor[v][u].val[2] += B*ks*cos_2theta_pow_shininess;
+                        cos_2theta_pow_shininess = (float)pow(cos_2theta_pow_shininess,k_phong[3]);
+                        colorImage->cor[v][u].val[0] += R*k_phong[2]*cos_2theta_pow_shininess;
+                        colorImage->cor[v][u].val[1] += G*k_phong[2]*cos_2theta_pow_shininess;
+                        colorImage->cor[v][u].val[2] += B*k_phong[2]*cos_2theta_pow_shininess;
                     }
                     break;
                 }
@@ -4675,8 +4765,8 @@ void getPhongValueColor(iftMatrix<float> *p0,iftMatrix<float>*pn,
                     cos_theta += gradients->elements[gradIndex]*n_t->elements[0];
                     cos_theta += gradients->elements[gradIndex+1]*n_t->elements[1];
                     cos_theta += gradients->elements[gradIndex+2]*n_t->elements[2];
-                    cos_2theta_pow_shininess = cos(2*theta);
                     theta = acos(cos_theta);
+                    cos_2theta_pow_shininess = cos(2*theta);
                     colorTableRow =labelImage->val[z][y][x];
                     pixelValue = (image3D->val[z][y][x]/4095.);
                     newY = (pixelValue)*magicNumber;
@@ -4689,19 +4779,19 @@ void getPhongValueColor(iftMatrix<float> *p0,iftMatrix<float>*pn,
                     R = log(R+1)*beta;
                     G = log(G+1)*beta;
                     B = log(B+1)*beta;
-                    colorImage->cor[v][u].val[0] = minimumValue*ka;
-                    colorImage->cor[v][u].val[1] = minimumValue*ka;
-                    colorImage->cor[v][u].val[2] = minimumValue*ka;
+                    colorImage->cor[v][u].val[0] = minimumValue*k_phong[0];
+                    colorImage->cor[v][u].val[1] = minimumValue*k_phong[0];
+                    colorImage->cor[v][u].val[2] = minimumValue*k_phong[0];
                     if(cos_theta >= 0){
-                        colorImage->cor[v][u].val[0] += R*kd*cos_theta;
-                        colorImage->cor[v][u].val[1] += G*kd*cos_theta;
-                        colorImage->cor[v][u].val[2] += B*kd*cos_theta;
+                        colorImage->cor[v][u].val[0] += R*k_phong[1]*cos_theta;
+                        colorImage->cor[v][u].val[1] += G*k_phong[1]*cos_theta;
+                        colorImage->cor[v][u].val[2] += B*k_phong[1]*cos_theta;
                     }
                     if(cos_2theta_pow_shininess>=0){
-                        cos_2theta_pow_shininess = (float)pow(cos_2theta_pow_shininess,shininess);
-                        colorImage->cor[v][u].val[0] += R*ks*cos_2theta_pow_shininess;
-                        colorImage->cor[v][u].val[1] += G*ks*cos_2theta_pow_shininess;
-                        colorImage->cor[v][u].val[2] += B*ks*cos_2theta_pow_shininess;
+                        cos_2theta_pow_shininess = (float)pow(cos_2theta_pow_shininess,k_phong[3]);
+                        colorImage->cor[v][u].val[0] += R*k_phong[2]*cos_2theta_pow_shininess;
+                        colorImage->cor[v][u].val[1] += G*k_phong[2]*cos_2theta_pow_shininess;
+                        colorImage->cor[v][u].val[2] += B*k_phong[2]*cos_2theta_pow_shininess;
                     }
                     break;
                 }
@@ -4726,8 +4816,8 @@ void getPhongValueColor(iftMatrix<float> *p0,iftMatrix<float>*pn,
                     cos_theta += gradients->elements[gradIndex]*n_t->elements[0];
                     cos_theta += gradients->elements[gradIndex+1]*n_t->elements[1];
                     cos_theta += gradients->elements[gradIndex+2]*n_t->elements[2];
-                    cos_2theta_pow_shininess = cos(2*theta);
                     theta = acos(cos_theta);
+                    cos_2theta_pow_shininess = cos(2*theta);
                     colorTableRow =labelImage->val[z][y][x];
                     pixelValue = (image3D->val[z][y][x]/4095.);
                     newY = (pixelValue)*magicNumber;
@@ -4740,19 +4830,19 @@ void getPhongValueColor(iftMatrix<float> *p0,iftMatrix<float>*pn,
                     R = log(R+1)*beta;
                     G = log(G+1)*beta;
                     B = log(B+1)*beta;
-                    colorImage->cor[v][u].val[0] = minimumValue*ka;
-                    colorImage->cor[v][u].val[1] = minimumValue*ka;
-                    colorImage->cor[v][u].val[2] = minimumValue*ka;
+                    colorImage->cor[v][u].val[0] = minimumValue*k_phong[0];
+                    colorImage->cor[v][u].val[1] = minimumValue*k_phong[0];
+                    colorImage->cor[v][u].val[2] = minimumValue*k_phong[0];
                     if(cos_theta >= 0){
-                        colorImage->cor[v][u].val[0] += R*kd*cos_theta;
-                        colorImage->cor[v][u].val[1] += G*kd*cos_theta;
-                        colorImage->cor[v][u].val[2] += B*kd*cos_theta;
+                        colorImage->cor[v][u].val[0] += R*k_phong[1]*cos_theta;
+                        colorImage->cor[v][u].val[1] += G*k_phong[1]*cos_theta;
+                        colorImage->cor[v][u].val[2] += B*k_phong[1]*cos_theta;
                     }
                     if(cos_2theta_pow_shininess>=0){
-                        cos_2theta_pow_shininess = (float)pow(cos_2theta_pow_shininess,shininess);
-                        colorImage->cor[v][u].val[0] += R*ks*cos_2theta_pow_shininess;
-                        colorImage->cor[v][u].val[1] += G*ks*cos_2theta_pow_shininess;
-                        colorImage->cor[v][u].val[2] += B*ks*cos_2theta_pow_shininess;
+                        cos_2theta_pow_shininess = (float)pow(cos_2theta_pow_shininess,k_phong[3]);
+                        colorImage->cor[v][u].val[0] += R*k_phong[2]*cos_2theta_pow_shininess;
+                        colorImage->cor[v][u].val[1] += G*k_phong[2]*cos_2theta_pow_shininess;
+                        colorImage->cor[v][u].val[2] += B*k_phong[2]*cos_2theta_pow_shininess;
                     }
                     break;
                 }
@@ -4768,8 +4858,8 @@ void getPhongValueColor(iftMatrix<float> *p0,iftMatrix<float>*pn,
                     cos_theta += gradients->elements[gradIndex]*n_t->elements[0];
                     cos_theta += gradients->elements[gradIndex+1]*n_t->elements[1];
                     cos_theta += gradients->elements[gradIndex+2]*n_t->elements[2];
-                    cos_2theta_pow_shininess = cos(2*theta);
                     theta = acos(cos_theta);
+                    cos_2theta_pow_shininess = cos(2*theta);
                     colorTableRow =labelImage->val[z][y][x];
                     pixelValue = (image3D->val[z][y][x]/4095.);
                     newY = (pixelValue)*magicNumber;
@@ -4782,19 +4872,19 @@ void getPhongValueColor(iftMatrix<float> *p0,iftMatrix<float>*pn,
                     R = log(R+1)*beta;
                     G = log(G+1)*beta;
                     B = log(B+1)*beta;
-                    colorImage->cor[v][u].val[0] = minimumValue*ka;
-                    colorImage->cor[v][u].val[1] = minimumValue*ka;
-                    colorImage->cor[v][u].val[2] = minimumValue*ka;
+                    colorImage->cor[v][u].val[0] = minimumValue*k_phong[0];
+                    colorImage->cor[v][u].val[1] = minimumValue*k_phong[0];
+                    colorImage->cor[v][u].val[2] = minimumValue*k_phong[0];
                     if(cos_theta >= 0){
-                        colorImage->cor[v][u].val[0] += R*kd*cos_theta;
-                        colorImage->cor[v][u].val[1] += G*kd*cos_theta;
-                        colorImage->cor[v][u].val[2] += B*kd*cos_theta;
+                        colorImage->cor[v][u].val[0] += R*k_phong[1]*cos_theta;
+                        colorImage->cor[v][u].val[1] += G*k_phong[1]*cos_theta;
+                        colorImage->cor[v][u].val[2] += B*k_phong[1]*cos_theta;
                     }
                     if(cos_2theta_pow_shininess>=0){
-                        cos_2theta_pow_shininess = (float)pow(cos_2theta_pow_shininess,shininess);
-                        colorImage->cor[v][u].val[0] += R*ks*cos_2theta_pow_shininess;
-                        colorImage->cor[v][u].val[1] += G*ks*cos_2theta_pow_shininess;
-                        colorImage->cor[v][u].val[2] += B*ks*cos_2theta_pow_shininess;
+                        cos_2theta_pow_shininess = (float)pow(cos_2theta_pow_shininess,k_phong[3]);
+                        colorImage->cor[v][u].val[0] += R*k_phong[2]*cos_2theta_pow_shininess;
+                        colorImage->cor[v][u].val[1] += G*k_phong[2]*cos_2theta_pow_shininess;
+                        colorImage->cor[v][u].val[2] += B*k_phong[2]*cos_2theta_pow_shininess;
                     }
                     break;
                 }
@@ -4812,9 +4902,9 @@ void getPhongValueColor(iftMatrix<float> *p0,iftMatrix<float>*pn,
 
 
 ColorImage* PhongRenderingColor(MedicalImage* image3D, MedicalImage *labelImage,
-                           float thetax_degree, float thetay_degree,
-                           bool drawFrame, ViewDisplay* view, float *alphas,
-                           iftMatrix<float>*gradients){
+                                float thetax_degree, float thetay_degree,
+                                bool drawFrame, ViewDisplay* view, float *alphas,
+                                iftMatrix<float>*gradients,float *k_phong){
     //convert degree to rads
     float thetay_rad = thetay_degree*(M_PI)/180.;
     float thetax_rad = thetax_degree*(M_PI)/180.;
@@ -4994,7 +5084,7 @@ ColorImage* PhongRenderingColor(MedicalImage* image3D, MedicalImage *labelImage,
                 pn->elements[3] = 1;
 
                 getPhongValueColor(p1,pn,image3D,labelImage,colorImage,
-                              view->yCgCoColorTable,v,u,alphas,gradients,n_t);
+                                   view->yCgCoColorTable,v,u,alphas,gradients,n_t,k_phong);
             }
 
         }
@@ -5029,10 +5119,10 @@ ColorImage* PhongRenderingColor(MedicalImage* image3D, MedicalImage *labelImage,
 }
 
 void getPhongValueAlpha(iftMatrix<float> *p0,iftMatrix<float>*pn,
-                   MedicalImage *image3D,MedicalImage* labelImage,
-                   ColorImage* colorImage,
-                   ColorMapFloat *yCgCoColorTable,int v,int u,
-                   float *alpha, iftMatrix<float>*gradients,iftMatrix<float>*n_t){
+                        MedicalImage *image3D,MedicalImage* labelImage,
+                        ColorImage* colorImage,
+                        ColorMapFloat *yCgCoColorTable,int v,int u,
+                        float *alpha, iftMatrix<float>*gradients,iftMatrix<float>*n_t,float *k_phong){
 
     iftMatrix<float>* delta = matrixSubtraction(pn,p0);
     float deltaZ = fabs(delta->elements[2]);
@@ -5092,8 +5182,8 @@ void getPhongValueAlpha(iftMatrix<float> *p0,iftMatrix<float>*pn,
                     cos_theta += gradients->elements[gradIndex]*n_t->elements[0];
                     cos_theta += gradients->elements[gradIndex+1]*n_t->elements[1];
                     cos_theta += gradients->elements[gradIndex+2]*n_t->elements[2];
-                    cos_2theta_pow_shininess = cos(2*theta);
                     theta = acos(cos_theta);
+                    cos_2theta_pow_shininess = cos(2*theta);
                     colorTableRow =labelImage->val[z][y][x];
                     pixelValue = (image3D->val[z][y][x]/4095.);
                     newY = (pixelValue)*magicNumber;
@@ -5106,19 +5196,19 @@ void getPhongValueAlpha(iftMatrix<float> *p0,iftMatrix<float>*pn,
                     R = log(R+1)*beta;
                     G = log(G+1)*beta;
                     B = log(B+1)*beta;
-                    Rp = minimumValue*ka;
-                    Gp = minimumValue*ka;
-                    Bp = minimumValue*ka;
+                    Rp = minimumValue*k_phong[0];
+                    Gp = minimumValue*k_phong[0];
+                    Bp = minimumValue*k_phong[0];
                     if(cos_theta >= 0){
-                        Rp += R*kd*cos_theta;
-                        Gp += G*kd*cos_theta;
-                        Bp += B*kd*cos_theta;
+                        Rp += R*k_phong[1]*cos_theta;
+                        Gp += G*k_phong[1]*cos_theta;
+                        Bp += B*k_phong[1]*cos_theta;
                     }
                     if(cos_2theta_pow_shininess>=0){
-                        cos_2theta_pow_shininess = (float)pow(cos_2theta_pow_shininess,shininess);
-                        Rp += R*ks*cos_2theta_pow_shininess;
-                        Gp += G*ks*cos_2theta_pow_shininess;
-                        Bp += B*ks*cos_2theta_pow_shininess;
+                        cos_2theta_pow_shininess = (float)pow(cos_2theta_pow_shininess,k_phong[3]);
+                        Rp += R*k_phong[2]*cos_2theta_pow_shininess;
+                        Gp += G*k_phong[2]*cos_2theta_pow_shininess;
+                        Bp += B*k_phong[2]*cos_2theta_pow_shininess;
                     }
                     Rp *= alphaBufer*alpha[colorTableRow];
                     Gp *= alphaBufer*alpha[colorTableRow];
@@ -5146,8 +5236,8 @@ void getPhongValueAlpha(iftMatrix<float> *p0,iftMatrix<float>*pn,
                     cos_theta += gradients->elements[gradIndex]*n_t->elements[0];
                     cos_theta += gradients->elements[gradIndex+1]*n_t->elements[1];
                     cos_theta += gradients->elements[gradIndex+2]*n_t->elements[2];
-                    cos_2theta_pow_shininess = cos(2*theta);
                     theta = acos(cos_theta);
+                    cos_2theta_pow_shininess = cos(2*theta);
                     colorTableRow =labelImage->val[z][y][x];
                     pixelValue = (image3D->val[z][y][x]/4095.);
                     newY = (pixelValue)*magicNumber;
@@ -5160,19 +5250,19 @@ void getPhongValueAlpha(iftMatrix<float> *p0,iftMatrix<float>*pn,
                     R = log(R+1)*beta;
                     G = log(G+1)*beta;
                     B = log(B+1)*beta;
-                    Rp = minimumValue*ka;
-                    Gp = minimumValue*ka;
-                    Bp = minimumValue*ka;
+                    Rp = minimumValue*k_phong[0];
+                    Gp = minimumValue*k_phong[0];
+                    Bp = minimumValue*k_phong[0];
                     if(cos_theta >= 0){
-                        Rp += R*kd*cos_theta;
-                        Gp += G*kd*cos_theta;
-                        Bp += B*kd*cos_theta;
+                        Rp += R*k_phong[1]*cos_theta;
+                        Gp += G*k_phong[1]*cos_theta;
+                        Bp += B*k_phong[1]*cos_theta;
                     }
                     if(cos_2theta_pow_shininess>=0){
-                        cos_2theta_pow_shininess = (float)pow(cos_2theta_pow_shininess,shininess);
-                        Rp += R*ks*cos_2theta_pow_shininess;
-                        Gp += G*ks*cos_2theta_pow_shininess;
-                        Bp += B*ks*cos_2theta_pow_shininess;
+                        cos_2theta_pow_shininess = (float)pow(cos_2theta_pow_shininess,k_phong[3]);
+                        Rp += R*k_phong[2]*cos_2theta_pow_shininess;
+                        Gp += G*k_phong[2]*cos_2theta_pow_shininess;
+                        Bp += B*k_phong[2]*cos_2theta_pow_shininess;
                     }
                     Rp *= alphaBufer*alpha[colorTableRow];
                     Gp *= alphaBufer*alpha[colorTableRow];
@@ -5210,8 +5300,8 @@ void getPhongValueAlpha(iftMatrix<float> *p0,iftMatrix<float>*pn,
                     cos_theta += gradients->elements[gradIndex]*n_t->elements[0];
                     cos_theta += gradients->elements[gradIndex+1]*n_t->elements[1];
                     cos_theta += gradients->elements[gradIndex+2]*n_t->elements[2];
-                    cos_2theta_pow_shininess = cos(2*theta);
                     theta = acos(cos_theta);
+                    cos_2theta_pow_shininess = cos(2*theta);
                     colorTableRow =labelImage->val[z][y][x];
                     pixelValue = (image3D->val[z][y][x]/4095.);
                     newY = (pixelValue)*magicNumber;
@@ -5224,19 +5314,19 @@ void getPhongValueAlpha(iftMatrix<float> *p0,iftMatrix<float>*pn,
                     R = log(R+1)*beta;
                     G = log(G+1)*beta;
                     B = log(B+1)*beta;
-                    Rp = minimumValue*ka;
-                    Gp = minimumValue*ka;
-                    Bp = minimumValue*ka;
+                    Rp = minimumValue*k_phong[0];
+                    Gp = minimumValue*k_phong[0];
+                    Bp = minimumValue*k_phong[0];
                     if(cos_theta >= 0){
-                        Rp += R*kd*cos_theta;
-                        Gp += G*kd*cos_theta;
-                        Bp += B*kd*cos_theta;
+                        Rp += R*k_phong[1]*cos_theta;
+                        Gp += G*k_phong[1]*cos_theta;
+                        Bp += B*k_phong[1]*cos_theta;
                     }
                     if(cos_2theta_pow_shininess>=0){
-                        cos_2theta_pow_shininess = (float)pow(cos_2theta_pow_shininess,shininess);
-                        Rp += R*ks*cos_2theta_pow_shininess;
-                        Gp += G*ks*cos_2theta_pow_shininess;
-                        Bp += B*ks*cos_2theta_pow_shininess;
+                        cos_2theta_pow_shininess = (float)pow(cos_2theta_pow_shininess,k_phong[3]);
+                        Rp += R*k_phong[2]*cos_2theta_pow_shininess;
+                        Gp += G*k_phong[2]*cos_2theta_pow_shininess;
+                        Bp += B*k_phong[2]*cos_2theta_pow_shininess;
                     }
                     Rp *= alphaBufer*alpha[colorTableRow];
                     Gp *= alphaBufer*alpha[colorTableRow];
@@ -5263,8 +5353,8 @@ void getPhongValueAlpha(iftMatrix<float> *p0,iftMatrix<float>*pn,
                     cos_theta += gradients->elements[gradIndex]*n_t->elements[0];
                     cos_theta += gradients->elements[gradIndex+1]*n_t->elements[1];
                     cos_theta += gradients->elements[gradIndex+2]*n_t->elements[2];
-                    cos_2theta_pow_shininess = cos(2*theta);
                     theta = acos(cos_theta);
+                    cos_2theta_pow_shininess = cos(2*theta);
                     colorTableRow =labelImage->val[z][y][x];
                     pixelValue = (image3D->val[z][y][x]/4095.);
                     newY = (pixelValue)*magicNumber;
@@ -5277,19 +5367,19 @@ void getPhongValueAlpha(iftMatrix<float> *p0,iftMatrix<float>*pn,
                     R = log(R+1)*beta;
                     G = log(G+1)*beta;
                     B = log(B+1)*beta;
-                    Rp = minimumValue*ka;
-                    Gp = minimumValue*ka;
-                    Bp = minimumValue*ka;
+                    Rp = minimumValue*k_phong[0];
+                    Gp = minimumValue*k_phong[0];
+                    Bp = minimumValue*k_phong[0];
                     if(cos_theta >= 0){
-                        Rp += R*kd*cos_theta;
-                        Gp += G*kd*cos_theta;
-                        Bp += B*kd*cos_theta;
+                        Rp += R*k_phong[1]*cos_theta;
+                        Gp += G*k_phong[1]*cos_theta;
+                        Bp += B*k_phong[1]*cos_theta;
                     }
                     if(cos_2theta_pow_shininess>=0){
-                        cos_2theta_pow_shininess = (float)pow(cos_2theta_pow_shininess,shininess);
-                        Rp += R*ks*cos_2theta_pow_shininess;
-                        Gp += G*ks*cos_2theta_pow_shininess;
-                        Bp += B*ks*cos_2theta_pow_shininess;
+                        cos_2theta_pow_shininess = (float)pow(cos_2theta_pow_shininess,k_phong[3]);
+                        Rp += R*k_phong[2]*cos_2theta_pow_shininess;
+                        Gp += G*k_phong[2]*cos_2theta_pow_shininess;
+                        Bp += B*k_phong[2]*cos_2theta_pow_shininess;
                     }
                     Rp *= alphaBufer*alpha[colorTableRow];
                     Gp *= alphaBufer*alpha[colorTableRow];
@@ -5324,8 +5414,8 @@ void getPhongValueAlpha(iftMatrix<float> *p0,iftMatrix<float>*pn,
                     cos_theta += gradients->elements[gradIndex]*n_t->elements[0];
                     cos_theta += gradients->elements[gradIndex+1]*n_t->elements[1];
                     cos_theta += gradients->elements[gradIndex+2]*n_t->elements[2];
-                    cos_2theta_pow_shininess = cos(2*theta);
                     theta = acos(cos_theta);
+                    cos_2theta_pow_shininess = cos(2*theta);
                     colorTableRow =labelImage->val[z][y][x];
                     pixelValue = (image3D->val[z][y][x]/4095.);
                     newY = (pixelValue)*magicNumber;
@@ -5338,19 +5428,19 @@ void getPhongValueAlpha(iftMatrix<float> *p0,iftMatrix<float>*pn,
                     R = log(R+1)*beta;
                     G = log(G+1)*beta;
                     B = log(B+1)*beta;
-                    Rp = minimumValue*ka;
-                    Gp = minimumValue*ka;
-                    Bp = minimumValue*ka;
+                    Rp = minimumValue*k_phong[0];
+                    Gp = minimumValue*k_phong[0];
+                    Bp = minimumValue*k_phong[0];
                     if(cos_theta >= 0){
-                        Rp += R*kd*cos_theta;
-                        Gp += G*kd*cos_theta;
-                        Bp += B*kd*cos_theta;
+                        Rp += R*k_phong[1]*cos_theta;
+                        Gp += G*k_phong[1]*cos_theta;
+                        Bp += B*k_phong[1]*cos_theta;
                     }
                     if(cos_2theta_pow_shininess>=0){
-                        cos_2theta_pow_shininess = (float)pow(cos_2theta_pow_shininess,shininess);
-                        Rp += R*ks*cos_2theta_pow_shininess;
-                        Gp += G*ks*cos_2theta_pow_shininess;
-                        Bp += B*ks*cos_2theta_pow_shininess;
+                        cos_2theta_pow_shininess = (float)pow(cos_2theta_pow_shininess,k_phong[3]);
+                        Rp += R*k_phong[2]*cos_2theta_pow_shininess;
+                        Gp += G*k_phong[2]*cos_2theta_pow_shininess;
+                        Bp += B*k_phong[2]*cos_2theta_pow_shininess;
                     }
                     Rp *= alphaBufer*alpha[colorTableRow];
                     Gp *= alphaBufer*alpha[colorTableRow];
@@ -5376,8 +5466,8 @@ void getPhongValueAlpha(iftMatrix<float> *p0,iftMatrix<float>*pn,
                     cos_theta += gradients->elements[gradIndex]*n_t->elements[0];
                     cos_theta += gradients->elements[gradIndex+1]*n_t->elements[1];
                     cos_theta += gradients->elements[gradIndex+2]*n_t->elements[2];
-                    cos_2theta_pow_shininess = cos(2*theta);
                     theta = acos(cos_theta);
+                    cos_2theta_pow_shininess = cos(2*theta);
                     colorTableRow =labelImage->val[z][y][x];
                     pixelValue = (image3D->val[z][y][x]/4095.);
                     newY = (pixelValue)*magicNumber;
@@ -5390,19 +5480,19 @@ void getPhongValueAlpha(iftMatrix<float> *p0,iftMatrix<float>*pn,
                     R = log(R+1)*beta;
                     G = log(G+1)*beta;
                     B = log(B+1)*beta;
-                    Rp = minimumValue*ka;
-                    Gp = minimumValue*ka;
-                    Bp = minimumValue*ka;
+                    Rp = minimumValue*k_phong[0];
+                    Gp = minimumValue*k_phong[0];
+                    Bp = minimumValue*k_phong[0];
                     if(cos_theta >= 0){
-                        Rp += R*kd*cos_theta;
-                        Gp += G*kd*cos_theta;
-                        Bp += B*kd*cos_theta;
+                        Rp += R*k_phong[1]*cos_theta;
+                        Gp += G*k_phong[1]*cos_theta;
+                        Bp += B*k_phong[1]*cos_theta;
                     }
                     if(cos_2theta_pow_shininess>=0){
-                        cos_2theta_pow_shininess = (float)pow(cos_2theta_pow_shininess,shininess);
-                        Rp += R*ks*cos_2theta_pow_shininess;
-                        Gp += G*ks*cos_2theta_pow_shininess;
-                        Bp += B*ks*cos_2theta_pow_shininess;
+                        cos_2theta_pow_shininess = (float)pow(cos_2theta_pow_shininess,k_phong[3]);
+                        Rp += R*k_phong[2]*cos_2theta_pow_shininess;
+                        Gp += G*k_phong[2]*cos_2theta_pow_shininess;
+                        Bp += B*k_phong[2]*cos_2theta_pow_shininess;
                     }
                     Rp *= alphaBufer*alpha[colorTableRow];
                     Gp *= alphaBufer*alpha[colorTableRow];
@@ -5429,9 +5519,9 @@ void getPhongValueAlpha(iftMatrix<float> *p0,iftMatrix<float>*pn,
 }
 
 ColorImage* PhongRenderingAlpha(MedicalImage* image3D, MedicalImage *labelImage,
-                           float thetax_degree, float thetay_degree,
-                           bool drawFrame, ViewDisplay* view, float *alphas,
-                           iftMatrix<float>*gradients){
+                                float thetax_degree, float thetay_degree,
+                                bool drawFrame, ViewDisplay* view, float *alphas,
+                                iftMatrix<float>*gradients,float *k_phong){
     //convert degree to rads
     float thetay_rad = thetay_degree*(M_PI)/180.;
     float thetax_rad = thetax_degree*(M_PI)/180.;
@@ -5611,7 +5701,7 @@ ColorImage* PhongRenderingAlpha(MedicalImage* image3D, MedicalImage *labelImage,
                 pn->elements[3] = 1;
 
                 getPhongValueAlpha(p1,pn,image3D,labelImage,colorImage,
-                              view->yCgCoColorTable,v,u,alphas,gradients,n_t);
+                                   view->yCgCoColorTable,v,u,alphas,gradients,n_t,k_phong);
             }
 
         }
@@ -5646,10 +5736,10 @@ ColorImage* PhongRenderingAlpha(MedicalImage* image3D, MedicalImage *labelImage,
 }
 
 void getPhongValueSeeThrough(iftMatrix<float> *p0,iftMatrix<float>*pn,
-                   MedicalImage *image3D,MedicalImage* labelImage,
-                   ColorImage* colorImage,
-                   ColorMapFloat *yCgCoColorTable,int v,int u,
-                   float *alpha, iftMatrix<float>*gradients,iftMatrix<float>*n_t){
+                             MedicalImage *image3D,MedicalImage* labelImage,
+                             ColorImage* colorImage,
+                             ColorMapFloat *yCgCoColorTable,int v,int u,
+                             float *alpha, iftMatrix<float>*gradients,iftMatrix<float>*n_t,float *k_phong){
 
     iftMatrix<float>* delta = matrixSubtraction(pn,p0);
     float deltaZ = fabs(delta->elements[2]);
@@ -5703,7 +5793,10 @@ void getPhongValueSeeThrough(iftMatrix<float> *p0,iftMatrix<float>*pn,
             for(int z=p0->elements[2]; z<pn->elements[2]; z++){
                 x = a1*z + b1;
                 y = a2*z + b2;
-                if (labelImage->val[z][y][x] != 0 && lastLabel != labelImage->val[z][y][x]){
+                if (lastLabel != labelImage->val[z][y][x]){
+                    if(labelImage->val[z][y][x] == 0 && alpha[colorTableRow] <= 0.00){
+                        continue;
+                    }
                     lastLabel = labelImage->val[z][y][x];
                     gradIndex = x + (labelImage->nx*y) + (labelImage->nx*labelImage->ny*z);
                     gradIndex *= 3;
@@ -5711,8 +5804,8 @@ void getPhongValueSeeThrough(iftMatrix<float> *p0,iftMatrix<float>*pn,
                     cos_theta += gradients->elements[gradIndex]*n_t->elements[0];
                     cos_theta += gradients->elements[gradIndex+1]*n_t->elements[1];
                     cos_theta += gradients->elements[gradIndex+2]*n_t->elements[2];
-                    cos_2theta_pow_shininess = cos(2*theta);
                     theta = acos(cos_theta);
+                    cos_2theta_pow_shininess = cos(2*theta);
                     colorTableRow =labelImage->val[z][y][x];
                     pixelValue = (image3D->val[z][y][x]/4095.);
                     newY = (pixelValue)*magicNumber;
@@ -5725,20 +5818,22 @@ void getPhongValueSeeThrough(iftMatrix<float> *p0,iftMatrix<float>*pn,
                     R = log(R+1)*beta;
                     G = log(G+1)*beta;
                     B = log(B+1)*beta;
-                    Rp = minimumValue*ka;
-                    Gp = minimumValue*ka;
-                    Bp = minimumValue*ka;
+                    Rp = minimumValue*k_phong[0];
+                    Gp = minimumValue*k_phong[0];
+                    Bp = minimumValue*k_phong[0];
                     if(cos_theta >= 0){
-                        Rp += R*kd*cos_theta;
-                        Gp += G*kd*cos_theta;
-                        Bp += B*kd*cos_theta;
+                        Rp += R*k_phong[1]*cos_theta;
+                        Gp += G*k_phong[1]*cos_theta;
+                        Bp += B*k_phong[1]*cos_theta;
                     }
                     if(cos_2theta_pow_shininess>=0){
-                        cos_2theta_pow_shininess = (float)pow(cos_2theta_pow_shininess,shininess);
-                        Rp += R*ks*cos_2theta_pow_shininess;
-                        Gp += G*ks*cos_2theta_pow_shininess;
-                        Bp += B*ks*cos_2theta_pow_shininess;
+                        cos_2theta_pow_shininess = (float)pow(cos_2theta_pow_shininess,k_phong[3]);
+                        Rp += R*k_phong[2]*cos_2theta_pow_shininess;
+                        Gp += G*k_phong[2]*cos_2theta_pow_shininess;
+                        Bp += B*k_phong[2]*cos_2theta_pow_shininess;
                     }
+
+
                     Rp *= alphaBufer*alpha[colorTableRow];
                     Gp *= alphaBufer*alpha[colorTableRow];
                     Bp *= alphaBufer*alpha[colorTableRow];
@@ -5758,7 +5853,10 @@ void getPhongValueSeeThrough(iftMatrix<float> *p0,iftMatrix<float>*pn,
             for(int z=p0->elements[2]; z>pn->elements[2]; z--){
                 x = a1*z + b1;
                 y = a2*z + b2;
-                if (labelImage->val[z][y][x] != 0 && lastLabel != labelImage->val[z][y][x]){
+                if (lastLabel != labelImage->val[z][y][x]){
+                    if(labelImage->val[z][y][x] == 0 && alpha[colorTableRow] <= 0.00){
+                        continue;
+                    }
                     lastLabel = labelImage->val[z][y][x];
                     gradIndex = x + (labelImage->nx*y) + (labelImage->nx*labelImage->ny*z);
                     gradIndex *= 3;
@@ -5766,8 +5864,8 @@ void getPhongValueSeeThrough(iftMatrix<float> *p0,iftMatrix<float>*pn,
                     cos_theta += gradients->elements[gradIndex]*n_t->elements[0];
                     cos_theta += gradients->elements[gradIndex+1]*n_t->elements[1];
                     cos_theta += gradients->elements[gradIndex+2]*n_t->elements[2];
-                    cos_2theta_pow_shininess = cos(2*theta);
                     theta = acos(cos_theta);
+                    cos_2theta_pow_shininess = cos(2*theta);
                     colorTableRow =labelImage->val[z][y][x];
                     pixelValue = (image3D->val[z][y][x]/4095.);
                     newY = (pixelValue)*magicNumber;
@@ -5780,19 +5878,19 @@ void getPhongValueSeeThrough(iftMatrix<float> *p0,iftMatrix<float>*pn,
                     R = log(R+1)*beta;
                     G = log(G+1)*beta;
                     B = log(B+1)*beta;
-                    Rp = minimumValue*ka;
-                    Gp = minimumValue*ka;
-                    Bp = minimumValue*ka;
+                    Rp = minimumValue*k_phong[0];
+                    Gp = minimumValue*k_phong[0];
+                    Bp = minimumValue*k_phong[0];
                     if(cos_theta >= 0){
-                        Rp += R*kd*cos_theta;
-                        Gp += G*kd*cos_theta;
-                        Bp += B*kd*cos_theta;
+                        Rp += R*k_phong[1]*cos_theta;
+                        Gp += G*k_phong[1]*cos_theta;
+                        Bp += B*k_phong[1]*cos_theta;
                     }
                     if(cos_2theta_pow_shininess>=0){
-                        cos_2theta_pow_shininess = (float)pow(cos_2theta_pow_shininess,shininess);
-                        Rp += R*ks*cos_2theta_pow_shininess;
-                        Gp += G*ks*cos_2theta_pow_shininess;
-                        Bp += B*ks*cos_2theta_pow_shininess;
+                        cos_2theta_pow_shininess = (float)pow(cos_2theta_pow_shininess,k_phong[3]);
+                        Rp += R*k_phong[2]*cos_2theta_pow_shininess;
+                        Gp += G*k_phong[2]*cos_2theta_pow_shininess;
+                        Bp += B*k_phong[2]*cos_2theta_pow_shininess;
                     }
                     Rp *= alphaBufer*alpha[colorTableRow];
                     Gp *= alphaBufer*alpha[colorTableRow];
@@ -5823,7 +5921,10 @@ void getPhongValueSeeThrough(iftMatrix<float> *p0,iftMatrix<float>*pn,
             for(int y=p0->elements[1]; y<pn->elements[1]; y++){
                 x = a1*y + b1;
                 z = a2*y + b2;
-                if (labelImage->val[z][y][x] != 0 && lastLabel != labelImage->val[z][y][x]){
+                if (lastLabel != labelImage->val[z][y][x]){
+                    if(labelImage->val[z][y][x] == 0 && alpha[colorTableRow] <= 0.00){
+                        continue;
+                    }
                     lastLabel = labelImage->val[z][y][x];
                     gradIndex = x + (labelImage->nx*y) + (labelImage->nx*labelImage->ny*z);
                     gradIndex *= 3;
@@ -5831,8 +5932,8 @@ void getPhongValueSeeThrough(iftMatrix<float> *p0,iftMatrix<float>*pn,
                     cos_theta += gradients->elements[gradIndex]*n_t->elements[0];
                     cos_theta += gradients->elements[gradIndex+1]*n_t->elements[1];
                     cos_theta += gradients->elements[gradIndex+2]*n_t->elements[2];
-                    cos_2theta_pow_shininess = cos(2*theta);
                     theta = acos(cos_theta);
+                    cos_2theta_pow_shininess = cos(2*theta);
                     colorTableRow =labelImage->val[z][y][x];
                     pixelValue = (image3D->val[z][y][x]/4095.);
                     newY = (pixelValue)*magicNumber;
@@ -5845,19 +5946,19 @@ void getPhongValueSeeThrough(iftMatrix<float> *p0,iftMatrix<float>*pn,
                     R = log(R+1)*beta;
                     G = log(G+1)*beta;
                     B = log(B+1)*beta;
-                    Rp = minimumValue*ka;
-                    Gp = minimumValue*ka;
-                    Bp = minimumValue*ka;
+                    Rp = minimumValue*k_phong[0];
+                    Gp = minimumValue*k_phong[0];
+                    Bp = minimumValue*k_phong[0];
                     if(cos_theta >= 0){
-                        Rp += R*kd*cos_theta;
-                        Gp += G*kd*cos_theta;
-                        Bp += B*kd*cos_theta;
+                        Rp += R*k_phong[1]*cos_theta;
+                        Gp += G*k_phong[1]*cos_theta;
+                        Bp += B*k_phong[1]*cos_theta;
                     }
                     if(cos_2theta_pow_shininess>=0){
-                        cos_2theta_pow_shininess = (float)pow(cos_2theta_pow_shininess,shininess);
-                        Rp += R*ks*cos_2theta_pow_shininess;
-                        Gp += G*ks*cos_2theta_pow_shininess;
-                        Bp += B*ks*cos_2theta_pow_shininess;
+                        cos_2theta_pow_shininess = (float)pow(cos_2theta_pow_shininess,k_phong[3]);
+                        Rp += R*k_phong[2]*cos_2theta_pow_shininess;
+                        Gp += G*k_phong[2]*cos_2theta_pow_shininess;
+                        Bp += B*k_phong[2]*cos_2theta_pow_shininess;
                     }
                     Rp *= alphaBufer*alpha[colorTableRow];
                     Gp *= alphaBufer*alpha[colorTableRow];
@@ -5877,7 +5978,10 @@ void getPhongValueSeeThrough(iftMatrix<float> *p0,iftMatrix<float>*pn,
             for(int y=p0->elements[1]; y>pn->elements[1]; y--){
                 x = a1*y + b1;
                 z = a2*y + b2;
-                if (labelImage->val[z][y][x] != 0 && lastLabel != labelImage->val[z][y][x]){
+                if (lastLabel != labelImage->val[z][y][x]){
+                    if(labelImage->val[z][y][x] == 0 && alpha[colorTableRow] <= 0.00){
+                        continue;
+                    }
                     lastLabel = labelImage->val[z][y][x];
                     gradIndex = x + (labelImage->nx*y) + (labelImage->nx*labelImage->ny*z);
                     gradIndex *= 3;
@@ -5885,8 +5989,8 @@ void getPhongValueSeeThrough(iftMatrix<float> *p0,iftMatrix<float>*pn,
                     cos_theta += gradients->elements[gradIndex]*n_t->elements[0];
                     cos_theta += gradients->elements[gradIndex+1]*n_t->elements[1];
                     cos_theta += gradients->elements[gradIndex+2]*n_t->elements[2];
-                    cos_2theta_pow_shininess = cos(2*theta);
                     theta = acos(cos_theta);
+                    cos_2theta_pow_shininess = cos(2*theta);
                     colorTableRow =labelImage->val[z][y][x];
                     pixelValue = (image3D->val[z][y][x]/4095.);
                     newY = (pixelValue)*magicNumber;
@@ -5899,19 +6003,19 @@ void getPhongValueSeeThrough(iftMatrix<float> *p0,iftMatrix<float>*pn,
                     R = log(R+1)*beta;
                     G = log(G+1)*beta;
                     B = log(B+1)*beta;
-                    Rp = minimumValue*ka;
-                    Gp = minimumValue*ka;
-                    Bp = minimumValue*ka;
+                    Rp = minimumValue*k_phong[0];
+                    Gp = minimumValue*k_phong[0];
+                    Bp = minimumValue*k_phong[0];
                     if(cos_theta >= 0){
-                        Rp += R*kd*cos_theta;
-                        Gp += G*kd*cos_theta;
-                        Bp += B*kd*cos_theta;
+                        Rp += R*k_phong[1]*cos_theta;
+                        Gp += G*k_phong[1]*cos_theta;
+                        Bp += B*k_phong[1]*cos_theta;
                     }
                     if(cos_2theta_pow_shininess>=0){
-                        cos_2theta_pow_shininess = (float)pow(cos_2theta_pow_shininess,shininess);
-                        Rp += R*ks*cos_2theta_pow_shininess;
-                        Gp += G*ks*cos_2theta_pow_shininess;
-                        Bp += B*ks*cos_2theta_pow_shininess;
+                        cos_2theta_pow_shininess = (float)pow(cos_2theta_pow_shininess,k_phong[3]);
+                        Rp += R*k_phong[2]*cos_2theta_pow_shininess;
+                        Gp += G*k_phong[2]*cos_2theta_pow_shininess;
+                        Bp += B*k_phong[2]*cos_2theta_pow_shininess;
                     }
                     Rp *= alphaBufer*alpha[colorTableRow];
                     Gp *= alphaBufer*alpha[colorTableRow];
@@ -5939,7 +6043,10 @@ void getPhongValueSeeThrough(iftMatrix<float> *p0,iftMatrix<float>*pn,
             for(int x=p0->elements[0]; x<pn->elements[0]; x++){
                 y = a1*x + b1;
                 z = a2*x + b2;
-                if (labelImage->val[z][y][x] != 0 && lastLabel != labelImage->val[z][y][x]){
+                if (lastLabel != labelImage->val[z][y][x]){
+                    if(labelImage->val[z][y][x] == 0 && alpha[colorTableRow] <= 0.00){
+                        continue;
+                    }
                     lastLabel = labelImage->val[z][y][x];
                     gradIndex = x + (labelImage->nx*y) + (labelImage->nx*labelImage->ny*z);
                     gradIndex *= 3;
@@ -5947,8 +6054,8 @@ void getPhongValueSeeThrough(iftMatrix<float> *p0,iftMatrix<float>*pn,
                     cos_theta += gradients->elements[gradIndex]*n_t->elements[0];
                     cos_theta += gradients->elements[gradIndex+1]*n_t->elements[1];
                     cos_theta += gradients->elements[gradIndex+2]*n_t->elements[2];
-                    cos_2theta_pow_shininess = cos(2*theta);
                     theta = acos(cos_theta);
+                    cos_2theta_pow_shininess = cos(2*theta);
                     colorTableRow =labelImage->val[z][y][x];
                     pixelValue = (image3D->val[z][y][x]/4095.);
                     newY = (pixelValue)*magicNumber;
@@ -5961,19 +6068,19 @@ void getPhongValueSeeThrough(iftMatrix<float> *p0,iftMatrix<float>*pn,
                     R = log(R+1)*beta;
                     G = log(G+1)*beta;
                     B = log(B+1)*beta;
-                    Rp = minimumValue*ka;
-                    Gp = minimumValue*ka;
-                    Bp = minimumValue*ka;
+                    Rp = minimumValue*k_phong[0];
+                    Gp = minimumValue*k_phong[0];
+                    Bp = minimumValue*k_phong[0];
                     if(cos_theta >= 0){
-                        Rp += R*kd*cos_theta;
-                        Gp += G*kd*cos_theta;
-                        Bp += B*kd*cos_theta;
+                        Rp += R*k_phong[1]*cos_theta;
+                        Gp += G*k_phong[1]*cos_theta;
+                        Bp += B*k_phong[1]*cos_theta;
                     }
                     if(cos_2theta_pow_shininess>=0){
-                        cos_2theta_pow_shininess = (float)pow(cos_2theta_pow_shininess,shininess);
-                        Rp += R*ks*cos_2theta_pow_shininess;
-                        Gp += G*ks*cos_2theta_pow_shininess;
-                        Bp += B*ks*cos_2theta_pow_shininess;
+                        cos_2theta_pow_shininess = (float)pow(cos_2theta_pow_shininess,k_phong[3]);
+                        Rp += R*k_phong[2]*cos_2theta_pow_shininess;
+                        Gp += G*k_phong[2]*cos_2theta_pow_shininess;
+                        Bp += B*k_phong[2]*cos_2theta_pow_shininess;
                     }
                     Rp *= alphaBufer*alpha[colorTableRow];
                     Gp *= alphaBufer*alpha[colorTableRow];
@@ -5992,7 +6099,10 @@ void getPhongValueSeeThrough(iftMatrix<float> *p0,iftMatrix<float>*pn,
             for(int x=p0->elements[0]; x>pn->elements[0]; x--){
                 y = a1*x + b1;
                 z = a2*x + b2;
-                if (labelImage->val[z][y][x] != 0 && lastLabel != labelImage->val[z][y][x]){
+                if (lastLabel != labelImage->val[z][y][x]){
+                    if(labelImage->val[z][y][x] == 0 && alpha[colorTableRow] <= 0.00){
+                        continue;
+                    }
                     lastLabel = labelImage->val[z][y][x];
                     gradIndex = x + (labelImage->nx*y) + (labelImage->nx*labelImage->ny*z);
                     gradIndex *= 3;
@@ -6000,8 +6110,8 @@ void getPhongValueSeeThrough(iftMatrix<float> *p0,iftMatrix<float>*pn,
                     cos_theta += gradients->elements[gradIndex]*n_t->elements[0];
                     cos_theta += gradients->elements[gradIndex+1]*n_t->elements[1];
                     cos_theta += gradients->elements[gradIndex+2]*n_t->elements[2];
-                    cos_2theta_pow_shininess = cos(2*theta);
                     theta = acos(cos_theta);
+                    cos_2theta_pow_shininess = cos(2*theta);
                     colorTableRow =labelImage->val[z][y][x];
                     pixelValue = (image3D->val[z][y][x]/4095.);
                     newY = (pixelValue)*magicNumber;
@@ -6014,19 +6124,19 @@ void getPhongValueSeeThrough(iftMatrix<float> *p0,iftMatrix<float>*pn,
                     R = log(R+1)*beta;
                     G = log(G+1)*beta;
                     B = log(B+1)*beta;
-                    Rp = minimumValue*ka;
-                    Gp = minimumValue*ka;
-                    Bp = minimumValue*ka;
+                    Rp = minimumValue*k_phong[0];
+                    Gp = minimumValue*k_phong[0];
+                    Bp = minimumValue*k_phong[0];
                     if(cos_theta >= 0){
-                        Rp += R*kd*cos_theta;
-                        Gp += G*kd*cos_theta;
-                        Bp += B*kd*cos_theta;
+                        Rp += R*k_phong[1]*cos_theta;
+                        Gp += G*k_phong[1]*cos_theta;
+                        Bp += B*k_phong[1]*cos_theta;
                     }
                     if(cos_2theta_pow_shininess>=0){
-                        cos_2theta_pow_shininess = (float)pow(cos_2theta_pow_shininess,shininess);
-                        Rp += R*ks*cos_2theta_pow_shininess;
-                        Gp += G*ks*cos_2theta_pow_shininess;
-                        Bp += B*ks*cos_2theta_pow_shininess;
+                        cos_2theta_pow_shininess = (float)pow(cos_2theta_pow_shininess,k_phong[3]);
+                        Rp += R*k_phong[2]*cos_2theta_pow_shininess;
+                        Gp += G*k_phong[2]*cos_2theta_pow_shininess;
+                        Bp += B*k_phong[2]*cos_2theta_pow_shininess;
                     }
                     Rp *= alphaBufer*alpha[colorTableRow];
                     Gp *= alphaBufer*alpha[colorTableRow];
@@ -6055,9 +6165,9 @@ void getPhongValueSeeThrough(iftMatrix<float> *p0,iftMatrix<float>*pn,
 }
 
 ColorImage* PhongRenderingSeeThrough(MedicalImage* image3D, MedicalImage *labelImage,
-                           float thetax_degree, float thetay_degree,
-                           bool drawFrame, ViewDisplay* view, float *alphas,
-                           iftMatrix<float>*gradients){
+                                     float thetax_degree, float thetay_degree,
+                                     bool drawFrame, ViewDisplay* view, float *alphas,
+                                     iftMatrix<float>*gradients,float *k_phong){
     //convert degree to rads
     float thetay_rad = thetay_degree*(M_PI)/180.;
     float thetax_rad = thetax_degree*(M_PI)/180.;
@@ -6237,7 +6347,7 @@ ColorImage* PhongRenderingSeeThrough(MedicalImage* image3D, MedicalImage *labelI
                 pn->elements[3] = 1;
 
                 getPhongValueSeeThrough(p1,pn,image3D,labelImage,colorImage,
-                              view->yCgCoColorTable,v,u,alphas,gradients,n_t);
+                                        view->yCgCoColorTable,v,u,alphas,gradients,n_t,k_phong);
             }
 
         }
@@ -6268,6 +6378,26 @@ ColorImage* PhongRenderingSeeThrough(MedicalImage* image3D, MedicalImage *labelI
     destroyMatrix(&p0_t);
 
     return colorImage;
+}
+
+void WriteBinaryScene(MedicalImage* image3D,int t){
+    MedicalImage* labelScene = CreateMedicalImage(image3D->nx,image3D->ny,image3D->nz);
+    labelScene->dx = image3D->dx;
+    labelScene->dy = image3D->dy;
+    labelScene->dz = image3D->dz;
+    for(int i=0; i<10; i++){
+        labelScene->unid[i] = image3D->unid[i];
+    }
+    for(int z=0; z<image3D->nz; z++){
+        for(int y=0; y<image3D->ny; y++){
+            for(int x=0; x<image3D->nx; x++){
+                if(image3D->val[z][y][x] > t){
+                    labelScene->val[z][y][x] = 1;
+                }
+            }
+        }
+    }
+    WriteMedicalImage(labelScene,"label.scn");
 }
 
 #endif // MATRIXFEIA_H

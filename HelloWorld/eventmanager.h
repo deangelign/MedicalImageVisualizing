@@ -20,7 +20,7 @@ void mirrorAlongVerticalAxis(ViewDisplay *view);
 void mirrorAlongHorizontalAxis(ViewDisplay *view);\
 void getQImageFromView(ViewDisplay *view, MedicalImage *image3D, MedicalImage *labelImage, QImage **image);
 int createContextMenuForLabelImage(MedicalImage *image3D,MedicalImage *labelImage,const QPoint &pos, QObject *obj);
-int createContextMenuForRedering(MedicalImage *image3D,MedicalImage *labelImage,const QPoint &pos, QObject *obj);
+int createContextMenuForRedering(MedicalImage *image3D,MedicalImage *labelImage,const QPoint &pos, QObject *obj,bool *save, int *selectedOption);
 QImage *createColorImage2LabelAreaModified(ColorImage *colorImage, GrayImage *grayImage, int cont);
 QImage *createColorImage2LabelArea(ColorImage *colorImage);
 

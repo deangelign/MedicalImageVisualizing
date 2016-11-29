@@ -244,7 +244,8 @@ int createContextMenuForLabelImage(MedicalImage *image3D,MedicalImage *labelImag
     return selectedOption;
 }
 
-int createContextMenuForRedering(MedicalImage *image3D,MedicalImage *labelImage,const QPoint &pos, QObject *obj){
+int createContextMenuForRedering(MedicalImage *image3D,MedicalImage *labelImage,
+                                 const QPoint &pos, QObject *obj, bool* save, int*selectedOption){
     QString stringOption1 = "PlanarView";
     QString stringOption2 = "Maximum Intensity Projetction";
     QString stringOption3 = "Surface Rendering (grey)";
@@ -254,7 +255,8 @@ int createContextMenuForRedering(MedicalImage *image3D,MedicalImage *labelImage,
     QString stringOption7 = "Phong (RGB)";
     QString stringOption8 = "Phong (RGBA)";
     QString stringOption9 = "Phong (ST)";
-    int selectedOption = -1;
+    QString stringOption100 = "Save Image";
+    //int selectedOption = -1;
     QMenu *menu = new QMenu();
     QAction *PlanarView = new QAction(stringOption1, obj);
     QAction *MIP = new QAction(stringOption2, obj);
@@ -265,6 +267,7 @@ int createContextMenuForRedering(MedicalImage *image3D,MedicalImage *labelImage,
     QAction *phong_RGB = new QAction(stringOption7, obj);
     QAction *phong_RGBA = new QAction(stringOption8, obj);
     QAction *phong_ST = new QAction(stringOption9, obj);
+    QAction *saveImage = new QAction(stringOption100, obj);
     menu->addAction(PlanarView);
     menu->addAction(MIP);
     menu->addAction(VR);
@@ -274,6 +277,8 @@ int createContextMenuForRedering(MedicalImage *image3D,MedicalImage *labelImage,
     menu->addAction(phong_RGB);
     menu->addAction(phong_RGBA);
     menu->addAction(phong_ST);
+
+    menu->addAction(saveImage);
     if(image3D == NULL){
         PlanarView->setEnabled(false);
         MIP->setEnabled(false);
@@ -301,24 +306,28 @@ int createContextMenuForRedering(MedicalImage *image3D,MedicalImage *labelImage,
             selectedOption =  0;
         }
         else if(selectedItem->text() == stringOption2){
-            selectedOption = 1;
+            *selectedOption = 1;
         }else if(selectedItem->text() == stringOption3){
-            selectedOption = 2;
+            *selectedOption = 2;
         }else if(selectedItem->text() == stringOption4){
-            selectedOption = 3;
+            *selectedOption = 3;
         }else if(selectedItem->text() == stringOption5){
-            selectedOption = 4;
+            *selectedOption = 4;
         }else if(selectedItem->text() == stringOption6){
-            selectedOption = 5;
+            *selectedOption = 5;
         }else if(selectedItem->text() == stringOption7){
-            selectedOption = 6;
+            *selectedOption = 6;
         }else if(selectedItem->text() == stringOption8){
-            selectedOption = 7;
+            *selectedOption = 7;
         }else if(selectedItem->text() == stringOption9){
-            selectedOption = 8;
+            *selectedOption = 8;
+        }
+
+        if(selectedItem->text() == stringOption100){
+            (*save) = true;
         }
     }
-    return selectedOption;
+    return *selectedOption;
 }
 
 
