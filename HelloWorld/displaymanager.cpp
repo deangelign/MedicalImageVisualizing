@@ -72,7 +72,7 @@ ColorMap* generateRGBColorMap(MedicalImage *labelImage,int maximumValue){
         RGBColorTable->table[0][j] = 0;
     }
 
-    srand(0);
+    srand(17);
     int value;
     for(int i=1;i<RGBColorTable->numberRows; i++){
         for(int j=0; j<RGBColorTable->numberColumns; j++){

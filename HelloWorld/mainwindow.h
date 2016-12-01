@@ -81,6 +81,10 @@ private slots:
 
     void on_pushButtonConfirmPhong_clicked(bool checked);
 
+    void on_pushButtonConfirmBackGroundColor_clicked();
+
+    void renderXYZView();
+
 private:
     Ui::MainWindow *ui;
     BrightContrastDialog *brightContrastDialogForm;

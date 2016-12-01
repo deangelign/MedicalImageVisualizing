@@ -35,7 +35,10 @@ int renderingOption=0;
 
 float *alphas = NULL;
 float *k_phong = NULL;
+float *bg_color = (float*)calloc(1,sizeof(float));
+
 iftMatrix<float>*gradients = NULL;
+iftMatrix<float>*depthMap = NULL;
 bool save = false;
 
 
@@ -86,6 +89,9 @@ void init(){
 
     viewXYZ = (ViewDisplay *)calloc(1,sizeof(ViewDisplay));
     viewXYZ->rgbColorTable = NULL;
+    bg_color[0] = 0;
+    bg_color[1] = 0;
+    bg_color[2] = 0;
 }
 
 MainWindow::MainWindow(QWidget *parent) :
@@ -122,6 +128,10 @@ void MainWindow::on_action3D_Image_triggered()
             if(gradients != NULL){
                 destroyMatrix(&gradients);
                 gradients = NULL;
+            }
+            if(depthMap !=NULL){
+                destroyMatrix(&depthMap);
+                depthMap = NULL;
             }
         }
 
@@ -282,7 +292,7 @@ void MainWindow::on_actionLabel_map_triggered()
             labelImage = ReadMedicalImage(fileName.toLatin1().data());
 
             //TODO: checar se as dimensoes sao iguais labelImage-3Dimage
-            viewZ->rgbColorTable = generateRGBColorMap(labelImage,4095);
+            viewZ->rgbColorTable = generateRGBColorMap(labelImage,255);
             copyColorMap(viewZ->rgbColorTable,&viewY->rgbColorTable);
             copyColorMap(viewZ->rgbColorTable,&viewX->rgbColorTable);
             copyColorMap(viewZ->rgbColorTable,&viewXYZ->rgbColorTable);
@@ -298,10 +308,10 @@ void MainWindow::on_actionLabel_map_triggered()
 
 
 
-            convertRGBColorMap2YCgCoColorMap(viewZ->rgbColorTable,&viewZ->yCgCoColorTable, 4095);
-            convertRGBColorMap2YCgCoColorMap(viewY->rgbColorTable,&viewY->yCgCoColorTable, 4095);
-            convertRGBColorMap2YCgCoColorMap(viewX->rgbColorTable,&viewX->yCgCoColorTable, 4095);
-            convertRGBColorMap2YCgCoColorMap(viewXYZ->rgbColorTable,&viewXYZ->yCgCoColorTable, 4095);
+            convertRGBColorMap2YCgCoColorMap(viewZ->rgbColorTable,&viewZ->yCgCoColorTable, 255);
+            convertRGBColorMap2YCgCoColorMap(viewY->rgbColorTable,&viewY->yCgCoColorTable, 255);
+            convertRGBColorMap2YCgCoColorMap(viewX->rgbColorTable,&viewX->yCgCoColorTable, 255);
+            convertRGBColorMap2YCgCoColorMap(viewXYZ->rgbColorTable,&viewXYZ->yCgCoColorTable, 255);
             //            for(int i=0; i<viewZ->rgbColorTable->numberRows; i++){
             //                for(int j=0; j<viewZ->rgbColorTable->numberColumns; j++){
             //                    fprintf(stderr,"%f ",viewZ->yCgCoColorTable->table[i][j]);
@@ -484,7 +494,9 @@ void MainWindow::displayNormalizedImage(){
 void MainWindow::on_pushButton_2_clicked()
 {
 
-    MedicalImage* image3D_aux = ReadMedicalImage("skull.scn");
+    MedicalImage* image3D_aux = ReadMedicalImage("cubo-teste.scn");
+    scaleSceneValues(image3D_aux,100);
+    WriteMedicalImage(image3D_aux,"cuboLabel.scn");
     MedicalImage* labels_aux = ReadMedicalImage("brain_label.scn");
     //test1
     //    iftMatrix<float> *vec = createMatrix(1,4,(float)0);
@@ -551,7 +563,8 @@ void MainWindow::on_pushButton_2_clicked()
 //    fprintf(stderr,"took %d mseconds to execute \n", nMilliseconds);
     //fprintf(stderr,"%d %d",grad->numberRows,grad->numberCols);
     //destroyMatrix(&grad);
-    WriteBinaryScene(image3D_aux,40);
+    //fprintf(stderr,"%d\n",image3D_aux->maxValue);
+    //WriteBinaryScene(image3D_aux,40);
     DestroyMedicalImage(&image3D_aux);
     DestroyMedicalImage(&labels_aux);
 }
@@ -855,12 +868,17 @@ void MainWindow::on_labelFigureXYZ_customContextMenuRequested(const QPoint &pos)
 
     }else if(renderingOption == 8){
         on_doubleSpinBoxThetaX_valueChanged(ui->doubleSpinBoxThetaX->value());
+    }else if(renderingOption == 9){
+        on_doubleSpinBoxThetaX_valueChanged(ui->doubleSpinBoxThetaX->value());
     }
+
 }
 
-void MainWindow::on_doubleSpinBoxThetaX_valueChanged(double thetaX_degree)
-{
-    ui->doubleSpinBoxThetaX->setValue(thetaX_degree);
+void MainWindow::renderXYZView(){
+    if(gradients == NULL){
+        gradients = computeGradient(image3D,labelImage);
+    }
+
     if(renderingOption == 1){
         GrayImage *sliceXYZ = maximumIntensityProjection(image3D,ui->doubleSpinBoxThetaX->value(),ui->doubleSpinBoxThetaY->value(),
                                                          ui->checkBox->isChecked());
@@ -967,7 +985,20 @@ void MainWindow::on_doubleSpinBoxThetaX_valueChanged(double thetaX_degree)
         }
         ColorImage* colorImage = PhongRenderingSeeThrough(image3D,labelImage,ui->doubleSpinBoxThetaX->value(),
                                                       ui->doubleSpinBoxThetaY->value(),
-                                                      ui->checkBox->isChecked(),viewXYZ,alphas,gradients,k_phong);
+                                                      ui->checkBox->isChecked(),viewXYZ,alphas,gradients,k_phong,bg_color);
+        imageXYZ =  createColorImage2LabelArea(colorImage);
+        displayImageOnLabel(imageXYZ,ui->labelFigureXYZ);
+        if(save){
+            WriteColorImage(colorImage,"PhongRGBA.ppm");
+            save = false;
+        }
+        DestroyColorImage(&colorImage);
+    }else if(renderingOption == 9){
+        ColorImage* colorImage = depthRendering(image3D,labelImage,ui->doubleSpinBoxThetaX->value(),
+                                                      ui->doubleSpinBoxThetaY->value(),
+                                                      ui->checkBox->isChecked(),
+                                                viewXYZ,alphas,gradients,k_phong,
+                                                bg_color);
         imageXYZ =  createColorImage2LabelArea(colorImage);
         displayImageOnLabel(imageXYZ,ui->labelFigureXYZ);
         if(save){
@@ -977,211 +1008,25 @@ void MainWindow::on_doubleSpinBoxThetaX_valueChanged(double thetaX_degree)
         DestroyColorImage(&colorImage);
     }
 
+}
 
+void MainWindow::on_doubleSpinBoxThetaX_valueChanged(double thetaX_degree)
+{
+    ui->doubleSpinBoxThetaX->setValue(thetaX_degree);
+    renderXYZView();
 }
 
 void MainWindow::on_doubleSpinBoxThetaY_valueChanged(double thetaY_degree)
 {
     ui->doubleSpinBoxThetaY->setValue(thetaY_degree);
-    if(renderingOption == 1){
-        GrayImage *sliceXYZ = maximumIntensityProjection(image3D,ui->doubleSpinBoxThetaX->value(),ui->doubleSpinBoxThetaY->value(),
-                                                         ui->checkBox->isChecked());
-        updateContrastBrightParameters(viewXYZ,image3D->maxValue/2.0,image3D->maxValue);
-        WidthLevelGrayImage(sliceXYZ, viewXYZ->bright, viewXYZ->contrast,image3D->maxValue);
-        if(image3D->nbits > 8){
-            imageXYZ = createGrayImage2LabelArea(sliceXYZ,image3D->maxValue);
-        }else{
-            imageXYZ = create8bitsGrayImage2LabelArea(sliceXYZ);
-        }
-        displayImageOnLabel(imageXYZ,ui->labelFigureXYZ);
-        DestroyGrayImage(&sliceXYZ);
-    }else if(renderingOption == 2){
-        GrayImage *sliceXYZ = firstHit(image3D,labelImage,ui->doubleSpinBoxThetaX->value(),ui->doubleSpinBoxThetaY->value(),
-                                       ui->checkBox->isChecked());
-        updateContrastBrightParameters(viewXYZ,image3D->maxValue/2.0,image3D->maxValue);
-        WidthLevelGrayImage(sliceXYZ, viewXYZ->bright, viewXYZ->contrast,image3D->maxValue);
-        if(image3D->nbits > 8){
-            imageXYZ = createGrayImage2LabelArea(sliceXYZ,image3D->maxValue);
-        }else{
-            imageXYZ = create8bitsGrayImage2LabelArea(sliceXYZ);
-        }
-        displayImageOnLabel(imageXYZ,ui->labelFigureXYZ);
-        DestroyGrayImage(&sliceXYZ);
-    }else if(renderingOption == 3){
-        ColorImage* colorImage = firstHitColor(image3D,labelImage,ui->doubleSpinBoxThetaX->value(),
-                                               ui->doubleSpinBoxThetaY->value(),
-                                               ui->checkBox->isChecked(),viewXYZ);
-
-        imageXYZ = createColorImage2LabelArea(colorImage);
-        displayImageOnLabel(imageXYZ,ui->labelFigureXYZ);
-        DestroyColorImage(&colorImage);
-    }else if(renderingOption == 4){
-        ColorImage* colorImage = renderingColourAlpha(image3D,labelImage,ui->doubleSpinBoxThetaX->value(),
-                                                      ui->doubleSpinBoxThetaY->value(),
-                                                      ui->checkBox->isChecked(),viewXYZ,alphas);
-
-        imageXYZ = createColorImage2LabelArea(colorImage);
-        displayImageOnLabel(imageXYZ,ui->labelFigureXYZ);
-        DestroyColorImage(&colorImage);
-    }else if(renderingOption == 5){
-        if(gradients == NULL){
-            gradients = computeGradient(image3D,labelImage);
-        }
-        ColorImage* colorImage = PhongRendering(image3D,labelImage,ui->doubleSpinBoxThetaX->value(),
-                                                      ui->doubleSpinBoxThetaY->value(),
-                                                      ui->checkBox->isChecked(),viewXYZ,alphas,gradients,k_phong);
-        imageXYZ =  createColorImage2LabelArea(colorImage);
-        displayImageOnLabel(imageXYZ,ui->labelFigureXYZ);
-        DestroyColorImage(&colorImage);
-    }else if(renderingOption == 6){
-        if(gradients == NULL){
-            gradients = computeGradient(image3D,labelImage);
-        }
-        ColorImage* colorImage = PhongRenderingColor(image3D,labelImage,ui->doubleSpinBoxThetaX->value(),
-                                                      ui->doubleSpinBoxThetaY->value(),
-                                                      ui->checkBox->isChecked(),viewXYZ,alphas,gradients,k_phong);
-        imageXYZ =  createColorImage2LabelArea(colorImage);
-        displayImageOnLabel(imageXYZ,ui->labelFigureXYZ);
-        DestroyColorImage(&colorImage);
-    }else if(renderingOption == 7){
-        if(gradients == NULL){
-            gradients = computeGradient(image3D,labelImage);
-        }
-        ColorImage* colorImage = PhongRenderingAlpha(image3D,labelImage,ui->doubleSpinBoxThetaX->value(),
-                                                      ui->doubleSpinBoxThetaY->value(),
-                                                      ui->checkBox->isChecked(),viewXYZ,alphas,gradients,k_phong);
-        imageXYZ =  createColorImage2LabelArea(colorImage);
-        displayImageOnLabel(imageXYZ,ui->labelFigureXYZ);
-        DestroyColorImage(&colorImage);
-    }else if(renderingOption == 8){
-        if(gradients == NULL){
-            gradients = computeGradient(image3D,labelImage);
-        }
-        ColorImage* colorImage = PhongRenderingSeeThrough(image3D,labelImage,ui->doubleSpinBoxThetaX->value(),
-                                                      ui->doubleSpinBoxThetaY->value(),
-                                                      ui->checkBox->isChecked(),viewXYZ,alphas,gradients,k_phong);
-        imageXYZ =  createColorImage2LabelArea(colorImage);
-        displayImageOnLabel(imageXYZ,ui->labelFigureXYZ);
-        DestroyColorImage(&colorImage);
-    }
+    renderXYZView();
 }
 
 
 
 void MainWindow::on_checkBox_toggled(bool checked)
 {
-
-    if(renderingOption == 0){
-
-        iftMatrix<float> *vec = createMatrix(1,4,(float)0);
-        iftMatrix<float> *p = createMatrix(1,4,(float)0);
-        p->elements[0] = ui->SpinBoxPointX->value();
-        p->elements[1] = ui->SpinBoxPointY->value();
-        p->elements[2] = ui->SpinBoxPointZ->value();
-        p->elements[3] = 1;
-
-        vec->elements[0] = ui->SpinBoxVectorX->value();
-        vec->elements[1] = ui->SpinBoxVectorY->value();
-        vec->elements[2] = ui->SpinBoxVectorZ->value();
-        vec->elements[3] = 0;
-
-        GrayImage *sliceXYZ = getPlanarSlice(p,vec,image3D,ui->checkBox->isChecked());
-        //WidthLevelGrayImage(slice, view->bright, view->contrast,image3D->maxValue);
-        updateContrastBrightParameters(viewXYZ,image3D->maxValue/2.0,image3D->maxValue);
-        WidthLevelGrayImage(sliceXYZ, viewXYZ->bright, viewXYZ->contrast,image3D->maxValue);
-
-        if(image3D->nbits > 8){
-            imageXYZ = createGrayImage2LabelArea(sliceXYZ,image3D->maxValue);
-        }else{
-            imageXYZ = create8bitsGrayImage2LabelArea(sliceXYZ);
-        }
-
-        displayImageOnLabel(imageXYZ,ui->labelFigureXYZ);
-        DestroyGrayImage(&sliceXYZ);
-
-    }
-    else if(renderingOption == 1){
-        GrayImage *sliceXYZ = maximumIntensityProjection(image3D,ui->doubleSpinBoxThetaX->value(),ui->doubleSpinBoxThetaY->value(),
-                                                         ui->checkBox->isChecked());
-        updateContrastBrightParameters(viewXYZ,image3D->maxValue/2.0,image3D->maxValue);
-        WidthLevelGrayImage(sliceXYZ, viewXYZ->bright, viewXYZ->contrast,image3D->maxValue);
-        if(image3D->nbits > 8){
-            imageXYZ = createGrayImage2LabelArea(sliceXYZ,image3D->maxValue);
-        }else{
-            imageXYZ = create8bitsGrayImage2LabelArea(sliceXYZ);
-        }
-        displayImageOnLabel(imageXYZ,ui->labelFigureXYZ);
-        DestroyGrayImage(&sliceXYZ);
-    }else if(renderingOption == 2){
-        GrayImage *sliceXYZ = firstHit(image3D,labelImage,ui->doubleSpinBoxThetaX->value(),ui->doubleSpinBoxThetaY->value(),
-                                       ui->checkBox->isChecked());
-
-        updateContrastBrightParameters(viewXYZ,image3D->maxValue/2.0,image3D->maxValue);
-        WidthLevelGrayImage(sliceXYZ, viewXYZ->bright, viewXYZ->contrast,image3D->maxValue);
-        if(image3D->nbits > 8){
-            imageXYZ = createGrayImage2LabelArea(sliceXYZ,image3D->maxValue);
-        }else{
-            imageXYZ = create8bitsGrayImage2LabelArea(sliceXYZ);
-        }
-        displayImageOnLabel(imageXYZ,ui->labelFigureXYZ);
-        DestroyGrayImage(&sliceXYZ);
-    }else if(renderingOption == 3){
-        ColorImage* colorImage = firstHitColor(image3D,labelImage,ui->doubleSpinBoxThetaX->value(),
-                                               ui->doubleSpinBoxThetaY->value(),
-                                               ui->checkBox->isChecked(),viewXYZ);
-
-        imageXYZ = createColorImage2LabelArea(colorImage);
-        displayImageOnLabel(imageXYZ,ui->labelFigureXYZ);
-        DestroyColorImage(&colorImage);
-    }else if(renderingOption == 4){
-        ColorImage* colorImage = renderingColourAlpha(image3D,labelImage,ui->doubleSpinBoxThetaX->value(),
-                                                      ui->doubleSpinBoxThetaY->value(),
-                                                      ui->checkBox->isChecked(),viewXYZ,alphas);
-
-        imageXYZ = createColorImage2LabelArea(colorImage);
-        displayImageOnLabel(imageXYZ,ui->labelFigureXYZ);
-        DestroyColorImage(&colorImage);
-    }else if(renderingOption == 5){
-        if(gradients == NULL){
-            gradients = computeGradient(image3D,labelImage);
-        }
-        ColorImage* colorImage = PhongRendering(image3D,labelImage,ui->doubleSpinBoxThetaX->value(),
-                                                      ui->doubleSpinBoxThetaY->value(),
-                                                      ui->checkBox->isChecked(),viewXYZ,alphas,gradients,k_phong);
-        imageXYZ =  createColorImage2LabelArea(colorImage);
-        displayImageOnLabel(imageXYZ,ui->labelFigureXYZ);
-        DestroyColorImage(&colorImage);
-    }else if(renderingOption == 6){
-        if(gradients == NULL){
-            gradients = computeGradient(image3D,labelImage);
-        }
-        ColorImage* colorImage = PhongRenderingColor(image3D,labelImage,ui->doubleSpinBoxThetaX->value(),
-                                                      ui->doubleSpinBoxThetaY->value(),
-                                                      ui->checkBox->isChecked(),viewXYZ,alphas,gradients,k_phong);
-        imageXYZ =  createColorImage2LabelArea(colorImage);
-        displayImageOnLabel(imageXYZ,ui->labelFigureXYZ);
-        DestroyColorImage(&colorImage);
-    }else if(renderingOption == 7){
-        if(gradients == NULL){
-            gradients = computeGradient(image3D,labelImage);
-        }
-        ColorImage* colorImage = PhongRenderingAlpha(image3D,labelImage,ui->doubleSpinBoxThetaX->value(),
-                                                      ui->doubleSpinBoxThetaY->value(),
-                                                      ui->checkBox->isChecked(),viewXYZ,alphas,gradients,k_phong);
-        imageXYZ =  createColorImage2LabelArea(colorImage);
-        displayImageOnLabel(imageXYZ,ui->labelFigureXYZ);
-        DestroyColorImage(&colorImage);
-    }else if(renderingOption == 8){
-        if(gradients == NULL){
-            gradients = computeGradient(image3D,labelImage);
-        }
-        ColorImage* colorImage = PhongRenderingSeeThrough(image3D,labelImage,ui->doubleSpinBoxThetaX->value(),
-                                                      ui->doubleSpinBoxThetaY->value(),
-                                                      ui->checkBox->isChecked(),viewXYZ,alphas,gradients,k_phong);
-        imageXYZ =  createColorImage2LabelArea(colorImage);
-        displayImageOnLabel(imageXYZ,ui->labelFigureXYZ);
-        DestroyColorImage(&colorImage);
-    }
+    renderXYZView();
 }
 
 void MainWindow::on_pushButtonConfirmAlphas_clicked(bool checked)
@@ -1230,6 +1075,28 @@ void MainWindow::on_pushButtonConfirmPhong_clicked(bool checked)
                 continue;
             }
             k_phong[i] = num.toFloat();
+            i++;
+        }
+        on_doubleSpinBoxThetaX_valueChanged(ui->doubleSpinBoxThetaX->value());
+    }else{
+        QMessageBox messageBox;
+        messageBox.critical(0,"Error","mismatch between number of inputs and number of objects");
+        messageBox.setFixedSize(500,200);
+    }
+}
+
+void MainWindow::on_pushButtonConfirmBackGroundColor_clicked()
+{
+    QStringList alphasValuesStr = ui->lineEditBgColor->text().split(" ");
+    if(alphasValuesStr.count() == 3){
+        int i=0;
+        QString NullComand("x");
+        foreach(QString num, alphasValuesStr){
+            if(num == NullComand){
+                i++;
+                continue;
+            }
+            bg_color[i] = num.toInt();
             i++;
         }
         on_doubleSpinBoxThetaX_valueChanged(ui->doubleSpinBoxThetaX->value());

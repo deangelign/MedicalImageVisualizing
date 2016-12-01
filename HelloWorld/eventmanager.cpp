@@ -255,6 +255,7 @@ int createContextMenuForRedering(MedicalImage *image3D,MedicalImage *labelImage,
     QString stringOption7 = "Phong (RGB)";
     QString stringOption8 = "Phong (RGBA)";
     QString stringOption9 = "Phong (ST)";
+    QString stringOption10 = "Depth";
     QString stringOption100 = "Save Image";
     //int selectedOption = -1;
     QMenu *menu = new QMenu();
@@ -267,6 +268,7 @@ int createContextMenuForRedering(MedicalImage *image3D,MedicalImage *labelImage,
     QAction *phong_RGB = new QAction(stringOption7, obj);
     QAction *phong_RGBA = new QAction(stringOption8, obj);
     QAction *phong_ST = new QAction(stringOption9, obj);
+    QAction *depth_map = new QAction(stringOption10, obj);
     QAction *saveImage = new QAction(stringOption100, obj);
     menu->addAction(PlanarView);
     menu->addAction(MIP);
@@ -277,6 +279,7 @@ int createContextMenuForRedering(MedicalImage *image3D,MedicalImage *labelImage,
     menu->addAction(phong_RGB);
     menu->addAction(phong_RGBA);
     menu->addAction(phong_ST);
+    menu->addAction(depth_map);
 
     menu->addAction(saveImage);
     if(image3D == NULL){
@@ -289,6 +292,7 @@ int createContextMenuForRedering(MedicalImage *image3D,MedicalImage *labelImage,
         phong_RGB->setEnabled(false);
         phong_RGBA->setEnabled(false);
         phong_ST->setEnabled(false);
+        depth_map->setEnabled(false);
     }else if(labelImage == NULL){
         PlanarView->setEnabled(true);
         MIP->setEnabled(true);
@@ -299,6 +303,7 @@ int createContextMenuForRedering(MedicalImage *image3D,MedicalImage *labelImage,
         phong_RGB->setEnabled(false);
         phong_RGBA->setEnabled(false);
         phong_ST->setEnabled(false);
+        depth_map->setEnabled(false);
     }
     QAction* selectedItem = menu->exec(pos);
     if(selectedItem != NULL){
@@ -321,6 +326,8 @@ int createContextMenuForRedering(MedicalImage *image3D,MedicalImage *labelImage,
             *selectedOption = 7;
         }else if(selectedItem->text() == stringOption9){
             *selectedOption = 8;
+        }else if(selectedItem->text() == stringOption10){
+            *selectedOption = 9;
         }
 
         if(selectedItem->text() == stringOption100){
