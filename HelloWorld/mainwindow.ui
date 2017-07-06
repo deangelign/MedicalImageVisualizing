@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1161</width>
+    <width>1176</width>
     <height>854</height>
    </rect>
   </property>
@@ -288,6 +288,9 @@ background-color: rgb(0, 0, 0);</string>
     </property>
    </widget>
    <widget class="QPushButton" name="pushButton_2">
+    <property name="enabled">
+     <bool>false</bool>
+    </property>
     <property name="geometry">
      <rect>
       <x>990</x>
@@ -297,14 +300,14 @@ background-color: rgb(0, 0, 0);</string>
      </rect>
     </property>
     <property name="text">
-     <string>PushButton</string>
+     <string>debug</string>
     </property>
    </widget>
    <widget class="QDoubleSpinBox" name="SpinBoxPointX">
     <property name="geometry">
      <rect>
       <x>990</x>
-      <y>460</y>
+      <y>430</y>
       <width>66</width>
       <height>23</height>
      </rect>
@@ -320,7 +323,7 @@ background-color: rgb(0, 0, 0);</string>
     <property name="geometry">
      <rect>
       <x>990</x>
-      <y>490</y>
+      <y>460</y>
       <width>66</width>
       <height>23</height>
      </rect>
@@ -336,7 +339,7 @@ background-color: rgb(0, 0, 0);</string>
     <property name="geometry">
      <rect>
       <x>990</x>
-      <y>520</y>
+      <y>490</y>
       <width>66</width>
       <height>23</height>
      </rect>
@@ -352,7 +355,7 @@ background-color: rgb(0, 0, 0);</string>
     <property name="geometry">
      <rect>
       <x>1070</x>
-      <y>460</y>
+      <y>430</y>
       <width>66</width>
       <height>23</height>
      </rect>
@@ -371,7 +374,7 @@ background-color: rgb(0, 0, 0);</string>
     <property name="geometry">
      <rect>
       <x>1070</x>
-      <y>490</y>
+      <y>460</y>
       <width>66</width>
       <height>23</height>
      </rect>
@@ -390,7 +393,7 @@ background-color: rgb(0, 0, 0);</string>
     <property name="geometry">
      <rect>
       <x>1070</x>
-      <y>520</y>
+      <y>490</y>
       <width>66</width>
       <height>23</height>
      </rect>
@@ -412,7 +415,7 @@ background-color: rgb(0, 0, 0);</string>
     <property name="geometry">
      <rect>
       <x>1000</x>
-      <y>440</y>
+      <y>410</y>
       <width>16</width>
       <height>16</height>
      </rect>
@@ -425,7 +428,7 @@ background-color: rgb(0, 0, 0);</string>
     <property name="geometry">
      <rect>
       <x>1080</x>
-      <y>430</y>
+      <y>410</y>
       <width>16</width>
       <height>16</height>
      </rect>
@@ -433,6 +436,102 @@ background-color: rgb(0, 0, 0);</string>
     <property name="text">
      <string>V</string>
     </property>
+   </widget>
+   <widget class="QWidget" name="formLayoutWidget">
+    <property name="geometry">
+     <rect>
+      <x>990</x>
+      <y>520</y>
+      <width>171</width>
+      <height>166</height>
+     </rect>
+    </property>
+    <layout class="QFormLayout" name="formLayout">
+     <item row="0" column="0">
+      <widget class="QLabel" name="label_3">
+       <property name="text">
+        <string># objects: </string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="1">
+      <widget class="QLabel" name="labelNumberObjets">
+       <property name="text">
+        <string>0</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="0">
+      <widget class="QLabel" name="drawFrameLabel">
+       <property name="text">
+        <string>drawFrame:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="0">
+      <widget class="QLabel" name="thetaXLabel">
+       <property name="text">
+        <string>thetaX:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="1">
+      <widget class="QDoubleSpinBox" name="doubleSpinBoxThetaX">
+       <property name="minimum">
+        <double>-360.000000000000000</double>
+       </property>
+       <property name="maximum">
+        <double>360000.000000000000000</double>
+       </property>
+       <property name="singleStep">
+        <double>1.000000000000000</double>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="0">
+      <widget class="QLabel" name="thetaYLabel">
+       <property name="text">
+        <string>thetaY:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="1">
+      <widget class="QDoubleSpinBox" name="doubleSpinBoxThetaY">
+       <property name="minimum">
+        <double>-360.000000000000000</double>
+       </property>
+       <property name="maximum">
+        <double>360.000000000000000</double>
+       </property>
+       <property name="singleStep">
+        <double>1.000000000000000</double>
+       </property>
+      </widget>
+     </item>
+     <item row="4" column="0">
+      <widget class="QLabel" name="alphaSLabel">
+       <property name="text">
+        <string>alpha(s):</string>
+       </property>
+      </widget>
+     </item>
+     <item row="4" column="1">
+      <widget class="QLineEdit" name="lineEditAlphasValues"/>
+     </item>
+     <item row="5" column="0">
+      <widget class="QLabel" name="phongLabel">
+       <property name="text">
+        <string>phong:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="5" column="1">
+      <widget class="QLineEdit" name="lineEditPhongValues"/>
+     </item>
+     <item row="1" column="1">
+      <widget class="QCheckBox" name="checkBox"/>
+     </item>
+    </layout>
    </widget>
   </widget>
   <widget class="QToolBar" name="mainToolBar">
@@ -449,8 +548,8 @@ background-color: rgb(0, 0, 0);</string>
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1161</width>
-     <height>19</height>
+     <width>1176</width>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">

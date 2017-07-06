@@ -1085,10 +1085,32 @@ void MainWindow::on_pushButtonConfirmPhong_clicked(bool checked)
     }
 }
 
-void MainWindow::on_pushButtonConfirmBackGroundColor_clicked()
+//void MainWindow::on_pushButtonConfirmBackGroundColor_clicked()
+//{
+//    QStringList alphasValuesStr = ui->lineEditBgColor->text().split(" ");
+//    if(alphasValuesStr.count() == 3){
+//        int i=0;
+//        QString NullComand("x");
+//        foreach(QString num, alphasValuesStr){
+//            if(num == NullComand){
+//                i++;
+//                continue;
+//            }
+//            bg_color[i] = num.toInt();
+//            i++;
+//        }
+//        on_doubleSpinBoxThetaX_valueChanged(ui->doubleSpinBoxThetaX->value());
+//    }else{
+//        QMessageBox messageBox;
+//        messageBox.critical(0,"Error","mismatch between number of inputs and number of objects");
+//        messageBox.setFixedSize(500,200);
+//    }
+//}
+
+void MainWindow::on_lineEditAlphasValues_editingFinished()
 {
-    QStringList alphasValuesStr = ui->lineEditBgColor->text().split(" ");
-    if(alphasValuesStr.count() == 3){
+    QStringList alphasValuesStr = ui->lineEditAlphasValues->text().split(" ");
+    if(alphasValuesStr.count() == viewZ->rgbColorTable->numberRows){
         int i=0;
         QString NullComand("x");
         foreach(QString num, alphasValuesStr){
@@ -1096,7 +1118,7 @@ void MainWindow::on_pushButtonConfirmBackGroundColor_clicked()
                 i++;
                 continue;
             }
-            bg_color[i] = num.toInt();
+            alphas[i] = num.toFloat();
             i++;
         }
         on_doubleSpinBoxThetaX_valueChanged(ui->doubleSpinBoxThetaX->value());

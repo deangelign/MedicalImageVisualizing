@@ -81,9 +81,11 @@ private slots:
 
     void on_pushButtonConfirmPhong_clicked(bool checked);
 
-    void on_pushButtonConfirmBackGroundColor_clicked();
+    //void on_pushButtonConfirmBackGroundColor_clicked();
 
     void renderXYZView();
+
+    void on_lineEditAlphasValues_editingFinished();
 
 private:
     Ui::MainWindow *ui;
