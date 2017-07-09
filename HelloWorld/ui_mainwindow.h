@@ -181,7 +181,7 @@ public:
         labelFigureXYZ->setWordWrap(false);
         pushButton_2 = new QPushButton(centralWidget);
         pushButton_2->setObjectName(QStringLiteral("pushButton_2"));
-        pushButton_2->setEnabled(false);
+        pushButton_2->setEnabled(true);
         pushButton_2->setGeometry(QRect(990, 380, 80, 22));
         SpinBoxPointX = new QDoubleSpinBox(centralWidget);
         SpinBoxPointX->setObjectName(QStringLiteral("SpinBoxPointX"));
@@ -225,7 +225,7 @@ public:
         label_2->setGeometry(QRect(1080, 410, 16, 16));
         formLayoutWidget = new QWidget(centralWidget);
         formLayoutWidget->setObjectName(QStringLiteral("formLayoutWidget"));
-        formLayoutWidget->setGeometry(QRect(990, 520, 171, 166));
+        formLayoutWidget->setGeometry(QRect(990, 520, 188, 166));
         formLayout = new QFormLayout(formLayoutWidget);
         formLayout->setSpacing(6);
         formLayout->setContentsMargins(11, 11, 11, 11);

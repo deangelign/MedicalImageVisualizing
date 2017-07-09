@@ -493,11 +493,38 @@ void MainWindow::displayNormalizedImage(){
 
 void MainWindow::on_pushButton_2_clicked()
 {
+    MedicalImage* image3D_aux = CreateMedicalImage(150,150,150);
+    int label = 1;
+    for (int z = 0; z < image3D_aux->nz; ++z) {
+        for (int y = 0; y < image3D_aux->ny; ++y) {
+            for (int x = 0; x < image3D_aux->nx; ++x) {
 
-    MedicalImage* image3D_aux = ReadMedicalImage("cubo-teste.scn");
+                if(x >= 25 && x < 75 && y >=25 && y < 75 && z >= 25 && z < 75){
+                    image3D_aux->val[z][y][x] = 100;
+                }else if(x >= 75 && x < 125 && y >=25 && y < 75 && z >= 25 && z < 75){
+                    image3D_aux->val[z][y][x] = 200;
+                }else if(x >= 25 && x < 75 && y >=75 && y < 125 && z >= 25 && z < 75){
+                    image3D_aux->val[z][y][x] = 300;
+                }else if(x >= 75 && x < 125 && y >=75 && y < 125 && z >= 25 && z < 75){
+                    image3D_aux->val[z][y][x] = 400;
+                }
+                //z
+                else if(x >= 25 && x < 75 && y >=25 && y < 75 && z >= 75 && z < 125){
+                    image3D_aux->val[z][y][x] = 500;
+                }else if(x >= 75 && x < 125 && y >=25 && y < 75 && z >= 75 && z < 125){
+                    image3D_aux->val[z][y][x] = 600;
+                }else if(x >= 25 && x < 75 && y >=75 && y < 125 && z >= 75 && z < 125){
+                    image3D_aux->val[z][y][x] = 700;
+                }else if(x >= 75 && x < 125 && y >=75 && y < 125 && z >= 75 && z < 125){
+                    image3D_aux->val[z][y][x] = 800;
+                }
+            }
+        }
+    }
+    WriteMedicalImage(image3D_aux,"/home/deangeli/MedicalImageVisualizing/data/cube.scn");
     scaleSceneValues(image3D_aux,100);
-    WriteMedicalImage(image3D_aux,"cuboLabel.scn");
-    MedicalImage* labels_aux = ReadMedicalImage("brain_label.scn");
+    WriteMedicalImage(image3D_aux,"/home/deangeli/MedicalImageVisualizing/data/cubeLabel.scn");
+//    MedicalImage* labels_aux = ReadMedicalImage("brain_label.scn");
     //test1
     //    iftMatrix<float> *vec = createMatrix(1,4,(float)0);
     //    vec->elements[0] = 1;
@@ -565,8 +592,8 @@ void MainWindow::on_pushButton_2_clicked()
     //destroyMatrix(&grad);
     //fprintf(stderr,"%d\n",image3D_aux->maxValue);
     //WriteBinaryScene(image3D_aux,40);
-    DestroyMedicalImage(&image3D_aux);
-    DestroyMedicalImage(&labels_aux);
+//    DestroyMedicalImage(&image3D_aux);
+//    DestroyMedicalImage(&labels_aux);
 }
 
 void MainWindow::on_actionRefactor_triggered()
