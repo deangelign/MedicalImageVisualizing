@@ -493,37 +493,65 @@ void MainWindow::displayNormalizedImage(){
 
 void MainWindow::on_pushButton_2_clicked()
 {
-    MedicalImage* image3D_aux = CreateMedicalImage(150,150,150);
-    int label = 1;
+//    MedicalImage* image3D_aux = CreateMedicalImage(150,150,150);
+//    int label = 1;
+//    for (int z = 0; z < image3D_aux->nz; ++z) {
+//        for (int y = 0; y < image3D_aux->ny; ++y) {
+//            for (int x = 0; x < image3D_aux->nx; ++x) {
+
+//                if(x >= 25 && x < 75 && y >=25 && y < 75 && z >= 25 && z < 75){
+//                    image3D_aux->val[z][y][x] = 100;
+//                }else if(x >= 75 && x < 125 && y >=25 && y < 75 && z >= 25 && z < 75){
+//                    image3D_aux->val[z][y][x] = 200;
+//                }else if(x >= 25 && x < 75 && y >=75 && y < 125 && z >= 25 && z < 75){
+//                    image3D_aux->val[z][y][x] = 300;
+//                }else if(x >= 75 && x < 125 && y >=75 && y < 125 && z >= 25 && z < 75){
+//                    image3D_aux->val[z][y][x] = 400;
+//                }
+//                //z
+//                else if(x >= 25 && x < 75 && y >=25 && y < 75 && z >= 75 && z < 125){
+//                    image3D_aux->val[z][y][x] = 500;
+//                }else if(x >= 75 && x < 125 && y >=25 && y < 75 && z >= 75 && z < 125){
+//                    image3D_aux->val[z][y][x] = 600;
+//                }else if(x >= 25 && x < 75 && y >=75 && y < 125 && z >= 75 && z < 125){
+//                    image3D_aux->val[z][y][x] = 700;
+//                }else if(x >= 75 && x < 125 && y >=75 && y < 125 && z >= 75 && z < 125){
+//                    image3D_aux->val[z][y][x] = 800;
+//                }
+//            }
+//        }
+//    }
+//    WriteMedicalImage(image3D_aux,"/home/deangeli/MedicalImageVisualizing/data/cube.scn");
+//    scaleSceneValues(image3D_aux,100);
+//    WriteMedicalImage(image3D_aux,"/home/deangeli/MedicalImageVisualizing/data/cubeLabel.scn");
+
+    MedicalImage* image3D_aux = CreateMedicalImage(200,200,200);
+    int xc = 100;
+    int yc = 100;
+    int zc = 100;
+    int radius = 75;
+    int radius_sqared = radius*radius;
     for (int z = 0; z < image3D_aux->nz; ++z) {
         for (int y = 0; y < image3D_aux->ny; ++y) {
             for (int x = 0; x < image3D_aux->nx; ++x) {
+                int deltax = x - xc;
+                int deltaY = y - yc;
+                int deltaZ = z - zc;
+                int total = (deltax*deltax) + (deltaY*deltaY) + (deltaZ*deltaZ);
+                if(total <= radius_sqared){
+                    if(z < zc){
+                        image3D_aux->val[z][y][x] = 100;
+                    }else{
+                        image3D_aux->val[z][y][x] = 200;
+                    }
 
-                if(x >= 25 && x < 75 && y >=25 && y < 75 && z >= 25 && z < 75){
-                    image3D_aux->val[z][y][x] = 100;
-                }else if(x >= 75 && x < 125 && y >=25 && y < 75 && z >= 25 && z < 75){
-                    image3D_aux->val[z][y][x] = 200;
-                }else if(x >= 25 && x < 75 && y >=75 && y < 125 && z >= 25 && z < 75){
-                    image3D_aux->val[z][y][x] = 300;
-                }else if(x >= 75 && x < 125 && y >=75 && y < 125 && z >= 25 && z < 75){
-                    image3D_aux->val[z][y][x] = 400;
-                }
-                //z
-                else if(x >= 25 && x < 75 && y >=25 && y < 75 && z >= 75 && z < 125){
-                    image3D_aux->val[z][y][x] = 500;
-                }else if(x >= 75 && x < 125 && y >=25 && y < 75 && z >= 75 && z < 125){
-                    image3D_aux->val[z][y][x] = 600;
-                }else if(x >= 25 && x < 75 && y >=75 && y < 125 && z >= 75 && z < 125){
-                    image3D_aux->val[z][y][x] = 700;
-                }else if(x >= 75 && x < 125 && y >=75 && y < 125 && z >= 75 && z < 125){
-                    image3D_aux->val[z][y][x] = 800;
                 }
             }
         }
     }
-    WriteMedicalImage(image3D_aux,"/home/deangeli/MedicalImageVisualizing/data/cube.scn");
+    WriteMedicalImage(image3D_aux,"/home/deangeli/MedicalImageVisualizing/data/sphere.scn");
     scaleSceneValues(image3D_aux,100);
-    WriteMedicalImage(image3D_aux,"/home/deangeli/MedicalImageVisualizing/data/cubeLabel.scn");
+    WriteMedicalImage(image3D_aux,"/home/deangeli/MedicalImageVisualizing/data/sphereLabel.scn");
 //    MedicalImage* labels_aux = ReadMedicalImage("brain_label.scn");
     //test1
     //    iftMatrix<float> *vec = createMatrix(1,4,(float)0);
@@ -1146,6 +1174,28 @@ void MainWindow::on_lineEditAlphasValues_editingFinished()
                 continue;
             }
             alphas[i] = num.toFloat();
+            i++;
+        }
+        on_doubleSpinBoxThetaX_valueChanged(ui->doubleSpinBoxThetaX->value());
+    }else{
+        QMessageBox messageBox;
+        messageBox.critical(0,"Error","mismatch between number of inputs and number of objects");
+        messageBox.setFixedSize(500,200);
+    }
+}
+
+void MainWindow::on_lineEditPhongValues_editingFinished()
+{
+    QStringList alphasValuesStr = ui->lineEditPhongValues->text().split(" ");
+    if(alphasValuesStr.count() == 4){
+        int i=0;
+        QString NullComand("x");
+        foreach(QString num, alphasValuesStr){
+            if(num == NullComand){
+                i++;
+                continue;
+            }
+            k_phong[i] = num.toFloat();
             i++;
         }
         on_doubleSpinBoxThetaX_valueChanged(ui->doubleSpinBoxThetaX->value());

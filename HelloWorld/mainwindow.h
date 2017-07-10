@@ -87,6 +87,8 @@ private slots:
 
     void on_lineEditAlphasValues_editingFinished();
 
+    void on_lineEditPhongValues_editingFinished();
+
 private:
     Ui::MainWindow *ui;
     BrightContrastDialog *brightContrastDialogForm;
